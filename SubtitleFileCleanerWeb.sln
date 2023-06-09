@@ -3,9 +3,63 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.33711.374
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{2469CB14-3011-4992-8CAB-413199377DBB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{7E54549C-1B5B-467B-8059-A54786AB7675}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubtitleFileCleanerWeb.Domain.UnitTests", "tests\SubtitleFileCleanerWeb.Domain.UnitTests\SubtitleFileCleanerWeb.Domain.UnitTests.csproj", "{5D9B5CAB-94EB-4952-AE6B-E7DEA6C6B760}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubtitleFileCleanerWeb.Application", "src\SubtitleFileCleanerWeb.Application\SubtitleFileCleanerWeb.Application.csproj", "{CF5A3CA2-C13E-4A45-A6D2-487445D96495}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubtitleFileCleanerWeb.Infrastructure", "src\SubtitleFileCleanerWeb.Infrastructure\SubtitleFileCleanerWeb.Infrastructure.csproj", "{D8F02A94-C729-417B-904B-914680FA0D99}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubtitleFileCleanerWeb.Api", "src\SubtitleFileCleanerWeb.Api\SubtitleFileCleanerWeb.Api.csproj", "{9E2700DD-42F4-456A-9DEF-53A113E4662F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubtitleFileCleanerWeb.Application.UnitTests", "tests\SubtitleFileCleanerWeb.Application.UnitTests\SubtitleFileCleanerWeb.Application.UnitTests.csproj", "{0FDB2372-14FF-40E7-BCCB-13F68A156DDF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubtitleFileCleanerWeb.Domain", "src\SubtitleFileCleanerWeb.Domain\SubtitleFileCleanerWeb.Domain.csproj", "{EE8AD3F6-5945-4749-84D6-E3F67FF4BB63}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5D9B5CAB-94EB-4952-AE6B-E7DEA6C6B760}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D9B5CAB-94EB-4952-AE6B-E7DEA6C6B760}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D9B5CAB-94EB-4952-AE6B-E7DEA6C6B760}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D9B5CAB-94EB-4952-AE6B-E7DEA6C6B760}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF5A3CA2-C13E-4A45-A6D2-487445D96495}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF5A3CA2-C13E-4A45-A6D2-487445D96495}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF5A3CA2-C13E-4A45-A6D2-487445D96495}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF5A3CA2-C13E-4A45-A6D2-487445D96495}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D8F02A94-C729-417B-904B-914680FA0D99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8F02A94-C729-417B-904B-914680FA0D99}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8F02A94-C729-417B-904B-914680FA0D99}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8F02A94-C729-417B-904B-914680FA0D99}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E2700DD-42F4-456A-9DEF-53A113E4662F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E2700DD-42F4-456A-9DEF-53A113E4662F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E2700DD-42F4-456A-9DEF-53A113E4662F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E2700DD-42F4-456A-9DEF-53A113E4662F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0FDB2372-14FF-40E7-BCCB-13F68A156DDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0FDB2372-14FF-40E7-BCCB-13F68A156DDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0FDB2372-14FF-40E7-BCCB-13F68A156DDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0FDB2372-14FF-40E7-BCCB-13F68A156DDF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE8AD3F6-5945-4749-84D6-E3F67FF4BB63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE8AD3F6-5945-4749-84D6-E3F67FF4BB63}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE8AD3F6-5945-4749-84D6-E3F67FF4BB63}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE8AD3F6-5945-4749-84D6-E3F67FF4BB63}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{5D9B5CAB-94EB-4952-AE6B-E7DEA6C6B760} = {7E54549C-1B5B-467B-8059-A54786AB7675}
+		{CF5A3CA2-C13E-4A45-A6D2-487445D96495} = {2469CB14-3011-4992-8CAB-413199377DBB}
+		{D8F02A94-C729-417B-904B-914680FA0D99} = {2469CB14-3011-4992-8CAB-413199377DBB}
+		{9E2700DD-42F4-456A-9DEF-53A113E4662F} = {2469CB14-3011-4992-8CAB-413199377DBB}
+		{0FDB2372-14FF-40E7-BCCB-13F68A156DDF} = {7E54549C-1B5B-467B-8059-A54786AB7675}
+		{EE8AD3F6-5945-4749-84D6-E3F67FF4BB63} = {2469CB14-3011-4992-8CAB-413199377DBB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {40C069AD-DE69-40C4-8F36-610F6596B69C}
