@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.Models;
+using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.FluentOperationResult;
 
 namespace SubtitleFileCleanerWeb.Application.UnitTests.Systems.Models;
 
@@ -18,11 +19,7 @@ public class TestOperationResult
         result.AddError(enumValue, message);
 
         // Assert
-        result.Payload.Should().BeNull();
-        result.IsError.Should().BeTrue();
-        result.Errors.Should().ContainSingle();
-        result.Errors[0].Code.Should().Be(enumValue);
-        result.Errors[0].Message.Should().Be(message);
+        result.Should().ContainSingleError(enumValue, message);
     }
 
     [Fact]
@@ -36,10 +33,6 @@ public class TestOperationResult
         result.AddUnknownError(message);
 
         // Assert
-        result.Payload.Should().BeNull();
-        result.IsError.Should().BeTrue();
-        result.Errors.Should().ContainSingle();
-        result.Errors[0].Code.Should().Be(ErrorCode.UnknownError);
-        result.Errors[0].Message.Should().Be(message);
+        result.Should().ContainSingleError(ErrorCode.UnknownError, message);
     }
 }

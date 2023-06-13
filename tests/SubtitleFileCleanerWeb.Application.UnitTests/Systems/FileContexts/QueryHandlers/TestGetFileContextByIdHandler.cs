@@ -1,10 +1,11 @@
 ﻿using FluentAssertions;
 using Moq;
 using Moq.EntityFrameworkCore;
+using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.FileContexts.Queries;
 using SubtitleFileCleanerWeb.Application.FileContexts.QueryHandlers;
-using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.UnitTests.Fixtures;
+using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.FluentOperationResult;
 using SubtitleFileCleanerWeb.Domain.Aggregates.FileContextAggregate;
 using SubtitleFileCleanerWeb.Infrastructure.Persistence;
 
@@ -26,13 +27,11 @@ public class TestGetFileContextByIdHandler
         var fileContexts = FileContextFixture.GetListOfThree();
         var searchedContext = fileContexts.Last();
 
-        _dbContextMock.Setup(x => x.FileContexts)
-            .ReturnsDbSet(fileContexts);
+        _dbContextMock.Setup(x => x.FileContexts).ReturnsDbSet(fileContexts);
+        var handler = new GetFileContextByIdHandler(_dbContextMock.Object);
 
         var request = new GetFileContextById(searchedContext.FileContextId);
         var cancellationToken = new CancellationToken();
-
-        var handler = new GetFileContextByIdHandler(_dbContextMock.Object);
 
         // Act
         var result = await handler.Handle(request, cancellationToken);
@@ -40,25 +39,20 @@ public class TestGetFileContextByIdHandler
         // Assert
         _dbContextMock.Verify(x => x.FileContexts, Times.Once);
 
-        result.Should().NotBeNull();
-        result.IsError.Should().BeFalse();
-        result.Errors.Should().BeEmpty();
-        result.Payload.Should().NotBeNull().And.BeOfType<FileContext>().And.Be(searchedContext);
+        result.Should().NotBeNull().And.ContainsNoErrors();
+        result.Payload.Should().NotBeNull().And.Be(searchedContext);
     }
 
     [Fact]
-    public async Task Handle_WithEmptyFiles_ReturnError()
+    public async Task Handle_WithNonExistentId_ReturnNotFoundError()
     {
         // Arrange
-        var fileContexts = Enumerable.Empty<FileContext>();
-
         _dbContextMock.Setup(x => x.FileContexts)
-            .ReturnsDbSet(fileContexts);
+            .ReturnsDbSet(Enumerable.Empty<FileContext>());
+        var handler = new GetFileContextByIdHandler(_dbContextMock.Object);
 
         var request = new GetFileContextById(Guid.Empty);
         var cancellationToken = new CancellationToken();
-
-        var handler = new GetFileContextByIdHandler(_dbContextMock.Object);
 
         // Act
         var result = await handler.Handle(request, cancellationToken);
@@ -66,11 +60,6 @@ public class TestGetFileContextByIdHandler
         // Assert
         _dbContextMock.Verify(x => x.FileContexts, Times.Once());
 
-        result.Should().NotBeNull();
-        result.Payload.Should().BeNull();
-        result.IsError.Should().BeTrue();
-        result.Errors.Should().HaveCount(1);
-        result.Errors[0].Code.Should().Be(ErrorCode.NotFound);
-        result.Errors[0].Message.Should().Be($"No file context found with id: {Guid.Empty}");
+        result.Should().ContainSingleError(ErrorCode.NotFound, $"No file context found with id: {Guid.Empty}");
     }
-}
+}   

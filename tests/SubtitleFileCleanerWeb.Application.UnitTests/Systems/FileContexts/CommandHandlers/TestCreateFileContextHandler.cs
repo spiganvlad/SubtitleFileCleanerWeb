@@ -4,6 +4,7 @@ using Moq;
 using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.FileContexts.CommandHandlers;
 using SubtitleFileCleanerWeb.Application.FileContexts.Commands;
+using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.FluentOperationResult;
 using SubtitleFileCleanerWeb.Domain.Aggregates.FileContextAggregate;
 using SubtitleFileCleanerWeb.Infrastructure.Persistence;
 
@@ -27,10 +28,10 @@ public class TestCreateFileContextHandler
     public async Task Handle_WithFooName_ReturnValid()
     {
         // Arrange
+        var handler = new CreateFileContextHandler(_dbContextMock.Object);
+
         var request = new CreateFileContext("FooName");
         var cancellationToken = new CancellationToken();
-
-        var handler = new CreateFileContextHandler(_dbContextMock.Object);
 
         // Act
         var result = await handler.Handle(request, cancellationToken);
@@ -38,12 +39,10 @@ public class TestCreateFileContextHandler
         // Assert
         _dbContextMock.Verify(db => db.FileContexts, Times.Once());
         _dbContextMock.Verify(db => db.FileContexts.Add(It.IsAny<FileContext>()), Times.Once);
-        _dbContextMock.Verify(db => db.SaveChangesAsync(cancellationToken), Times.Once());
+        _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once());
 
-        result.Should().NotBeNull();
-        result.IsError.Should().BeFalse();
-        result.Errors.Should().BeEmpty();
-        result.Payload.Should().NotBeNull().And.BeOfType<FileContext>();
+        result.Should().NotBeNull().And.ContainsNoErrors();
+        result.Payload.Should().NotBeNull();
         result.Payload!.FileContextId.Should().NotBeEmpty();
         result.Payload.Name.Should().Be(request.FileName);
         result.Payload.DateCreated.Should().BeCloseTo(DateTime.UtcNow, 1.Minutes());
@@ -54,13 +53,13 @@ public class TestCreateFileContextHandler
     }
 
     [Fact]
-    public async Task Handle_WithEmptyName_ReturnError()
+    public async Task Handle_WithNullName_ReturnValidationError()
     {
         // Arrange
-        var request = new CreateFileContext(string.Empty);
-        var cancellationToken = new CancellationToken();
-
         var handler = new CreateFileContextHandler(_dbContextMock.Object);
+
+        var request = new CreateFileContext(null!);
+        var cancellationToken = new CancellationToken();
 
         // Act
         var result = await handler.Handle(request, cancellationToken);
@@ -69,12 +68,28 @@ public class TestCreateFileContextHandler
         _dbContextMock.Verify(db => db.FileContexts, Times.Never());
         _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never());
 
-        result.Should().NotBeNull();
-        result.Payload.Should().BeNull();
-        result.IsError.Should().BeTrue();
-        result.Errors.Should().ContainSingle();
-        result.Errors[0].Code.Should().Be(ErrorCode.ValidationError);
-        result.Errors[0].Message.Should().Be("File context name cannot be empty");
+        result.Should().ContainSingleError(ErrorCode.ValidationError, "File context name cannot be null");
+
+        _fileContexts.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task Handle_WithEmptyName_ReturnValidationError()
+    {
+        // Arrange
+        var handler = new CreateFileContextHandler(_dbContextMock.Object);
+
+        var request = new CreateFileContext(string.Empty);
+        var cancellationToken = new CancellationToken();
+
+        // Act
+        var result = await handler.Handle(request, cancellationToken);
+
+        // Assert
+        _dbContextMock.Verify(db => db.FileContexts, Times.Never());
+        _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never());
+
+        result.Should().ContainSingleError(ErrorCode.ValidationError, "File context name cannot be empty");
 
         _fileContexts.Should().BeEmpty();
     }
