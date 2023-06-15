@@ -27,17 +27,17 @@ public class TestGetFileContextByIdHandler
         var fileContexts = FileContextFixture.GetListOfThree();
         var searchedContext = fileContexts.Last();
 
-        _dbContextMock.Setup(x => x.FileContexts).ReturnsDbSet(fileContexts);
-        var handler = new GetFileContextByIdHandler(_dbContextMock.Object);
-
         var request = new GetFileContextById(searchedContext.FileContextId);
         var cancellationToken = new CancellationToken();
+
+        _dbContextMock.Setup(db => db.FileContexts).ReturnsDbSet(fileContexts);
+        var handler = new GetFileContextByIdHandler(_dbContextMock.Object);
 
         // Act
         var result = await handler.Handle(request, cancellationToken);
 
         // Assert
-        _dbContextMock.Verify(x => x.FileContexts, Times.Once);
+        _dbContextMock.Verify(db => db.FileContexts, Times.Once);
 
         result.Should().NotBeNull().And.ContainsNoErrors();
         result.Payload.Should().NotBeNull().And.Be(searchedContext);
@@ -47,12 +47,11 @@ public class TestGetFileContextByIdHandler
     public async Task Handle_WithNonExistentId_ReturnNotFoundError()
     {
         // Arrange
-        _dbContextMock.Setup(x => x.FileContexts)
-            .ReturnsDbSet(Enumerable.Empty<FileContext>());
-        var handler = new GetFileContextByIdHandler(_dbContextMock.Object);
-
         var request = new GetFileContextById(Guid.Empty);
         var cancellationToken = new CancellationToken();
+
+        _dbContextMock.Setup(db => db.FileContexts).ReturnsDbSet(Enumerable.Empty<FileContext>());
+        var handler = new GetFileContextByIdHandler(_dbContextMock.Object);
 
         // Act
         var result = await handler.Handle(request, cancellationToken);
@@ -61,5 +60,27 @@ public class TestGetFileContextByIdHandler
         _dbContextMock.Verify(x => x.FileContexts, Times.Once());
 
         result.Should().ContainSingleError(ErrorCode.NotFound, $"No file context found with id: {Guid.Empty}");
+        result.Payload.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Handle_WithUnknownError_ReturnUnknownError()
+    {
+        // Arrange
+        var request = new GetFileContextById(Guid.Empty);
+        var cancellationToken = new CancellationToken();
+
+        var exceptionError = "Unexcepted error occurred";
+        _dbContextMock.Setup(db => db.FileContexts).Throws(new Exception(exceptionError));
+        var handler = new GetFileContextByIdHandler(_dbContextMock.Object);
+
+        // Act
+        var result = await handler.Handle(request, cancellationToken);
+
+        // Assert
+        _dbContextMock.Verify(db => db.FileContexts, Times.Once());
+
+        result.Should().NotBeNull().And.ContainSingleError(ErrorCode.UnknownError, exceptionError);
+        result.Payload.Should().BeNull();
     }
 }   

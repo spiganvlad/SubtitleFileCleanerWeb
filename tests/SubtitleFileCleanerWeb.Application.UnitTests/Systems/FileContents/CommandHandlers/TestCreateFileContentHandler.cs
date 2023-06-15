@@ -21,17 +21,17 @@ public class TestCreateFileContentHandler
     public async Task Handle_WithValidParameters_ReturnValid()
     {
         // Arrange
-        var handler = new CreateFileContentHandler(_blobContextMock.Object);
-
         var streamContent = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 }, false);
         var request = new CreateFileContent(Guid.NewGuid(), streamContent);
         var cancellationToken = new CancellationToken();
+
+        var handler = new CreateFileContentHandler(_blobContextMock.Object);
 
         // Act
         var result = await handler.Handle(request, cancellationToken);
 
         // Assert
-        _blobContextMock.Verify(b => b.CreateContentAsync(It.IsAny<string>(), It.IsAny<Stream>()), Times.Once());
+        _blobContextMock.Verify(bc => bc.CreateContentAsync(It.IsAny<string>(), It.IsAny<Stream>()), Times.Once());
 
         result.Should().NotBeNull().And.ContainsNoErrors();
         result.Payload.Should().NotBeNull();
@@ -43,10 +43,10 @@ public class TestCreateFileContentHandler
     public async Task Handle_WithNullStream_ReturnValidationError()
     {
         // Arrange
-        var handler = new CreateFileContentHandler(_blobContextMock.Object);
-
         var request = new CreateFileContent(Guid.Empty, null!);
         var cancellationToken = new CancellationToken();
+
+        var handler = new CreateFileContentHandler(_blobContextMock.Object);
 
         // Act
         var result = await handler.Handle(request, cancellationToken);
@@ -55,16 +55,17 @@ public class TestCreateFileContentHandler
         _blobContextMock.Verify(bc => bc.CreateContentAsync(It.IsAny<string>(), It.IsAny<Stream>()), Times.Never());
 
         result.Should().ContainSingleError(ErrorCode.ValidationError, "File content stream cannot be null");
+        result.Payload.Should().BeNull();
     }
 
     [Fact]
     public async Task Handle_WithEmptyStream_ReturnValidationError()
     {
         // Arrange
-        var handler = new CreateFileContentHandler(_blobContextMock.Object);
-
         var request = new CreateFileContent(Guid.Empty, new MemoryStream(Array.Empty<byte>()));
         var cancellationToken = new CancellationToken();
+
+        var handler = new CreateFileContentHandler(_blobContextMock.Object);
 
         // Act
         var result = await handler.Handle(request, cancellationToken);
@@ -74,17 +75,18 @@ public class TestCreateFileContentHandler
 
         result.Should().NotBeNull().And
             .ContainSingleError(ErrorCode.ValidationError, "File content stream cannot be empty");
+        result.Payload.Should().BeNull();
     }
 
     [Fact]
     public async Task Handle_WithWritableStream_ReturnValidationError()
     {
         // Arrange
-        var handler = new CreateFileContentHandler(_blobContextMock.Object);
-
         var contentStream = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 }, true);
         var request = new CreateFileContent(Guid.Empty, contentStream);
         var cancellationToken = new CancellationToken();
+
+        var handler = new CreateFileContentHandler(_blobContextMock.Object);
 
         // Act
         var result = await handler.Handle(request, cancellationToken);
@@ -94,5 +96,28 @@ public class TestCreateFileContentHandler
 
         result.Should().NotBeNull().And
             .ContainSingleError(ErrorCode.ValidationError, "File content stream must be readonly");
+        result.Payload.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Handle_WithUnknownError_ReturnUnknownError()
+    {
+        // Arrange
+        var request = new CreateFileContent(Guid.Empty, new MemoryStream(new byte[] { 1, 2, 3, 4, 5 }, false));
+        var cancellationToken = new CancellationToken();
+
+        var exceptionMessage = "Unexpected error occurred";
+        _blobContextMock.Setup(bc => bc.CreateContentAsync(request.FileContextId.ToString(), request.ContentStream))
+            .ThrowsAsync(new Exception(exceptionMessage));
+        var handler = new CreateFileContentHandler(_blobContextMock.Object);
+
+        // Act
+        var result = await handler.Handle(request, cancellationToken);
+
+        // Assert
+        _blobContextMock.Verify(bc => bc.CreateContentAsync(It.IsAny<string>(), It.IsAny<Stream>()), Times.Once());
+
+        result.Should().NotBeNull().And.ContainSingleError(ErrorCode.UnknownError, exceptionMessage);
+        result.Payload.Should().BeNull();
     }
 }

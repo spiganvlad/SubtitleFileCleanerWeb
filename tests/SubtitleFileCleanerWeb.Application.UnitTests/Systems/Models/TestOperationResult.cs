@@ -20,6 +20,7 @@ public class TestOperationResult
 
         // Assert
         result.Should().ContainSingleError(enumValue, message);
+        result.Payload.Should().BeNull();
     }
 
     [Fact]
@@ -34,5 +35,6 @@ public class TestOperationResult
 
         // Assert
         result.Should().ContainSingleError(ErrorCode.UnknownError, message);
+        result.Payload.Should().BeNull();
     }
 }

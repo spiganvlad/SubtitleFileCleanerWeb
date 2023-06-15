@@ -31,11 +31,11 @@ public class TestDeleteFileContextHandler
     public async Task Handle_WithValidGuidId_ReturnValid()
     {
         // Arrange
-        var handler = new DeleteFileContextHandler(_dbContextMock.Object);
-
         var contextToRemove = _fileContexts.Last();
         var request = new DeleteFileContext(contextToRemove.FileContextId);
         var cancellationToken = new CancellationToken();
+
+        var handler = new DeleteFileContextHandler(_dbContextMock.Object);
 
         // Act
         var result = await handler.Handle(request, cancellationToken);
@@ -55,10 +55,10 @@ public class TestDeleteFileContextHandler
     public async Task Handle_WithNonExistentGuidId_ReturnNotFoundError()
     {
         // Arrange
-        var handler = new DeleteFileContextHandler(_dbContextMock.Object);
-
         var request = new DeleteFileContext(Guid.Empty);
         var cancellationToken = new CancellationToken();
+
+        var handler = new DeleteFileContextHandler(_dbContextMock.Object);
 
         // Act
         var result = await handler.Handle(request, cancellationToken);
@@ -71,5 +71,28 @@ public class TestDeleteFileContextHandler
         result.Should().ContainSingleError(ErrorCode.NotFound, $"No file context found with id: {request.FileContextId}");
 
         _fileContexts.Should().HaveCount(3);
+    }
+
+    [Fact]
+    public async Task Handle_WithUnknownError_ReturnUnknownError()
+    {
+        // Arrange
+        var request = new DeleteFileContext(Guid.Empty);
+        var cancellationToken = new CancellationToken();
+
+        var exceptionMessage = "Unexpected error occurred";
+        _dbContextMock.Setup(db => db.FileContexts)
+            .Throws(new Exception(exceptionMessage));
+        var handler = new DeleteFileContextHandler(_dbContextMock.Object);
+
+        // Act
+        var result = await handler.Handle(request, cancellationToken);
+
+        // Assert
+        _dbContextMock.Verify(db => db.FileContexts, Times.Once());
+        _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never());
+
+        result.Should().NotBeNull().And.ContainSingleError(ErrorCode.UnknownError, exceptionMessage);
+        result.Payload.Should().BeNull();
     }
 }

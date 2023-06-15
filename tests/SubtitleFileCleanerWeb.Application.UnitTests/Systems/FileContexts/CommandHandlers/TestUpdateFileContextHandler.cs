@@ -29,12 +29,11 @@ public class TestUpdateFileContextHandler
     public async Task Handle_WithFooName_ReturnValid()
     {
         // Arrange
-        var handler = new UpdateFileContextNameHandler(_dbContextMock.Object);
-
         var contextToUpdate = _fileContexts.Last();
-
         var request = new UpdateFileContextName(contextToUpdate.FileContextId, "FooName");
         var cancellationToken = new CancellationToken();
+
+        var handler = new UpdateFileContextNameHandler(_dbContextMock.Object);
 
         // Act
         var result = await handler.Handle(request, cancellationToken);
@@ -52,10 +51,10 @@ public class TestUpdateFileContextHandler
     public async Task Handle_WithEmptyName_ReturnValidationError()
     {
         // Arrange
-        var handler = new UpdateFileContextNameHandler(_dbContextMock.Object);
-
         var request = new UpdateFileContextName(_fileContexts.Last().FileContextId, string.Empty);
         var cancellationToken = new CancellationToken();
+
+        var handler = new UpdateFileContextNameHandler(_dbContextMock.Object);
 
         // Act
         var result = await handler.Handle(request, cancellationToken);
@@ -66,17 +65,18 @@ public class TestUpdateFileContextHandler
         _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never());
 
         result.Should().ContainSingleError(ErrorCode.ValidationError, "The provided name is either null or white space");
+        result.Payload.Should().BeNull();
     }
 
     [Fact]
     public async Task Handle_WithNonExistentGuidId_ReturnNotFoundError()
     {
         // Arrange
-        var handler = new UpdateFileContextNameHandler(_dbContextMock.Object);
-
         var fileContextId = Guid.Empty;
         var request = new UpdateFileContextName(fileContextId, "FooName");
         var cancellationToken = new CancellationToken();
+
+        var handler = new UpdateFileContextNameHandler(_dbContextMock.Object);
 
         // Act
         var result = await handler.Handle(request, cancellationToken);
@@ -87,5 +87,29 @@ public class TestUpdateFileContextHandler
         _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never());
 
         result.Should().ContainSingleError(ErrorCode.NotFound, $"No file context found with id: {fileContextId}");
+        result.Payload.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Handle_WithUnknownError_RerurnUnknownError()
+    {
+        // Arrange
+        var request = new UpdateFileContextName(Guid.Empty, "FooName");
+        var cancellationToken = new CancellationToken();
+
+        var exceptionMessage = "Unexpected error occurred";
+        _dbContextMock.Setup(db => db.FileContexts)
+            .Throws(new Exception(exceptionMessage));
+        var handler = new UpdateFileContextNameHandler(_dbContextMock.Object);
+
+        // Act
+        var result = await handler.Handle(request, cancellationToken);
+
+        // Assert
+        _dbContextMock.Verify(db => db.FileContexts, Times.Once());
+        _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never());
+
+        result.Should().NotBeNull().And.ContainSingleError(ErrorCode.UnknownError, exceptionMessage);
+        result.Payload.Should().BeNull();
     }
 }
