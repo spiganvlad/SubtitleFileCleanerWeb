@@ -1,7 +1,7 @@
 ﻿using FluentAssertions.Primitives;
 using SubtitleFileCleanerWeb.Application.Models;
 
-namespace SubtitleFileCleanerWeb.Application.UnitTests.Helpers.FluentOperationResult;
+namespace SubtitleFileCleanerWeb.Application.UnitTests.Helpers.FluentObjects;
 
 public class OperationResultAssertion<T> : ObjectAssertions<OperationResult<T>, OperationResultAssertion<T>>
 {

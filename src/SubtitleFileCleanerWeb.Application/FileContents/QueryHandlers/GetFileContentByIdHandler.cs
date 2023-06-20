@@ -23,7 +23,7 @@ public class GetFileContentByIdHandler : IRequestHandler<GetFileContentById, Ope
 
         try
         {
-            var contentStream = await _blobContext.GetContentStreamAsync(request.FileContextId.ToString());
+            var contentStream = await _blobContext.GetContentStreamAsync(request.FileContextId.ToString(), cancellationToken);
             if (contentStream == null)
             {
                 result.AddError(ErrorCode.NotFound,

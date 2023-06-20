@@ -5,6 +5,7 @@ using SubtitleFileCleanerWeb.Application.Models;
 using SubtitleFileCleanerWeb.Domain.Aggregates.FileContextAggregate;
 using SubtitleFileCleanerWeb.Domain.Exceptions;
 using SubtitleFileCleanerWeb.Infrastructure.Blob;
+using SubtitleFileCleanerWeb.Infrastructure.Exceptions;
 
 namespace SubtitleFileCleanerWeb.Application.FileContents.CommandHandlers;
 
@@ -24,13 +25,17 @@ public class CreateFileContentHandler : IRequestHandler<CreateFileContent, Opera
         try
         {
             var fileContent = FileContent.Create(request.ContentStream);
-            await _blobContext.CreateContentAsync(request.FileContextId.ToString(), fileContent.Content);
-
+            await _blobContext.CreateContentAsync(request.FileContextId.ToString(), fileContent.Content, cancellationToken);
+            
             result.Payload = fileContent;
         }
         catch (FileContentNotValidException ex)
         {
             ex.ValidationErrors.ForEach(message => result.AddError(ErrorCode.ValidationError, message));
+        }
+        catch (BlobStorageOperationException ex)
+        {
+            result.AddError(ErrorCode.BlobContextOperationException, ex.Message);
         }
         catch (Exception ex)
         {

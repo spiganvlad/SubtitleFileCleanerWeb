@@ -19,7 +19,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubtitleFileCleanerWeb.Appl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubtitleFileCleanerWeb.Domain", "src\SubtitleFileCleanerWeb.Domain\SubtitleFileCleanerWeb.Domain.csproj", "{EE8AD3F6-5945-4749-84D6-E3F67FF4BB63}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SubtitleFileCleanerWeb.Api.UnitTests", "tests\SubtitleFileCleanerWeb.Api.UnitTests\SubtitleFileCleanerWeb.Api.UnitTests.csproj", "{1651DE03-31E6-40CA-99C0-D1061DE4F503}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubtitleFileCleanerWeb.Api.UnitTests", "tests\SubtitleFileCleanerWeb.Api.UnitTests\SubtitleFileCleanerWeb.Api.UnitTests.csproj", "{1651DE03-31E6-40CA-99C0-D1061DE4F503}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SubtitleFileCleanerWeb.Infrastructure.UnitTests", "tests\SubtitleFileCleanerWeb.Infrastructure.UnitTests\SubtitleFileCleanerWeb.Infrastructure.UnitTests.csproj", "{28373CDC-2836-42C5-8A12-9EDB01127C4D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,6 +57,10 @@ Global
 		{1651DE03-31E6-40CA-99C0-D1061DE4F503}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1651DE03-31E6-40CA-99C0-D1061DE4F503}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1651DE03-31E6-40CA-99C0-D1061DE4F503}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28373CDC-2836-42C5-8A12-9EDB01127C4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28373CDC-2836-42C5-8A12-9EDB01127C4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28373CDC-2836-42C5-8A12-9EDB01127C4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28373CDC-2836-42C5-8A12-9EDB01127C4D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -67,6 +73,7 @@ Global
 		{0FDB2372-14FF-40E7-BCCB-13F68A156DDF} = {7E54549C-1B5B-467B-8059-A54786AB7675}
 		{EE8AD3F6-5945-4749-84D6-E3F67FF4BB63} = {2469CB14-3011-4992-8CAB-413199377DBB}
 		{1651DE03-31E6-40CA-99C0-D1061DE4F503} = {7E54549C-1B5B-467B-8059-A54786AB7675}
+		{28373CDC-2836-42C5-8A12-9EDB01127C4D} = {7E54549C-1B5B-467B-8059-A54786AB7675}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {40C069AD-DE69-40C4-8F36-610F6596B69C}

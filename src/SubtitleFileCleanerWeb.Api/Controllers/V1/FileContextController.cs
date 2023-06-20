@@ -32,7 +32,7 @@ public class FileContextController : BaseController
 
         var result = await Mediator.Send(request, cancellationToken);
 
-        if(result.IsError)
+        if (result.IsError)
             return HandleErrorResponse(result.Errors);
 
         var response = Mapper.Map<FileContext, FileContextResponse>(result.Payload!);

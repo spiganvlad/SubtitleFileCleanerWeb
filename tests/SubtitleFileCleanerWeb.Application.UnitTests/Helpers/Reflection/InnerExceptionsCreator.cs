@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace SubtitleFileCleanerWeb.Application.UnitTests.Helpers;
+namespace SubtitleFileCleanerWeb.Application.UnitTests.Helpers.Reflection;
 
 public static class InnerExceptionsCreator
 {

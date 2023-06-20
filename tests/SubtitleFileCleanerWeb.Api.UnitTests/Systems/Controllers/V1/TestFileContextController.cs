@@ -192,7 +192,7 @@ public class TestFileContextController
             .And.HaveValueOfType<ErrorResponse>()
 
             .Which.Should().HaveStatusCode(400)
-            .And.HaveStatusPhrase("Bad request")
+            .And.HaveStatusPhrase("Bad Request")
             .And.HaveTimeStampCloseTo(DateTime.UtcNow, 1.Minutes())
             .And.HaveSingleError(errorMessage);
     }

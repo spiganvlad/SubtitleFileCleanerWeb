@@ -1,8 +1,10 @@
 ﻿using FluentAssertions;
 using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.Models;
+using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.Extensions;
+using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.FluentObjects;
 
-namespace SubtitleFileCleanerWeb.Application.UnitTests.Helpers.FluentOperationResult;
+namespace SubtitleFileCleanerWeb.Application.UnitTests.Helpers.Extensions;
 
 public static class OperationResultExtensions
 {

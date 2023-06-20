@@ -4,8 +4,8 @@ using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.SubtitleConversion;
 using SubtitleFileCleanerWeb.Application.SubtitleConversion.Abstractions;
 using SubtitleFileCleanerWeb.Application.SubtitleConversion.Exceptions;
-using SubtitleFileCleanerWeb.Application.UnitTests.Helpers;
-using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.FluentOperationResult;
+using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.Extensions;
+using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.Reflection;
 
 namespace SubtitleFileCleanerWeb.Application.UnitTests.Systems.SubtitleConversion;
 

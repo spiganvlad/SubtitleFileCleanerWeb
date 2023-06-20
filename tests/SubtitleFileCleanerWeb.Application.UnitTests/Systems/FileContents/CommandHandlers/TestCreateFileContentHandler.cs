@@ -3,8 +3,10 @@ using Moq;
 using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.FileContents.CommandHandlers;
 using SubtitleFileCleanerWeb.Application.FileContents.Commands;
-using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.FluentOperationResult;
+using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.Extensions;
+using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.Reflection;
 using SubtitleFileCleanerWeb.Infrastructure.Blob;
+using SubtitleFileCleanerWeb.Infrastructure.Exceptions;
 
 namespace SubtitleFileCleanerWeb.Application.UnitTests.Systems.FileContents.CommandHandlers;
 
@@ -31,7 +33,8 @@ public class TestCreateFileContentHandler
         var result = await handler.Handle(request, cancellationToken);
 
         // Assert
-        _blobContextMock.Verify(bc => bc.CreateContentAsync(It.IsAny<string>(), It.IsAny<Stream>()), Times.Once());
+        _blobContextMock.Verify(bc => bc.CreateContentAsync(It.IsAny<string>(), It.IsAny<Stream>(),
+            It.IsAny<CancellationToken>()), Times.Once());
 
         result.Should().NotBeNull().And.ContainsNoErrors();
         result.Payload.Should().NotBeNull();
@@ -52,7 +55,8 @@ public class TestCreateFileContentHandler
         var result = await handler.Handle(request, cancellationToken);
 
         // Assert
-        _blobContextMock.Verify(bc => bc.CreateContentAsync(It.IsAny<string>(), It.IsAny<Stream>()), Times.Never());
+        _blobContextMock.Verify(bc => bc.CreateContentAsync(It.IsAny<string>(), It.IsAny<Stream>(),
+            It.IsAny<CancellationToken>()), Times.Never());
 
         result.Should().ContainSingleError(ErrorCode.ValidationError, "File content stream cannot be null");
         result.Payload.Should().BeNull();
@@ -71,7 +75,8 @@ public class TestCreateFileContentHandler
         var result = await handler.Handle(request, cancellationToken);
 
         // Assert
-        _blobContextMock.Verify(bc => bc.CreateContentAsync(It.IsAny<string>(), It.IsAny<Stream>()), Times.Never());
+        _blobContextMock.Verify(bc => bc.CreateContentAsync(It.IsAny<string>(), It.IsAny<Stream>(),
+            It.IsAny<CancellationToken>()), Times.Never());
 
         result.Should().NotBeNull().And
             .ContainSingleError(ErrorCode.ValidationError, "File content stream cannot be empty");
@@ -92,10 +97,36 @@ public class TestCreateFileContentHandler
         var result = await handler.Handle(request, cancellationToken);
 
         // Assert
-        _blobContextMock.Verify(bc => bc.CreateContentAsync(It.IsAny<string>(), It.IsAny<Stream>()), Times.Never());
+        _blobContextMock.Verify(bc => bc.CreateContentAsync(It.IsAny<string>(), It.IsAny<Stream>(),
+            It.IsAny<CancellationToken>()), Times.Never());
 
         result.Should().NotBeNull().And
             .ContainSingleError(ErrorCode.ValidationError, "File content stream must be readonly");
+        result.Payload.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Handle_WithBlobException_ReturnBlobOperationError()
+    {
+        // Arrange
+        var request = new CreateFileContent(Guid.Empty, new MemoryStream(new byte[] { 1, 2, 3, 4, 5 }, false));
+        var cancellationToken = new CancellationToken();
+
+        var exceptionMessage = "Blob exception occurred";
+        var exception = InnerExceptionsCreator.Create<BlobStorageOperationException>(exceptionMessage);
+        _blobContextMock.Setup(bc => bc.CreateContentAsync(request.FileContextId.ToString(), request.ContentStream, cancellationToken))
+            .ThrowsAsync(exception);
+
+        var handler = new CreateFileContentHandler(_blobContextMock.Object);
+
+        // Act
+        var result = await handler.Handle(request, cancellationToken);
+
+        // Assert
+        _blobContextMock.Verify(bc => bc.CreateContentAsync(It.IsAny<string>(), It.IsAny<Stream>(),
+            It.IsAny<CancellationToken>()), Times.Once());
+
+        result.Should().NotBeNull().And.ContainSingleError(ErrorCode.BlobContextOperationException, exceptionMessage);
         result.Payload.Should().BeNull();
     }
 
@@ -106,8 +137,8 @@ public class TestCreateFileContentHandler
         var request = new CreateFileContent(Guid.Empty, new MemoryStream(new byte[] { 1, 2, 3, 4, 5 }, false));
         var cancellationToken = new CancellationToken();
 
-        var exceptionMessage = "Unexpected error occurred";
-        _blobContextMock.Setup(bc => bc.CreateContentAsync(request.FileContextId.ToString(), request.ContentStream))
+        var exceptionMessage = "Unexpected exception occurred";
+        _blobContextMock.Setup(bc => bc.CreateContentAsync(request.FileContextId.ToString(), request.ContentStream, cancellationToken))
             .ThrowsAsync(new Exception(exceptionMessage));
         var handler = new CreateFileContentHandler(_blobContextMock.Object);
 
@@ -115,7 +146,8 @@ public class TestCreateFileContentHandler
         var result = await handler.Handle(request, cancellationToken);
 
         // Assert
-        _blobContextMock.Verify(bc => bc.CreateContentAsync(It.IsAny<string>(), It.IsAny<Stream>()), Times.Once());
+        _blobContextMock.Verify(bc => bc.CreateContentAsync(It.IsAny<string>(), It.IsAny<Stream>(),
+            It.IsAny<CancellationToken>()), Times.Once());
 
         result.Should().NotBeNull().And.ContainSingleError(ErrorCode.UnknownError, exceptionMessage);
         result.Payload.Should().BeNull();
