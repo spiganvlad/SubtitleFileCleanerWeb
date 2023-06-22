@@ -9,4 +9,6 @@ public class ApplicationDbContext : IdentityDbContext
     public virtual DbSet<FileContext> FileContexts => Set<FileContext>();
 
     public ApplicationDbContext() { }
+
+    public ApplicationDbContext(DbContextOptions options): base(options) { }
 }

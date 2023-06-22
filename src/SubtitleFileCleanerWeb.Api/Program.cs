@@ -1,3 +1,5 @@
+using SubtitleFileCleanerWeb.Api.Extensions;
+
 namespace SubtitleFileCleanerWeb.Api;
 
 public class Program
@@ -5,26 +7,10 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-
-        builder.Services.AddControllers();
-
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+        builder.RegisterServices(typeof(Program).Assembly);
 
         var app = builder.Build();
-
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI();
-        }
-
-        app.UseHttpsRedirection();
-
-        app.UseAuthorization();
-
-
-        app.MapControllers();
+        app.RegisterPipelines(typeof(Program).Assembly);
 
         app.Run();
     }
