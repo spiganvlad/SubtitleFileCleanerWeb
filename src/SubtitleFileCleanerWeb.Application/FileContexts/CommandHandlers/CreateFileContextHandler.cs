@@ -1,19 +1,22 @@
 ﻿using MediatR;
 using SubtitleFileCleanerWeb.Application.Enums;
+using SubtitleFileCleanerWeb.Application.FileContents.Commands;
 using SubtitleFileCleanerWeb.Application.FileContexts.Commands;
 using SubtitleFileCleanerWeb.Application.Models;
 using SubtitleFileCleanerWeb.Domain.Aggregates.FileContextAggregate;
-using SubtitleFileCleanerWeb.Domain.Exceptions;
+using SubtitleFileCleanerWeb.Domain.Exceptions.FileContextAggregateExceptions;
 using SubtitleFileCleanerWeb.Infrastructure.Persistence;
 
 namespace SubtitleFileCleanerWeb.Application.FileContexts.CommandHandlers;
 
 public class CreateFileContextHandler : IRequestHandler<CreateFileContext, OperationResult<FileContext>>
 {
+    private readonly IMediator _mediator;
     private readonly ApplicationDbContext _ctx;
 
-    public CreateFileContextHandler(ApplicationDbContext ctx)
+    public CreateFileContextHandler(IMediator mediator, ApplicationDbContext ctx)
     {
+        _mediator = mediator;
         _ctx = ctx;
     }
 
@@ -24,6 +27,15 @@ public class CreateFileContextHandler : IRequestHandler<CreateFileContext, Opera
         try
         {
             var fileContext = FileContext.Create(request.FileName);
+
+            var createFileContent = new CreateFileContent(fileContext.FileContextId.ToString(), request.ContentStream);
+            var fileContentResult = await _mediator.Send(createFileContent, cancellationToken);
+            if (fileContentResult.IsError)
+            {
+                fileContentResult.Errors.ForEach(e => result.AddError(e.Code, e.Message!));
+                return result;
+            }
+            fileContext.SetContent(fileContentResult.Payload!);
 
             _ctx.FileContexts.Add(fileContext);
             await _ctx.SaveChangesAsync(cancellationToken);

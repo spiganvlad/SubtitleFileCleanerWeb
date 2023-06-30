@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using FluentAssertions.Extensions;
 using SubtitleFileCleanerWeb.Domain.Aggregates.FileContextAggregate;
-using SubtitleFileCleanerWeb.Domain.Exceptions;
+using SubtitleFileCleanerWeb.Domain.Exceptions.FileContextAggregateExceptions;
 
 namespace SubtitleFileCleanerWeb.Domain.UnitTests.Systems.Aggregates.FileContextAggregate;
 
@@ -38,10 +38,10 @@ public class TestFileContext
 
         // Assert
         var exception = act.Should().ThrowExactly<FileContextNotValidException>()
-            .WithMessage("File context is not valid").And;
+            .WithMessage("File context is not valid.").And;
 
         exception.ValidationErrors.Should().ContainSingle();
-        exception.ValidationErrors[0].Should().Be("File context name cannot be null");
+        exception.ValidationErrors[0].Should().Be("File context name cannot be null.");
     }
 
     [Fact]
@@ -58,10 +58,10 @@ public class TestFileContext
 
         // Assert
         var exception = act.Should().ThrowExactly<FileContextNotValidException>()
-            .WithMessage("File context is not valid").And;
+            .WithMessage("File context is not valid.").And;
 
         exception.ValidationErrors.Should().ContainSingle();
-        exception.ValidationErrors[0].Should().Be("File context name cannot be empty");
+        exception.ValidationErrors[0].Should().Be("File context name cannot be empty.");
     }
 
     [Fact]
@@ -102,10 +102,10 @@ public class TestFileContext
 
         // Assert
         var exception = act.Should().ThrowExactly<FileContextNotValidException>()
-            .WithMessage("Cannot update file context. File context name is not valid").And;
+            .WithMessage("Cannot update file context. File context name is not valid.").And;
 
         exception.ValidationErrors.Should().ContainSingle();
-        exception.ValidationErrors[0].Should().Be("The provided name is either null or white space");
+        exception.ValidationErrors[0].Should().Be("The provided name is either null or white space.");
     }
 
     [Fact]
@@ -123,9 +123,48 @@ public class TestFileContext
 
         // Assert
         var exception = act.Should().ThrowExactly<FileContextNotValidException>()
-            .WithMessage("Cannot update file context. File context name is not valid").And;
+            .WithMessage("Cannot update file context. File context name is not valid.").And;
 
         exception.ValidationErrors.Should().ContainSingle();
-        exception.ValidationErrors[0].Should().Be("The provided name is either null or white space");
+        exception.ValidationErrors[0].Should().Be("The provided name is either null or white space.");
+    }
+
+    [Fact]
+    public void SetContent_WithNotSetContent_SetValid()
+    {
+        // Arrange
+        var content = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 }, false);
+        var fileContent = FileContent.Create(content);
+
+        var fileContext = FileContext.Create("FooName");
+
+        // Act
+        fileContext.SetContent(fileContent);
+
+        // Assert
+        fileContent.Content.Should().NotBeNull()
+            .And.HaveLength(content.Length)
+            .And.BeReadOnly();
+    }
+
+    [Fact]
+    public void SetContent_WithAlreadySetContent_ThrowException()
+    {
+        // Arrange
+        var content = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 }, false);
+        var fileContent = FileContent.Create(content);
+
+        var fileContext = FileContext.Create("FooName");
+        fileContext.SetContent(fileContent);
+
+        // Act
+        var act = () =>
+        {
+            fileContext.SetContent(fileContent);
+        };
+
+        // Assert
+        act.Should().ThrowExactly<FileContentAlreadySetException>()
+            .WithMessage("Cannot set file content. It is already set.");
     }
 }

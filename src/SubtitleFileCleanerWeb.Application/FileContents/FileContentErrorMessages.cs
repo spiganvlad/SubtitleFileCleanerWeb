@@ -2,6 +2,6 @@
 {
     public static class FileContentErrorMessages
     {
-        public const string FileContentNotFound = "No file content found with id: {0}";
+        public const string FileContentNotFound = "File content not found on path: {0}";
     }
 }

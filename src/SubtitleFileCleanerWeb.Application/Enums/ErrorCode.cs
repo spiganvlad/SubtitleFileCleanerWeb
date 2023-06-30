@@ -11,6 +11,10 @@ public enum ErrorCode
     // Infrastructure errors should be in the range 700-799
     BlobContextOperationException = 700,
 
+    // Application errors should be in the range 800-899
+    SubtitleConversionException = 800,
+    PostConversionException = 801,
+
     UnknownError = 999
 }
     

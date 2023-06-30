@@ -1,10 +1,10 @@
 ﻿using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.Models;
 
-namespace SubtitleFileCleanerWeb.Application.SubtitleConversion.Abstractions;
+namespace SubtitleFileCleanerWeb.Application.Abstractions;
 
-public interface ISubtitleConversionProcessor
+public interface IPostConversionProcessor
 {
     public Task<OperationResult<Stream>> ProcessAsync(Stream contentStream, ConversionType conversionType,
-        CancellationToken cancellationToken);
+        CancellationToken cancellationToken, params PostConversionOption[] options);
 }

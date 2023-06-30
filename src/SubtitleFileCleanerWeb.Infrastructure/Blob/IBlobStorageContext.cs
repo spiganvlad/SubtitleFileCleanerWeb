@@ -13,11 +13,20 @@
         /// <summary>
         /// Asynchronously creates blob content at the specified path
         /// </summary>
-        /// <param name="path">The path where the blob content will be placed</param>
+        /// <param name="path">The path where the blob content will be created</param>
         /// <param name="contentStream">Readable stream from which blob content will be retrieved</param>
         /// <param name="cancellationToken">The token to monitor for cancellation request</param>
         /// <returns>A task that represents the asynchronous create operation</returns>
         /// <exception cref="Exceptions.BlobStorageOperationException"></exception>
         public Task CreateContentAsync(string path, Stream contentStream, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Asynchronously deletes blob content at the specified path
+        /// </summary>
+        /// <param name="path">The path where the blob content will be deleted</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation request</param>
+        /// <returns>A task that represents the asynchronous delete operation</returns>
+        /// <exception cref="Exceptions.BlobStorageOperationException"></exception>
+        public Task DeleteContentAsync(string path, CancellationToken cancellationToken);
     }
 }

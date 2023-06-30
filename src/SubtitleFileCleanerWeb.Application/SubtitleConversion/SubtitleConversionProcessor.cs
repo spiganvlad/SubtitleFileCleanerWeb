@@ -1,7 +1,7 @@
-﻿using SubtitleFileCleanerWeb.Application.Enums;
+﻿using SubtitleFileCleanerWeb.Application.Abstractions;
+using SubtitleFileCleanerWeb.Application.Enums;
+using SubtitleFileCleanerWeb.Application.Exceptions;
 using SubtitleFileCleanerWeb.Application.Models;
-using SubtitleFileCleanerWeb.Application.SubtitleConversion.Abstractions;
-using SubtitleFileCleanerWeb.Application.SubtitleConversion.Exceptions;
 
 namespace SubtitleFileCleanerWeb.Application.SubtitleConversion
 {
@@ -30,7 +30,7 @@ namespace SubtitleFileCleanerWeb.Application.SubtitleConversion
                     }
                 }
 
-                result.AddError(ErrorCode.UnprocessableContent, 
+                result.AddError(ErrorCode.SubtitleConversionException,
                     string.Format(SubtitleConversionErrorMessages.SubtitleConverterNotFound, conversionType));
             }
             catch (NotConvertibleContentException ex)

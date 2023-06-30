@@ -19,7 +19,7 @@ namespace SubtitleFileCleanerWeb.Domain.Aggregates.FileContextAggregate
             if (validationResult.IsValid)
                 return fileContent;
 
-            var exception = new FileContentNotValidException("File content not valid");
+            var exception = new FileContentNotValidException("File content not valid.");
             validationResult.Errors.ForEach(e => exception.ValidationErrors.Add(e.ErrorMessage));
             throw exception;
         }

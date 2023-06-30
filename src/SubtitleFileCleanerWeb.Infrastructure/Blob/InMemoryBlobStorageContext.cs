@@ -27,4 +27,15 @@ public class InMemoryBlobStorageContext : IBlobStorageContext
             StorageContext.Add(path, contentStream);
         }, cancellationToken);
     }
+
+    public async Task DeleteContentAsync(string path, CancellationToken cancellationToken)
+    {
+        await Task.Run(() =>
+        {
+            if (!StorageContext.ContainsKey(path))
+                throw new BlobStorageOperationException($"No blob content was found on path: {path}");
+
+            StorageContext.Remove(path);
+        }, cancellationToken);
+    }
 }

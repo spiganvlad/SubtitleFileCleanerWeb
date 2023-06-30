@@ -8,7 +8,7 @@ public class FileContextValidator: AbstractValidator<FileContext>
     public FileContextValidator()
     {
         RuleFor(fc => fc.Name).Cascade(CascadeMode.Stop).
-            NotNull().WithMessage("File context name cannot be null").
-            NotEmpty().WithMessage("File context name cannot be empty");
+            NotNull().WithMessage("File context name cannot be null.").
+            NotEmpty().WithMessage("File context name cannot be empty.");
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace SubtitleFileCleanerWeb.Application.SubtitleConversion.Exceptions;
+﻿namespace SubtitleFileCleanerWeb.Application.Exceptions;
 
 public class NotConvertibleContentException : Exception
 {

@@ -35,10 +35,10 @@ public class TestFileContent
 
         // Assert
         var exception = act.Should().ThrowExactly<FileContentNotValidException>()
-            .WithMessage("File content not valid").And;
+            .WithMessage("File content not valid.").And;
 
         exception.ValidationErrors.Should().ContainSingle();
-        exception.ValidationErrors[0].Should().Be("File content stream cannot be null");
+        exception.ValidationErrors[0].Should().Be("File content stream cannot be null.");
     }
 
     [Fact]
@@ -55,10 +55,10 @@ public class TestFileContent
 
         // Assert
         var exception = act.Should().ThrowExactly<FileContentNotValidException>()
-            .WithMessage("File content not valid").And;
+            .WithMessage("File content not valid.").And;
 
         exception.ValidationErrors.Should().ContainSingle();
-        exception.ValidationErrors[0].Should().Be("File content stream cannot be empty");
+        exception.ValidationErrors[0].Should().Be("File content stream cannot be empty.");
     }
 
     [Fact]
@@ -75,9 +75,9 @@ public class TestFileContent
 
         // Assert
         var exception = act.Should().ThrowExactly<FileContentNotValidException>()
-            .WithMessage("File content not valid").And;
+            .WithMessage("File content not valid.").And;
 
         exception.ValidationErrors.Should().ContainSingle();
-        exception.ValidationErrors[0].Should().Be("File content stream must be readonly");
+        exception.ValidationErrors[0].Should().Be("File content stream must be readonly.");
     }
 }

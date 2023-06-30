@@ -7,50 +7,10 @@ namespace SubtitleFileCleanerWeb.Infrastructure.UnitTests.Systems.Blob;
 public class TestInMemoryBlobStorageContext
 {
     [Fact]
-    public async Task CreateContentAsync_WithNonExistentPath_AddValid()
-    {
-        // Arrange
-        var path = Guid.Empty.ToString();
-        var contentStream = new MemoryStream();
-        var cancellationToken = new CancellationToken();
-
-        var inMemoryStorage = new InMemoryBlobStorageContext();
-
-        // Act
-        await inMemoryStorage.CreateContentAsync(path, contentStream, cancellationToken);
-
-        // Assert
-        inMemoryStorage.StorageContext.Should().NotBeEmpty().And.ContainSingle()
-            .And.ContainKey(path).And.ContainValue(contentStream);
-    }
-
-    [Fact]
-    public async Task CreateContentAsync_WithExistentPath_ThrowException()
-    {
-        // Arrange
-        var path = Guid.Empty.ToString();
-        var contentStream = new MemoryStream();
-        var cancellationToken = new CancellationToken();
-
-        var inMemoryStorage = new InMemoryBlobStorageContext();
-        inMemoryStorage.StorageContext.Add(path, contentStream);
-
-        // Act
-        var act = async () =>
-        {
-            await inMemoryStorage.CreateContentAsync(path, contentStream, cancellationToken);
-        };
-
-        // Assert
-        await act.Should().ThrowAsync<BlobStorageOperationException>()
-            .WithMessage($"Content already exists on path: {path}");
-    }
-
-    [Fact]
     public async Task GetContentStreamAsync_WithExistedPath_ReturnValidStream()
     {
         // Arrange
-        var path = Guid.Empty.ToString();
+        var path = string.Empty;
         var contentStream = new MemoryStream();
         var cancellationToken = new CancellationToken();
 
@@ -69,7 +29,7 @@ public class TestInMemoryBlobStorageContext
     public async Task GetContentStreamAsync_WithNonExistentPath_ReturnNull()
     {
         // Arrange
-        var path = Guid.Empty.ToString();
+        var path = string.Empty;
         var cancellationToken = new CancellationToken();
 
         var inMemoryStorage = new InMemoryBlobStorageContext();
@@ -79,5 +39,84 @@ public class TestInMemoryBlobStorageContext
 
         // Assert
         result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task CreateContentAsync_WithNonExistentPath_AddValid()
+    {
+        // Arrange
+        var path = string.Empty;
+        var contentStream = new MemoryStream();
+        var cancellationToken = new CancellationToken();
+
+        var inMemoryStorage = new InMemoryBlobStorageContext();
+
+        // Act
+        await inMemoryStorage.CreateContentAsync(path, contentStream, cancellationToken);
+
+        // Assert
+        inMemoryStorage.StorageContext.Should().NotBeEmpty()
+            .And.ContainSingle()
+            .And.ContainKey(path)
+            .And.ContainValue(contentStream);
+    }
+
+    [Fact]
+    public async Task CreateContentAsync_WithExistentPath_ThrowException()
+    {
+        // Arrange
+        var path = string.Empty;
+        var contentStream = new MemoryStream();
+        var cancellationToken = new CancellationToken();
+
+        var inMemoryStorage = new InMemoryBlobStorageContext();
+        inMemoryStorage.StorageContext.Add(path, contentStream);
+
+        // Act
+        var act = async () =>
+        {
+            await inMemoryStorage.CreateContentAsync(path, contentStream, cancellationToken);
+        };
+
+        // Assert
+        await act.Should().ThrowAsync<BlobStorageOperationException>()
+            .WithMessage($"Content already exists on path: {path}");
+    }
+
+    [Fact]
+    public async Task DeleteContentAsync_WithExistentPath_ReturnValid()
+    {
+        // Arrange
+        var path = string.Empty;
+        var contentStream = new MemoryStream();
+        var cancellationToken = new CancellationToken();
+
+        var inMemoryStorage = new InMemoryBlobStorageContext();
+        inMemoryStorage.StorageContext.Add(path, contentStream);
+
+        // Act
+        await inMemoryStorage.DeleteContentAsync(path, cancellationToken);
+
+        // Assert
+        inMemoryStorage.StorageContext.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task DeleteContentAsync_WithNonExistentPath_ThrowException()
+    {
+        // Arrange
+        var path = string.Empty;
+        var cancellationToken = new CancellationToken();
+
+        var inMemoryStorage = new InMemoryBlobStorageContext();
+
+        // Act
+        var act = async () =>
+        {
+            await inMemoryStorage.DeleteContentAsync(path, cancellationToken);
+        };
+
+        // Assert
+        await act.Should().ThrowAsync<BlobStorageOperationException>().WithMessage($"No blob content was found on path: {path}");
     }
 }

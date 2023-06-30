@@ -1,4 +1,4 @@
-﻿namespace SubtitleFileCleanerWeb.Domain.Exceptions;
+﻿namespace SubtitleFileCleanerWeb.Domain.Exceptions.FileContextAggregateExceptions;
 
 public class FileContextNotValidException : DomainModelInvalidException
 {

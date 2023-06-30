@@ -4,7 +4,7 @@ using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.FileContexts.Commands;
 using SubtitleFileCleanerWeb.Application.Models;
 using SubtitleFileCleanerWeb.Domain.Aggregates.FileContextAggregate;
-using SubtitleFileCleanerWeb.Domain.Exceptions;
+using SubtitleFileCleanerWeb.Domain.Exceptions.FileContextAggregateExceptions;
 using SubtitleFileCleanerWeb.Infrastructure.Persistence;
 
 namespace SubtitleFileCleanerWeb.Application.FileContexts.CommandHandlers;

@@ -25,8 +25,8 @@ public class CreateFileContentHandler : IRequestHandler<CreateFileContent, Opera
         try
         {
             var fileContent = FileContent.Create(request.ContentStream);
-            await _blobContext.CreateContentAsync(request.FileContextId.ToString(), fileContent.Content, cancellationToken);
-            
+            await _blobContext.CreateContentAsync(request.Path, fileContent.Content, cancellationToken);
+
             result.Payload = fileContent;
         }
         catch (FileContentNotValidException ex)

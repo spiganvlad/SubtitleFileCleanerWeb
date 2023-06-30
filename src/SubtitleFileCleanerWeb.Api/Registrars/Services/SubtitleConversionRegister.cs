@@ -1,5 +1,5 @@
-﻿using SubtitleFileCleanerWeb.Application.SubtitleConversion;
-using SubtitleFileCleanerWeb.Application.SubtitleConversion.Abstractions;
+﻿using SubtitleFileCleanerWeb.Application.Abstractions;
+using SubtitleFileCleanerWeb.Application.SubtitleConversion;
 using SubtitleFileCleanerWeb.Application.SubtitleConversion.Converters;
 
 namespace SubtitleFileCleanerWeb.Api.Registrars.Services;

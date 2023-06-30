@@ -11,12 +11,12 @@ using SubtitleFileCleanerWeb.Infrastructure.Persistence;
 
 namespace SubtitleFileCleanerWeb.Application.UnitTests.Systems.FileContexts.CommandHandlers;
 
-public class TestUpdateFileContextHandler
+public class TestUpdateFileContextNameHandler
 {
     private readonly List<FileContext> _fileContexts;
     private readonly Mock<ApplicationDbContext> _dbContextMock;
 
-    public TestUpdateFileContextHandler()
+    public TestUpdateFileContextNameHandler()
     {
         _fileContexts = FileContextFixture.GetListOfThree();
 
@@ -30,8 +30,9 @@ public class TestUpdateFileContextHandler
     {
         // Arrange
         var contextToUpdate = _fileContexts.Last();
-        var request = new UpdateFileContextName(contextToUpdate.FileContextId, "FooName");
         var cancellationToken = new CancellationToken();
+
+        var request = new UpdateFileContextName(contextToUpdate.FileContextId, "FooName");
 
         var handler = new UpdateFileContextNameHandler(_dbContextMock.Object);
 
@@ -51,8 +52,9 @@ public class TestUpdateFileContextHandler
     public async Task Handle_WithEmptyName_ReturnValidationError()
     {
         // Arrange
-        var request = new UpdateFileContextName(_fileContexts.Last().FileContextId, string.Empty);
         var cancellationToken = new CancellationToken();
+
+        var request = new UpdateFileContextName(_fileContexts.Last().FileContextId, string.Empty);
 
         var handler = new UpdateFileContextNameHandler(_dbContextMock.Object);
 
@@ -64,7 +66,7 @@ public class TestUpdateFileContextHandler
         _dbContextMock.Verify(db => db.Update(It.IsAny<FileContext>()), Times.Never());
         _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never());
 
-        result.Should().ContainSingleError(ErrorCode.ValidationError, "The provided name is either null or white space");
+        result.Should().ContainSingleError(ErrorCode.ValidationError, "The provided name is either null or white space.");
         result.Payload.Should().BeNull();
     }
 
@@ -73,8 +75,9 @@ public class TestUpdateFileContextHandler
     {
         // Arrange
         var fileContextId = Guid.Empty;
-        var request = new UpdateFileContextName(fileContextId, "FooName");
         var cancellationToken = new CancellationToken();
+
+        var request = new UpdateFileContextName(fileContextId, "FooName");
 
         var handler = new UpdateFileContextNameHandler(_dbContextMock.Object);
 
@@ -91,15 +94,17 @@ public class TestUpdateFileContextHandler
     }
 
     [Fact]
-    public async Task Handle_WithUnknownError_RerurnUnknownError()
+    public async Task Handle_WithUnexpectedError_ReturnUnknownError()
     {
         // Arrange
-        var request = new UpdateFileContextName(Guid.Empty, "FooName");
         var cancellationToken = new CancellationToken();
 
         var exceptionMessage = "Unexpected error occurred";
         _dbContextMock.Setup(db => db.FileContexts)
             .Throws(new Exception(exceptionMessage));
+
+        var request = new UpdateFileContextName(Guid.Empty, "FooName");
+
         var handler = new UpdateFileContextNameHandler(_dbContextMock.Object);
 
         // Act

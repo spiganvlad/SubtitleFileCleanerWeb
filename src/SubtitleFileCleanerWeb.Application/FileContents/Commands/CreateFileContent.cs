@@ -4,4 +4,4 @@ using SubtitleFileCleanerWeb.Domain.Aggregates.FileContextAggregate;
 
 namespace SubtitleFileCleanerWeb.Application.FileContents.Commands;
 
-public record CreateFileContent(Guid FileContextId, Stream ContentStream) : IRequest<OperationResult<FileContent>>;
+public record CreateFileContent(string Path, Stream ContentStream) : IRequest<OperationResult<FileContent>>;

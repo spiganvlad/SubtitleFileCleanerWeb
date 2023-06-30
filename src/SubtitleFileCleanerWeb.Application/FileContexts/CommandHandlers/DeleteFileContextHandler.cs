@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SubtitleFileCleanerWeb.Application.Enums;
+using SubtitleFileCleanerWeb.Application.FileContents.Commands;
 using SubtitleFileCleanerWeb.Application.FileContexts.Commands;
 using SubtitleFileCleanerWeb.Application.Models;
 using SubtitleFileCleanerWeb.Domain.Aggregates.FileContextAggregate;
@@ -10,10 +11,12 @@ namespace SubtitleFileCleanerWeb.Application.FileContexts.CommandHandlers;
 
 public class DeleteFileContextHandler : IRequestHandler<DeleteFileContext, OperationResult<FileContext>>
 {
+    private readonly IMediator _mediator;
     private readonly ApplicationDbContext _ctx;
 
-    public DeleteFileContextHandler(ApplicationDbContext ctx)
+    public DeleteFileContextHandler(IMediator mediator, ApplicationDbContext ctx)
     {
+        _mediator = mediator;
         _ctx = ctx;
     }
 
@@ -30,6 +33,14 @@ public class DeleteFileContextHandler : IRequestHandler<DeleteFileContext, Opera
             {
                 result.AddError(ErrorCode.NotFound,
                     string.Format(FileContextErrorMessages.FileContextNotFound, request.FileContextId));
+                return result;
+            }
+
+            var deleteContent = new DeleteFileContent(fileContext.FileContextId.ToString());
+            var contentResult = await _mediator.Send(deleteContent, cancellationToken);
+            if (contentResult.IsError)
+            {
+                contentResult.Errors.ForEach(e => result.AddError(e.Code, e.Message!));
                 return result;
             }
 

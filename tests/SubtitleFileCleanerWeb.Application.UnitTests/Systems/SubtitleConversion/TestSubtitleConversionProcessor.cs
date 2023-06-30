@@ -1,19 +1,19 @@
 ﻿using FluentAssertions;
 using Moq;
+using SubtitleFileCleanerWeb.Application.Abstractions;
 using SubtitleFileCleanerWeb.Application.Enums;
+using SubtitleFileCleanerWeb.Application.Exceptions;
 using SubtitleFileCleanerWeb.Application.SubtitleConversion;
-using SubtitleFileCleanerWeb.Application.SubtitleConversion.Abstractions;
-using SubtitleFileCleanerWeb.Application.SubtitleConversion.Exceptions;
 using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.Extensions;
 using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.Reflection;
 
 namespace SubtitleFileCleanerWeb.Application.UnitTests.Systems.SubtitleConversion;
 
-public class TestConversionProcessor
+public class TestSubtitleConversionProcessor
 {
     private readonly Mock<ISubtitleConverter> _assConverterMock;
 
-    public TestConversionProcessor()
+    public TestSubtitleConversionProcessor()
     {
         _assConverterMock = new Mock<ISubtitleConverter>();
         _assConverterMock.Setup(c => c.ConversionType).Returns(ConversionType.Ass);
@@ -47,7 +47,7 @@ public class TestConversionProcessor
     }
 
     [Fact]
-    public async Task ProcessAsync_WithNonExistentConversionType_ReturnUnprocessableContentError()
+    public async Task ProcessAsync_WithNonExistentConversionType_ReturnSubtitleConversionError()
     {
         // Arrange
         var contentStream = new MemoryStream();
@@ -65,7 +65,7 @@ public class TestConversionProcessor
         _assConverterMock.Verify(c => c.ConvertAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Never());
 
         result.Should().NotBeNull().And
-            .ContainSingleError(ErrorCode.UnprocessableContent, $"No converter was found for conversion type: {conversionType}");
+            .ContainSingleError(ErrorCode.SubtitleConversionException, $"No converter was found for conversion type: {conversionType}");
         result.Payload.Should().BeNull();
     }
 

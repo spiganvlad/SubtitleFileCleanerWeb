@@ -1,7 +1,7 @@
 ﻿using SubtitleBytesClearFormatting.Cleaners;
+using SubtitleFileCleanerWeb.Application.Abstractions;
 using SubtitleFileCleanerWeb.Application.Enums;
-using SubtitleFileCleanerWeb.Application.SubtitleConversion.Abstractions;
-using SubtitleFileCleanerWeb.Application.SubtitleConversion.Exceptions;
+using SubtitleFileCleanerWeb.Application.Exceptions;
 
 namespace SubtitleFileCleanerWeb.Application.SubtitleConversion.Converters;
 

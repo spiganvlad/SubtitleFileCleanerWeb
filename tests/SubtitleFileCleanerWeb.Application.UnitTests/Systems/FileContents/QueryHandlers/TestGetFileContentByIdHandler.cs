@@ -22,12 +22,13 @@ public class TestGetFileContentByIdHandler
     {
         // Arrange
         var contentStream = new MemoryStream(new byte[] { 1, 2, 3, 4, 5}, false);
-
-        var request = new GetFileContentById(Guid.NewGuid());
         var cancellationToken = new CancellationToken();
 
-        _blobContextMock.Setup(bc => bc.GetContentStreamAsync(request.FileContextId.ToString(), cancellationToken))
+        _blobContextMock.Setup(bc => bc.GetContentStreamAsync(string.Empty, cancellationToken))
             .ReturnsAsync(contentStream);
+
+        var request = new GetFileContentById(string.Empty);
+
         var handler = new GetFileContentByIdHandler(_blobContextMock.Object);
 
         // Act
@@ -38,19 +39,20 @@ public class TestGetFileContentByIdHandler
 
         result.Should().NotBeNull().And.ContainsNoErrors();
         result.Payload.Should().NotBeNull();
-        result.Payload!.Content.Should().NotBeNull().And.BeReadOnly();
-        result.Payload.Content.Length.Should().Be(contentStream.Length);
+        result.Payload!.Content.Should().NotBeNull().And.BeReadOnly().And.HaveLength(contentStream.Length);
     }
 
     [Fact]
     public async Task Handle_WithNonExistentId_ReturnNotFoundError()
     {
         // Arrange
-        var request = new GetFileContentById(Guid.Empty);
         var cancellationToken = new CancellationToken();
 
-        _blobContextMock.Setup(bc => bc.GetContentStreamAsync(request.FileContextId.ToString(), cancellationToken))
+        _blobContextMock.Setup(bc => bc.GetContentStreamAsync(string.Empty, cancellationToken))
             .ReturnsAsync(() => null);
+
+        var request = new GetFileContentById(string.Empty);
+
         var handler = new GetFileContentByIdHandler(_blobContextMock.Object);
 
         // Act
@@ -60,7 +62,7 @@ public class TestGetFileContentByIdHandler
         _blobContextMock.Verify(bc => bc.GetContentStreamAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once());
 
         result.Should().NotBeNull().And
-            .ContainSingleError(ErrorCode.NotFound, $"No file content found with id: {Guid.Empty}");
+            .ContainSingleError(ErrorCode.NotFound, $"File content not found on path: {string.Empty}");
         result.Payload.Should().BeNull();
     }
 
@@ -68,11 +70,13 @@ public class TestGetFileContentByIdHandler
     public async Task Handle_WithWritableStreamFromBlob_ReturnValidationError()
     {
         // Arrange
-        var request = new GetFileContentById(Guid.Empty);
         var cancellationToken = new CancellationToken();
 
-        _blobContextMock.Setup(bc => bc.GetContentStreamAsync(request.FileContextId.ToString(), cancellationToken))
+        _blobContextMock.Setup(bc => bc.GetContentStreamAsync(string.Empty, cancellationToken))
             .ReturnsAsync(() => new MemoryStream(new byte[] { 1, 2, 3, 4, 5 }, true));
+
+        var request = new GetFileContentById(string.Empty);
+
         var handler = new GetFileContentByIdHandler(_blobContextMock.Object);
 
         // Act
@@ -82,20 +86,23 @@ public class TestGetFileContentByIdHandler
         _blobContextMock.Verify(bc => bc.GetContentStreamAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once());
 
         result.Should().NotBeNull().And.
-            ContainSingleError(ErrorCode.ValidationError, "File content stream must be readonly");
+            ContainSingleError(ErrorCode.ValidationError, "File content stream must be readonly.");
         result.Payload.Should().BeNull();
     }
 
     [Fact]
-    public async Task Handle_WithUnknownError_ReturnUnknownError()
+    public async Task Handle_WithUnexpectedError_ReturnUnknownError()
     {
         // Arrange
-        var request = new GetFileContentById(Guid.Empty);
+
         var cancellationToken = new CancellationToken();
 
         var exceptionMessage = "Unexpected error occurred";
-        _blobContextMock.Setup(bc => bc.GetContentStreamAsync(request.FileContextId.ToString(), cancellationToken))
+        _blobContextMock.Setup(bc => bc.GetContentStreamAsync(string.Empty, cancellationToken))
             .ThrowsAsync(new Exception(exceptionMessage));
+
+        var request = new GetFileContentById(string.Empty);
+
         var handler = new GetFileContentByIdHandler(_blobContextMock.Object);
 
         // Act

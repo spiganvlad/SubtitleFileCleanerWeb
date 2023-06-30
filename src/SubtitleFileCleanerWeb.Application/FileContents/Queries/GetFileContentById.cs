@@ -4,4 +4,4 @@ using SubtitleFileCleanerWeb.Domain.Aggregates.FileContextAggregate;
 
 namespace SubtitleFileCleanerWeb.Application.FileContents.Queries;
 
-public record GetFileContentById(Guid FileContextId) : IRequest<OperationResult<FileContent>>;
+public record GetFileContentById(string Path) : IRequest<OperationResult<FileContent>>;
