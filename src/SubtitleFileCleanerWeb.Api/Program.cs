@@ -8,7 +8,7 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
         builder.RegisterServices(typeof(Program).Assembly);
-
+        
         var app = builder.Build();
         app.RegisterPipelines(typeof(Program).Assembly);
 

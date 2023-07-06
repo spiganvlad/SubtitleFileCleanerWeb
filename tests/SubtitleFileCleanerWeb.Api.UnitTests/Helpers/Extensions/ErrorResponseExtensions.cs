@@ -12,33 +12,41 @@ public static class ErrorResponseExtensions
         return new ErrorResponseAssertion(response);
     }
 
-    public static AndConstraint<ErrorResponseAssertion> HaveStatusCode(this ErrorResponseAssertion response, int statusCode)
+    public static AndConstraint<ErrorResponseAssertion> HaveStatusCode(this ErrorResponseAssertion assertion, int statusCode)
     {
-        response.Subject.StatusCode.Should().Be(statusCode);
+        assertion.Subject.StatusCode.Should().Be(statusCode);
 
-        return new AndConstraint<ErrorResponseAssertion>(response);
+        return new AndConstraint<ErrorResponseAssertion>(assertion);
     }
 
-    public static AndConstraint<ErrorResponseAssertion> HaveStatusPhrase(this ErrorResponseAssertion response, string statusPhrase)
+    public static AndConstraint<ErrorResponseAssertion> HaveStatusPhrase(this ErrorResponseAssertion assertion, string statusPhrase)
     {
-        response.Subject.StatusPhrase.Should().Be(statusPhrase);
+        assertion.Subject.StatusPhrase.Should().Be(statusPhrase);
 
-        return new AndConstraint<ErrorResponseAssertion>(response);
+        return new AndConstraint<ErrorResponseAssertion>(assertion);
     }
 
-    public static AndConstraint<ErrorResponseAssertion> HaveTimeStampCloseTo(this ErrorResponseAssertion response,
+    public static AndConstraint<ErrorResponseAssertion> HaveTimeStampCloseTo(this ErrorResponseAssertion assertion,
         DateTime nearbyTime, TimeSpan precision)
     {
-        response.Subject.Timestamp.Should().BeCloseTo(nearbyTime, precision);
+        assertion.Subject.Timestamp.Should().BeCloseTo(nearbyTime, precision);
 
-        return new AndConstraint<ErrorResponseAssertion>(response);
+        return new AndConstraint<ErrorResponseAssertion>(assertion);
     }
 
-    public static AndConstraint<ErrorResponseAssertion> HaveSingleError(this ErrorResponseAssertion response, string errorMessage)
+    public static AndConstraint<ErrorResponseAssertion> HaveSingleError(this ErrorResponseAssertion assertion, string errorMessage)
     {
-        response.Subject.Errors.Should().ContainSingle();
-        response.Subject.Errors[0].Should().Be(errorMessage);
+        assertion.Subject.Errors.Should().ContainSingle()
+            .Which.Should().Be(errorMessage);
 
-        return new AndConstraint<ErrorResponseAssertion>(response);
+        return new AndConstraint<ErrorResponseAssertion>(assertion);
+    }
+
+    public static AndConstraint<ErrorResponseAssertion> HaveErrors(this ErrorResponseAssertion assertion, params string[] errorMessages)
+    {
+        assertion.Subject.Errors.Should().HaveCount(errorMessages.Length)
+            .And.Contain(errorMessages);
+
+        return new AndConstraint<ErrorResponseAssertion>(assertion);
     }
 }

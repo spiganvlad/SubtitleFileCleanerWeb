@@ -12,24 +12,24 @@ public static class ObjectResultExtensions
         return new ObjectResultAssertion(result);
     }
 
-    public static AndConstraint<ObjectResultAssertion> HaveStatusCode(this ObjectResultAssertion result, int statusCode)
+    public static AndConstraint<ObjectResultAssertion> HaveStatusCode(this ObjectResultAssertion assertion, int statusCode)
     {
-        result.Subject.StatusCode = statusCode;
+        assertion.Subject.StatusCode = statusCode;
 
-        return new AndConstraint<ObjectResultAssertion>(result);
+        return new AndConstraint<ObjectResultAssertion>(assertion);
     }
 
-    public static AndConstraint<ObjectResultAssertion> HaveNotNullValue(this ObjectResultAssertion result)
+    public static AndConstraint<ObjectResultAssertion> HaveNotNullValue(this ObjectResultAssertion assertion)
     {
-        result.Subject.Value.Should().NotBeNull();
+        assertion.Subject.Value.Should().NotBeNull();
 
-        return new AndConstraint<ObjectResultAssertion>(result);
+        return new AndConstraint<ObjectResultAssertion>(assertion);
     }
 
-    public static AndWhichConstraint<ObjectResultAssertion, T> HaveValueOfType<T>(this ObjectResultAssertion result)
+    public static AndWhichConstraint<ObjectResultAssertion, T> HaveValueOfType<T>(this ObjectResultAssertion assertion)
     {
-        var typedSubject = result.Subject.Value.Should().BeOfType<T>().Which;
+        var typedSubject = assertion.Subject.Value.Should().BeOfType<T>().Which;
 
-        return new AndWhichConstraint<ObjectResultAssertion, T>(result, typedSubject);
+        return new AndWhichConstraint<ObjectResultAssertion, T>(assertion, typedSubject);
     }
 }
