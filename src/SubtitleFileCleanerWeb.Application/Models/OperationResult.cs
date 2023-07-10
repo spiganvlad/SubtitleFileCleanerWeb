@@ -17,6 +17,14 @@ namespace SubtitleFileCleanerWeb.Application.Models
         public void AddUnknownError(string message)
         {
             AddError(ErrorCode.UnknownError, message);
-        } 
+        }
+
+        public void CopyErrors(IEnumerable<Error> errors)
+        {
+            foreach (var error in errors)
+                Errors.Add(error);
+            
+            IsError = true;
+        }
     }
 }

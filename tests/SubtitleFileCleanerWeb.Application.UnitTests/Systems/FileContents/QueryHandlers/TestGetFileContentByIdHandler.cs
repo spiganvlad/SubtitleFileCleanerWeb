@@ -3,7 +3,6 @@ using Moq;
 using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.FileContents.Queries;
 using SubtitleFileCleanerWeb.Application.FileContents.QueryHandlers;
-using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.Extensions;
 using SubtitleFileCleanerWeb.Infrastructure.Blob;
 
 namespace SubtitleFileCleanerWeb.Application.UnitTests.Systems.FileContents.QueryHandlers;
@@ -37,9 +36,14 @@ public class TestGetFileContentByIdHandler
         // Assert
         _blobContextMock.Verify(bc => bc.GetContentStreamAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
 
-        result.Should().NotBeNull().And.ContainsNoErrors();
-        result.Payload.Should().NotBeNull();
-        result.Payload!.Content.Should().NotBeNull().And.BeReadOnly().And.HaveLength(contentStream.Length);
+        result.Should().NotBeNull()
+            .And.NotBeInErrorState()
+            .And.HaveNoErrors()
+            .And.HaveNotDefaultPayload()
+            
+            .Which.Content.Should().NotBeNull()
+            .And.BeReadOnly()
+            .And.HaveLength(contentStream.Length);
     }
 
     [Fact]
@@ -61,9 +65,10 @@ public class TestGetFileContentByIdHandler
         // Assert
         _blobContextMock.Verify(bc => bc.GetContentStreamAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once());
 
-        result.Should().NotBeNull().And
-            .ContainSingleError(ErrorCode.NotFound, $"File content not found on path: {string.Empty}");
-        result.Payload.Should().BeNull();
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.NotFound, $"File content not found on path: {string.Empty}")
+            .And.HaveDefaultPayload();
     }
 
     [Fact]
@@ -85,9 +90,10 @@ public class TestGetFileContentByIdHandler
         // Assert
         _blobContextMock.Verify(bc => bc.GetContentStreamAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once());
 
-        result.Should().NotBeNull().And.
-            ContainSingleError(ErrorCode.ValidationError, "File content stream must be readonly.");
-        result.Payload.Should().BeNull();
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.ValidationError, "File content stream must be readonly.")
+            .And.HaveDefaultPayload();
     }
 
     [Fact]
@@ -111,7 +117,9 @@ public class TestGetFileContentByIdHandler
         // Assert
         _blobContextMock.Verify(bc => bc.GetContentStreamAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once());
 
-        result.Should().NotBeNull().And.ContainSingleError(ErrorCode.UnknownError, exceptionMessage);
-        result.Payload.Should().BeNull();
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.UnknownError, exceptionMessage)
+            .And.HaveDefaultPayload();
     }
 }

@@ -8,7 +8,6 @@ using SubtitleFileCleanerWeb.Application.FileContexts.Queries;
 using SubtitleFileCleanerWeb.Application.FileContexts.QueryHandlers;
 using SubtitleFileCleanerWeb.Application.Models;
 using SubtitleFileCleanerWeb.Application.UnitTests.Fixtures;
-using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.Extensions;
 using SubtitleFileCleanerWeb.Domain.Aggregates.FileContextAggregate;
 using SubtitleFileCleanerWeb.Infrastructure.Persistence;
 
@@ -55,9 +54,14 @@ public class TestGetFileContextWithContentByIdHandler
 
         _mediatorMock.Verify(m => m.Send(It.IsAny<GetFileContentById>(), It.IsAny<CancellationToken>()), Times.Once());
 
-        result.Should().NotBeNull().And.ContainsNoErrors();
-        result.Payload.Should().NotBeNull().And.Be(searchedContext);
-        result.Payload!.Content.Should().Be(searchedContent);
+        var payload = result.Should().NotBeNull()
+            .And.NotBeInErrorState()
+            .And.HaveNoErrors()
+            .And.HaveNotDefaultPayload()
+            .Which;
+
+        payload.Should().Be(searchedContext);
+        payload.Content.Should().NotBeNull().And.Be(searchedContent);
     }
 
     [Fact]
@@ -81,8 +85,10 @@ public class TestGetFileContextWithContentByIdHandler
 
         _mediatorMock.Verify(m => m.Send(It.IsAny<GetFileContentById>(), It.IsAny<CancellationToken>()), Times.Never());
 
-        result.Should().NotBeNull().And.ContainSingleError(ErrorCode.NotFound, $"No file context found with id: {Guid.Empty}");
-        result.Payload.Should().BeNull();
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.NotFound, $"No file context found with id: {Guid.Empty}")
+            .And.HaveDefaultPayload();
     }
 
     [Fact]
@@ -115,8 +121,10 @@ public class TestGetFileContextWithContentByIdHandler
         
         _mediatorMock.Verify(m => m.Send(It.IsAny<GetFileContentById>(), It.IsAny<CancellationToken>()), Times.Once());
 
-        result.Should().NotBeNull().And.ContainSingleError(ErrorCode.UnknownError, errorMessage);
-        result.Payload.Should().BeNull();
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.UnknownError, errorMessage)
+            .And.HaveDefaultPayload();
     }
 
     [Fact]
@@ -141,7 +149,9 @@ public class TestGetFileContextWithContentByIdHandler
 
         _mediatorMock.Verify(m => m.Send(It.IsAny<GetFileContentById>(), It.IsAny<CancellationToken>()), Times.Never());
 
-        result.Should().NotBeNull().And.ContainSingleError(ErrorCode.UnknownError, exceptionMessage);
-        result.Payload.Should().BeNull();
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.UnknownError, exceptionMessage)
+            .And.HaveDefaultPayload();
     }
 }

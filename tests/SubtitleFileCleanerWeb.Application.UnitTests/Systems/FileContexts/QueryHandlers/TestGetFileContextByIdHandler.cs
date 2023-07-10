@@ -5,7 +5,6 @@ using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.FileContexts.Queries;
 using SubtitleFileCleanerWeb.Application.FileContexts.QueryHandlers;
 using SubtitleFileCleanerWeb.Application.UnitTests.Fixtures;
-using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.Extensions;
 using SubtitleFileCleanerWeb.Domain.Aggregates.FileContextAggregate;
 using SubtitleFileCleanerWeb.Infrastructure.Persistence;
 
@@ -39,8 +38,12 @@ public class TestGetFileContextByIdHandler
         // Assert
         _dbContextMock.Verify(db => db.FileContexts, Times.Once);
 
-        result.Should().NotBeNull().And.ContainsNoErrors();
-        result.Payload.Should().NotBeNull().And.Be(searchedContext);
+        result.Should().NotBeNull()
+            .And.NotBeInErrorState()
+            .And.HaveNoErrors()
+            .And.HaveNotDefaultPayload()
+            
+            .Which.Should().Be(searchedContext);
     }
 
     [Fact]
@@ -59,8 +62,10 @@ public class TestGetFileContextByIdHandler
         // Assert
         _dbContextMock.Verify(x => x.FileContexts, Times.Once());
 
-        result.Should().ContainSingleError(ErrorCode.NotFound, $"No file context found with id: {Guid.Empty}");
-        result.Payload.Should().BeNull();
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.NotFound, $"No file context found with id: {Guid.Empty}")
+            .And.HaveDefaultPayload();
     }
 
     [Fact]
@@ -80,7 +85,9 @@ public class TestGetFileContextByIdHandler
         // Assert
         _dbContextMock.Verify(db => db.FileContexts, Times.Once());
 
-        result.Should().NotBeNull().And.ContainSingleError(ErrorCode.UnknownError, exceptionError);
-        result.Payload.Should().BeNull();
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.UnknownError, exceptionError)
+            .And.HaveDefaultPayload();
     }
 }   

@@ -32,7 +32,7 @@ public class CreateFileContextHandler : IRequestHandler<CreateFileContext, Opera
             var fileContentResult = await _mediator.Send(createFileContent, cancellationToken);
             if (fileContentResult.IsError)
             {
-                fileContentResult.Errors.ForEach(e => result.AddError(e.Code, e.Message!));
+                result.CopyErrors(fileContentResult.Errors);
                 return result;
             }
             fileContext.SetContent(fileContentResult.Payload!);

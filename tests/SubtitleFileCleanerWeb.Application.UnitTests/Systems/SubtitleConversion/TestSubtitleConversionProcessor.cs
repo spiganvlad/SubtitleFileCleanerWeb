@@ -4,7 +4,6 @@ using SubtitleFileCleanerWeb.Application.Abstractions;
 using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.Exceptions;
 using SubtitleFileCleanerWeb.Application.SubtitleConversion;
-using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.Extensions;
 using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.Reflection;
 
 namespace SubtitleFileCleanerWeb.Application.UnitTests.Systems.SubtitleConversion;
@@ -27,7 +26,7 @@ public class TestSubtitleConversionProcessor
         var conversionType = ConversionType.Ass;
         var cancellationToken = new CancellationToken();
 
-        var expectedContentStream = new MemoryStream(new byte[] { 2, 4 });
+        var expectedContentStream = new MemoryStream(new byte[] { 2, 4 }, false);
         _assConverterMock.Setup(c => c.ConvertAsync(contentStream, cancellationToken))
             .ReturnsAsync(expectedContentStream);
 
@@ -41,9 +40,13 @@ public class TestSubtitleConversionProcessor
         _assConverterMock.VerifyGet(c => c.ConversionType, Times.Once());
         _assConverterMock.Verify(c => c.ConvertAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Once());
 
-        result.Should().NotBeNull().And.ContainsNoErrors();
-        result.Payload.Should().NotBeNull();
-        result.Payload!.Length.Should().Be(expectedContentStream.Length);
+        result.Should().NotBeNull()
+            .And.NotBeInErrorState()
+            .And.HaveNoErrors()
+            .And.HaveNotDefaultPayload()
+            
+            .Which.Should().BeReadOnly()
+            .And.HaveLength(expectedContentStream.Length);
     }
 
     [Fact]
@@ -64,9 +67,10 @@ public class TestSubtitleConversionProcessor
         _assConverterMock.VerifyGet(c => c.ConversionType, Times.Once());
         _assConverterMock.Verify(c => c.ConvertAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Never());
 
-        result.Should().NotBeNull().And
-            .ContainSingleError(ErrorCode.SubtitleConversionException, $"No converter was found for conversion type: {conversionType}");
-        result.Payload.Should().BeNull();
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.SubtitleConversionException, $"No converter was found for conversion type: {conversionType}")
+            .And.HaveDefaultPayload();
     }
 
     [Fact]
@@ -89,8 +93,10 @@ public class TestSubtitleConversionProcessor
         // Assert
         _assConverterMock.Verify(c => c.ConvertAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Once());
 
-        result.Should().NotBeNull().And.ContainSingleError(ErrorCode.UnprocessableContent, exception.Message);
-        result.Payload.Should().BeNull();
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.UnprocessableContent, exception.Message)
+            .And.HaveDefaultPayload();
     }
 
     [Fact]
@@ -114,7 +120,9 @@ public class TestSubtitleConversionProcessor
         _assConverterMock.VerifyGet(c => c.ConversionType, Times.Once());
         _assConverterMock.Verify(c => c.ConvertAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Once());
 
-        result.Should().NotBeNull().And.ContainSingleError(ErrorCode.UnknownError, exceptionMessage);
-        result.Payload.Should().BeNull();
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.UnknownError, exceptionMessage)
+            .And.HaveDefaultPayload();
     }
 }

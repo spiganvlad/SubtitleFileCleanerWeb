@@ -39,7 +39,7 @@ public class GetFileContextWithContentByIdHandler : IRequestHandler<GetFileConte
             var fileContentResult = await _mediator.Send(getFileContent, cancellationToken);
             if (fileContentResult.IsError)
             {
-                fileContentResult.Errors.ForEach(e => result.AddError(e.Code, e.Message!));
+                result.CopyErrors(fileContentResult.Errors);
                 return result;
             }
 

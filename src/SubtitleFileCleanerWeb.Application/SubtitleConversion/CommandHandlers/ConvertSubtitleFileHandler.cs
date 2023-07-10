@@ -24,7 +24,7 @@ public class ConvertSubtitleFileHandler : IRequestHandler<ConvertSubtitleFile, O
             var conversionResult = await _conversionProcessor.ProcessAsync(request.ContentStream, request.ConversionType, cancellationToken);
             if (conversionResult.IsError)
             {
-                conversionResult.Errors.ForEach(e => result.AddError(e.Code, e.Message!));
+                result.CopyErrors(conversionResult.Errors);
                 return result;
             }
 

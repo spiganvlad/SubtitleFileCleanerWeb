@@ -5,7 +5,6 @@ using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.FileContexts.CommandHandlers;
 using SubtitleFileCleanerWeb.Application.FileContexts.Commands;
 using SubtitleFileCleanerWeb.Application.UnitTests.Fixtures;
-using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.Extensions;
 using SubtitleFileCleanerWeb.Domain.Aggregates.FileContextAggregate;
 using SubtitleFileCleanerWeb.Infrastructure.Persistence;
 
@@ -44,8 +43,12 @@ public class TestUpdateFileContextNameHandler
         _dbContextMock.Verify(db => db.FileContexts.Update(It.IsAny<FileContext>()), Times.Once());
         _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
 
-        result.Should().NotBeNull().And.ContainsNoErrors();
-        result.Payload.Should().NotBeNull().And.Be(contextToUpdate);
+        result.Should().NotBeNull()
+            .And.NotBeInErrorState()
+            .And.HaveNoErrors()
+            .And.HaveNotDefaultPayload()
+            
+            .Which.Should().Be(contextToUpdate);
     }
 
     [Fact]
@@ -66,8 +69,10 @@ public class TestUpdateFileContextNameHandler
         _dbContextMock.Verify(db => db.Update(It.IsAny<FileContext>()), Times.Never());
         _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never());
 
-        result.Should().ContainSingleError(ErrorCode.ValidationError, "The provided name is either null or white space.");
-        result.Payload.Should().BeNull();
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.ValidationError, "The provided name is either null or white space.")
+            .And.HaveDefaultPayload();
     }
 
     [Fact]
@@ -89,8 +94,10 @@ public class TestUpdateFileContextNameHandler
         _dbContextMock.Verify(db => db.FileContexts.Update(It.IsAny<FileContext>()), Times.Never());
         _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never());
 
-        result.Should().ContainSingleError(ErrorCode.NotFound, $"No file context found with id: {fileContextId}");
-        result.Payload.Should().BeNull();
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.NotFound, $"No file context found with id: {fileContextId}")
+            .And.HaveDefaultPayload();
     }
 
     [Fact]
@@ -114,7 +121,9 @@ public class TestUpdateFileContextNameHandler
         _dbContextMock.Verify(db => db.FileContexts, Times.Once());
         _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never());
 
-        result.Should().NotBeNull().And.ContainSingleError(ErrorCode.UnknownError, exceptionMessage);
-        result.Payload.Should().BeNull();
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.UnknownError, exceptionMessage)
+            .And.HaveDefaultPayload();
     }
 }

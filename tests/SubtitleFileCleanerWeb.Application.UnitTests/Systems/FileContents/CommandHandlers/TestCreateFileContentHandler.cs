@@ -3,7 +3,6 @@ using Moq;
 using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.FileContents.CommandHandlers;
 using SubtitleFileCleanerWeb.Application.FileContents.Commands;
-using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.Extensions;
 using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.Reflection;
 using SubtitleFileCleanerWeb.Infrastructure.Blob;
 using SubtitleFileCleanerWeb.Infrastructure.Exceptions;
@@ -37,9 +36,14 @@ public class TestCreateFileContentHandler
         _blobContextMock.Verify(bc => bc.CreateContentAsync(It.IsAny<string>(), It.IsAny<Stream>(),
             It.IsAny<CancellationToken>()), Times.Once());
 
-        result.Should().NotBeNull().And.ContainsNoErrors();
-        result.Payload.Should().NotBeNull();
-        result.Payload!.Content.Should().BeReadOnly().And.HaveLength(streamContent.Length);
+        result.Should().NotBeNull()
+            .And.NotBeInErrorState()
+            .And.HaveNoErrors()
+            .And.HaveNotDefaultPayload()
+            
+            .Which.Content.Should().NotBeNull()
+            .And.BeReadOnly()
+            .And.HaveLength(streamContent.Length);
     }
 
     [Fact]
@@ -59,8 +63,10 @@ public class TestCreateFileContentHandler
         _blobContextMock.Verify(bc => bc.CreateContentAsync(It.IsAny<string>(), It.IsAny<Stream>(),
             It.IsAny<CancellationToken>()), Times.Never());
 
-        result.Should().ContainSingleError(ErrorCode.ValidationError, "File content stream cannot be null.");
-        result.Payload.Should().BeNull();
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.ValidationError, "File content stream cannot be null.")
+            .And.HaveDefaultPayload();
     }
 
     [Fact]
@@ -80,9 +86,10 @@ public class TestCreateFileContentHandler
         _blobContextMock.Verify(bc => bc.CreateContentAsync(It.IsAny<string>(), It.IsAny<Stream>(),
             It.IsAny<CancellationToken>()), Times.Never());
 
-        result.Should().NotBeNull().And
-            .ContainSingleError(ErrorCode.ValidationError, "File content stream cannot be empty.");
-        result.Payload.Should().BeNull();
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.ValidationError, "File content stream cannot be empty.")
+            .And.HaveDefaultPayload();
     }
 
     [Fact]
@@ -103,9 +110,10 @@ public class TestCreateFileContentHandler
         _blobContextMock.Verify(bc => bc.CreateContentAsync(It.IsAny<string>(), It.IsAny<Stream>(),
             It.IsAny<CancellationToken>()), Times.Never());
 
-        result.Should().NotBeNull().And
-            .ContainSingleError(ErrorCode.ValidationError, "File content stream must be readonly.");
-        result.Payload.Should().BeNull();
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.ValidationError, "File content stream must be readonly.")
+            .And.HaveDefaultPayload();
     }
 
     [Fact]
@@ -131,8 +139,10 @@ public class TestCreateFileContentHandler
         _blobContextMock.Verify(bc => bc.CreateContentAsync(It.IsAny<string>(), It.IsAny<Stream>(),
             It.IsAny<CancellationToken>()), Times.Once());
 
-        result.Should().NotBeNull().And.ContainSingleError(ErrorCode.BlobContextOperationException, exceptionMessage);
-        result.Payload.Should().BeNull();
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.BlobContextOperationException, exceptionMessage)
+            .And.HaveDefaultPayload();
     }
 
     [Fact]
@@ -157,7 +167,9 @@ public class TestCreateFileContentHandler
         _blobContextMock.Verify(bc => bc.CreateContentAsync(It.IsAny<string>(), It.IsAny<Stream>(),
             It.IsAny<CancellationToken>()), Times.Once());
 
-        result.Should().NotBeNull().And.ContainSingleError(ErrorCode.UnknownError, exceptionMessage);
-        result.Payload.Should().BeNull();
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.UnknownError, exceptionMessage)
+            .And.HaveDefaultPayload();
     }
 }

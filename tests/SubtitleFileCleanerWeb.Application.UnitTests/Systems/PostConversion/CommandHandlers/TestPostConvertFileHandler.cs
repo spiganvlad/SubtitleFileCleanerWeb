@@ -5,7 +5,6 @@ using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.Models;
 using SubtitleFileCleanerWeb.Application.PostConversion.CommandHandlers;
 using SubtitleFileCleanerWeb.Application.PostConversion.Commands;
-using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.Extensions;
 
 namespace SubtitleFileCleanerWeb.Application.UnitTests.Systems.PostConversion.CommandHandlers;
 
@@ -45,10 +44,13 @@ public class TestPostConvertFileHandler
         _processorMock.Verify(p => p.ProcessAsync(It.IsAny<Stream>(), It.IsAny<ConversionType>(),
             It.IsAny<CancellationToken>(), It.IsAny<PostConversionOption[]>()), Times.Once());
 
-        result.Should().NotBeNull().And.ContainsNoErrors();
-        result.Payload.Should().NotBeNull()
-            .And.HaveLength(expectedContentStream.Length)
-            .And.BeReadOnly();
+        result.Should().NotBeNull()
+            .And.NotBeInErrorState()
+            .And.HaveNoErrors()
+            .And.HaveNotDefaultPayload()
+            
+            .Which.Should().BeReadOnly()
+            .And.HaveLength(expectedContentStream.Length);
     }
 
     [Fact]
@@ -77,8 +79,10 @@ public class TestPostConvertFileHandler
         _processorMock.Verify(p => p.ProcessAsync(It.IsAny<Stream>(), It.IsAny<ConversionType>(),
             It.IsAny<CancellationToken>(), It.IsAny<PostConversionOption[]>()), Times.Once());
 
-        result.Should().NotBeNull().And.ContainSingleError(ErrorCode.UnknownError, errorMessage);
-        result.Payload.Should().BeNull();
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.UnknownError, errorMessage)
+            .And.HaveDefaultPayload();
     }
 
     [Fact]
@@ -102,7 +106,9 @@ public class TestPostConvertFileHandler
         var result = await handler.Handle(request, cancellationToken);
 
         // Assert
-        result.Should().NotBeNull().And.ContainSingleError(ErrorCode.UnknownError, exceptionMessage);
-        result.Payload.Should().BeNull();
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.UnknownError, exceptionMessage)
+            .And.HaveDefaultPayload();
     }
 }

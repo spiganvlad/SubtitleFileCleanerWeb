@@ -24,7 +24,7 @@ public class PostConvertFileHandler : IRequestHandler<PostConvertFile, Operation
                 cancellationToken, request.ConversionOptions);
             if (postConversionResult.IsError)
             {
-                postConversionResult.Errors.ForEach(e => result.AddError(e.Code, e.Message!));
+                result.CopyErrors(postConversionResult.Errors);
                 return result;
             }
 

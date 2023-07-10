@@ -3,7 +3,6 @@ using Moq;
 using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.FileContents.CommandHandlers;
 using SubtitleFileCleanerWeb.Application.FileContents.Commands;
-using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.Extensions;
 using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.Reflection;
 using SubtitleFileCleanerWeb.Infrastructure.Blob;
 using SubtitleFileCleanerWeb.Infrastructure.Exceptions;
@@ -37,8 +36,10 @@ public class TestDeleteFileContentHandler
         // Assert
         _storageContext.Verify(sc => sc.DeleteContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once());
 
-        result.Should().NotBeNull().And.ContainsNoErrors();
-        result.Payload.Should().Be(true);
+        result.Should().NotBeNull()
+            .And.NotBeInErrorState()
+            .And.HaveNoErrors()
+            .And.HaveNotDefaultPayload();
     }
 
     [Fact]
@@ -63,8 +64,9 @@ public class TestDeleteFileContentHandler
         _storageContext.Verify(sc => sc.DeleteContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once());
 
         result.Should().NotBeNull()
-            .And.ContainSingleError(ErrorCode.BlobContextOperationException, exceptionMessage);
-        result.Payload.Should().BeFalse();
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.BlobContextOperationException, exceptionMessage)
+            .And.HaveDefaultPayload();
     }
 
     [Fact]
@@ -85,7 +87,9 @@ public class TestDeleteFileContentHandler
         var result = await handler.Handle(request, cancellationToken);
 
         // Assert
-        result.Should().NotBeNull().And.ContainSingleError(ErrorCode.UnknownError, exceptionMessage);
-        result.Payload.Should().Be(false);
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.UnknownError, exceptionMessage)
+            .And.HaveDefaultPayload();
     }
 }

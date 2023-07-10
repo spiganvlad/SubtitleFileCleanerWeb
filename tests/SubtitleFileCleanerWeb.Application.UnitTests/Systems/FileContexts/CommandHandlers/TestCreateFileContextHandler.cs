@@ -7,7 +7,6 @@ using SubtitleFileCleanerWeb.Application.FileContents.Commands;
 using SubtitleFileCleanerWeb.Application.FileContexts.CommandHandlers;
 using SubtitleFileCleanerWeb.Application.FileContexts.Commands;
 using SubtitleFileCleanerWeb.Application.Models;
-using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.Extensions;
 using SubtitleFileCleanerWeb.Domain.Aggregates.FileContextAggregate;
 using SubtitleFileCleanerWeb.Infrastructure.Persistence;
 
@@ -57,13 +56,17 @@ public class TestCreateFileContextHandler
         _dbContextMock.Verify(db => db.FileContexts.Add(It.IsAny<FileContext>()), Times.Once);
         _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once());
 
-        result.Should().NotBeNull().And.ContainsNoErrors();
-        result.Payload.Should().NotBeNull();
-        result.Payload!.FileContextId.Should().NotBeEmpty();
-        result.Payload.Content.Should().NotBeNull().And.Be(mediatorResult.Payload);
-        result.Payload.Name.Should().Be(request.FileName);
-        result.Payload.DateCreated.Should().BeCloseTo(DateTime.UtcNow, 1.Minutes());
-        result.Payload.DateModified.Should().BeCloseTo(DateTime.UtcNow, 1.Minutes());
+        var payload = result.Should().NotBeNull()
+            .And.NotBeInErrorState()
+            .And.HaveNoErrors()
+            .And.HaveNotDefaultPayload()
+            .Which;
+
+        payload.FileContextId.Should().NotBeEmpty();
+        payload.Content.Should().NotBeNull().And.Be(mediatorResult.Payload);
+        payload.Name.Should().NotBeNull().And.Be(request.FileName);
+        payload.DateCreated.Should().BeCloseTo(DateTime.UtcNow, 1.Minutes());
+        payload.DateModified.Should().BeCloseTo(DateTime.UtcNow, 1.Minutes());
 
         _fileContexts.Should().ContainSingle();
         _fileContexts[0].Should().NotBeNull().And.Be(result.Payload);
@@ -87,8 +90,10 @@ public class TestCreateFileContextHandler
         _dbContextMock.Verify(db => db.FileContexts, Times.Never());
         _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never());
 
-        result.Should().ContainSingleError(ErrorCode.ValidationError, "File context name cannot be null.");
-        result.Payload.Should().BeNull();
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.ValidationError, "File context name cannot be null.")
+            .And.HaveDefaultPayload();
 
         _fileContexts.Should().BeEmpty();
     }
@@ -111,8 +116,10 @@ public class TestCreateFileContextHandler
         _dbContextMock.Verify(db => db.FileContexts, Times.Never());
         _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never());
 
-        result.Should().ContainSingleError(ErrorCode.ValidationError, "File context name cannot be empty.");
-        result.Payload.Should().BeNull();
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.ValidationError, "File context name cannot be empty.")
+            .And.HaveDefaultPayload();
 
         _fileContexts.Should().BeEmpty();
     }
@@ -141,8 +148,10 @@ public class TestCreateFileContextHandler
         _dbContextMock.Verify(db => db.FileContexts, Times.Never());
         _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never());
 
-        result.Should().NotBeNull().And.ContainSingleError(ErrorCode.UnknownError, errorMessage);
-        result.Payload.Should().BeNull();
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.UnknownError, errorMessage)
+            .And.HaveDefaultPayload();
     }
 
     [Fact]
@@ -167,7 +176,9 @@ public class TestCreateFileContextHandler
         _dbContextMock.Verify(db => db.FileContexts, Times.Never());
         _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never());
 
-        result.Should().NotBeNull().And.ContainSingleError(ErrorCode.UnknownError, exceptionMessage);
-        result.Payload.Should().BeNull();
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.UnknownError, exceptionMessage)
+            .And.HaveDefaultPayload();
     }
 }

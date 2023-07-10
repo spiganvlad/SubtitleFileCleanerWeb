@@ -40,7 +40,7 @@ public class DeleteFileContextHandler : IRequestHandler<DeleteFileContext, Opera
             var contentResult = await _mediator.Send(deleteContent, cancellationToken);
             if (contentResult.IsError)
             {
-                contentResult.Errors.ForEach(e => result.AddError(e.Code, e.Message!));
+                result.CopyErrors(contentResult.Errors);
                 return result;
             }
 

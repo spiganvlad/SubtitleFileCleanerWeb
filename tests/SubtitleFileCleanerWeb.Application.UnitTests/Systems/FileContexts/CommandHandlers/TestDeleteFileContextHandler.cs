@@ -8,7 +8,6 @@ using SubtitleFileCleanerWeb.Application.FileContexts.CommandHandlers;
 using SubtitleFileCleanerWeb.Application.FileContexts.Commands;
 using SubtitleFileCleanerWeb.Application.Models;
 using SubtitleFileCleanerWeb.Application.UnitTests.Fixtures;
-using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.Extensions;
 using SubtitleFileCleanerWeb.Domain.Aggregates.FileContextAggregate;
 using SubtitleFileCleanerWeb.Infrastructure.Persistence;
 
@@ -59,8 +58,12 @@ public class TestDeleteFileContextHandler
         _dbContextMock.Verify(db => db.FileContexts.Remove(It.IsAny<FileContext>()), Times.Once());
         _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once());
 
-        result.Should().NotBeNull().And.ContainsNoErrors();
-        result.Payload.Should().NotBeNull().And.Be(contextToRemove);
+        result.Should().NotBeNull()
+            .And.NotBeInErrorState()
+            .And.HaveNoErrors()
+            .And.HaveNotDefaultPayload()
+            
+            .Which.Should().Be(contextToRemove);
 
         _fileContexts.Should().HaveCount(2).And.NotContain(contextToRemove);
     }
@@ -85,7 +88,10 @@ public class TestDeleteFileContextHandler
         _dbContextMock.Verify(db => db.FileContexts.Remove(It.IsAny<FileContext>()), Times.Never());
         _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never());
 
-        result.Should().ContainSingleError(ErrorCode.NotFound, $"No file context found with id: {request.FileContextId}");
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.NotFound, $"No file context found with id: {request.FileContextId}")
+            .And.HaveDefaultPayload();
 
         _fileContexts.Should().HaveCount(3);
     }
@@ -117,8 +123,10 @@ public class TestDeleteFileContextHandler
         _dbContextMock.Verify(db => db.FileContexts, Times.Once());
         _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never());
 
-        result.Should().NotBeNull().And.ContainSingleError(ErrorCode.UnknownError, errorMessage);
-        result.Payload.Should().BeNull();
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.UnknownError, errorMessage)
+            .And.HaveDefaultPayload();
     }
 
     [Fact]
@@ -142,7 +150,9 @@ public class TestDeleteFileContextHandler
         _dbContextMock.Verify(db => db.FileContexts, Times.Once());
         _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never());
 
-        result.Should().NotBeNull().And.ContainSingleError(ErrorCode.UnknownError, exceptionMessage);
-        result.Payload.Should().BeNull();
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.UnknownError, exceptionMessage)
+            .And.HaveDefaultPayload();
     }
 }

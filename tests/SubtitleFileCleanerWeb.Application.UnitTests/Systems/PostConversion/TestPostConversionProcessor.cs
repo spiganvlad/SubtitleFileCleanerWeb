@@ -4,7 +4,6 @@ using SubtitleFileCleanerWeb.Application.Abstractions;
 using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.Exceptions;
 using SubtitleFileCleanerWeb.Application.PostConversion;
-using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.Extensions;
 using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.Reflection;
 
 namespace SubtitleFileCleanerWeb.Application.UnitTests.Systems.PostConversion;
@@ -27,12 +26,12 @@ public class TestPostConversionProcessor
     public async Task ProcessAsync_WithValidParameters_ReturnValid()
     {
         // Arrange
-        var contentStream = new MemoryStream(new byte[] { 1, 2, 3, 4, 5, });
+        var contentStream = new MemoryStream(new byte[] { 1, 2, 3, 4, 5, }, false);
         var conversionType = ConversionType.Ass;
         var cancellationToken = new CancellationToken();
         var conversionOption = PostConversionOption.DeleteTags;
 
-        var converterResult = new MemoryStream(new byte[] { 2, 4, 5 });
+        var converterResult = new MemoryStream(new byte[] { 2, 4, 5 }, false);
         _converter.Setup(c => c.ConvertAsync(contentStream, conversionType, cancellationToken))
             .ReturnsAsync(converterResult);
 
@@ -45,9 +44,12 @@ public class TestPostConversionProcessor
         _converter.VerifyGet(c => c.PostConversionOption, Times.Once());
         _converter.Verify(c => c.ConvertAsync(It.IsAny<Stream>(), It.IsAny<ConversionType>(), It.IsAny<CancellationToken>()), Times.Once());
 
-        result.Should().NotBeNull().And.ContainsNoErrors();
-        result.Payload.Should().NotBeNull()
-            .And.BeReadable()
+        result.Should().NotBeNull()
+            .And.NotBeInErrorState()
+            .And.HaveNoErrors()
+            .And.HaveNotDefaultPayload()
+            
+            .Which.Should().BeReadOnly()
             .And.HaveLength(converterResult.Length);
     }
 
@@ -62,11 +64,11 @@ public class TestPostConversionProcessor
         conversionOptions[0] = PostConversionOption.DeleteTags;
         conversionOptions[1] = PostConversionOption.ToOneLine;
 
-        var firstConverterResult = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 });
+        var firstConverterResult = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 }, false);
         _converter.Setup(c => c.ConvertAsync(contentStream, conversionType, cancellationToken))
             .ReturnsAsync(firstConverterResult);
 
-        var secondConverterResult = new MemoryStream(new byte[] { 1, 4, 5 });
+        var secondConverterResult = new MemoryStream(new byte[] { 1, 4, 5 }, false);
         var secondConverter = new Mock<IPostConverter>();
         secondConverter.SetupGet(c => c.PostConversionOption)
             .Returns(PostConversionOption.ToOneLine);
@@ -80,9 +82,12 @@ public class TestPostConversionProcessor
         var result = await processor.ProcessAsync(contentStream, conversionType, cancellationToken, conversionOptions);
 
         // Assert
-        result.Should().NotBeNull().And.ContainsNoErrors();
-        result.Payload.Should().NotBeNull()
-            .And.BeReadable()
+        result.Should().NotBeNull()
+            .And.NotBeInErrorState()
+            .And.HaveNoErrors()
+            .And.HaveNotDefaultPayload()
+            
+            .Which.Should().BeReadOnly()
             .And.HaveLength(secondConverterResult.Length);
     }
 
@@ -101,9 +106,11 @@ public class TestPostConversionProcessor
         var result = await processor.ProcessAsync(contentStream, conversionType, cancellationToken, conversionOption);
 
         // Assert
-        result.Should().NotBeNull().And.ContainSingleError(ErrorCode.PostConversionException,
-            $"No converter was found for post conversion option: {conversionOption}");
-        result.Payload.Should().BeNull();
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.PostConversionException,
+            $"No converter was found for post conversion option: {conversionOption}")
+            .And.HaveDefaultPayload();
     }
 
     [Fact]
@@ -126,8 +133,10 @@ public class TestPostConversionProcessor
         var result = await processor.ProcessAsync(contentStream, conversionType, cancellationToken, conversionOption);
 
         // Assert
-        result.Should().NotBeNull().And.ContainSingleError(ErrorCode.UnprocessableContent, exceptionMessage);
-        result.Payload.Should().BeNull();
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.UnprocessableContent, exceptionMessage)
+            .And.HaveDefaultPayload();
     }
 
     [Fact]
@@ -149,7 +158,9 @@ public class TestPostConversionProcessor
         var result = await processor.ProcessAsync(contentStream, conversionType, cancellationToken, conversionOption);
 
         // Assert
-        result.Should().NotBeNull().And.ContainSingleError(ErrorCode.UnknownError, exceptionMessage);
-        result.Payload.Should().BeNull();
+        result.Should().NotBeNull()
+            .And.BeInErrorState()
+            .And.HaveSingleError(ErrorCode.UnknownError, exceptionMessage)
+            .And.HaveDefaultPayload();
     }
 }
