@@ -9,6 +9,12 @@ namespace SubtitleFileCleanerWeb.Domain.Aggregates.FileContextAggregate
 
         private FileContent() { }
 
+        /// <summary>
+        /// Creates a new file content instance
+        /// </summary>
+        /// <param name="content">File content stream</param>
+        /// <returns cref="FileContent"></returns>
+        /// <exception cref="FileContentNotValidException"></exception>
         public static FileContent Create(Stream content)
         {
             var validator = new FileContentValidator();

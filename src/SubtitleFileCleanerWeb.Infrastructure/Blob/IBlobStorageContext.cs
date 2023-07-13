@@ -7,7 +7,8 @@
         /// </summary>
         /// <param name="path">The path where the blob stream will be received</param>
         /// <param name="cancellationToken">The token to monitor for cancellation request</param>
-        /// <returns>A task that represents the asynchronous get operation. The task result contains the blob content stream or null</returns>
+        /// <returns>A task that represents the asynchronous get operation.
+        /// The task result contains the blob content stream or null</returns>
         public Task<Stream?> GetContentStreamAsync(string path, CancellationToken cancellationToken);
 
         /// <summary>

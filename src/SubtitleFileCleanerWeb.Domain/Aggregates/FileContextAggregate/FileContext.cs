@@ -13,6 +13,12 @@ public class FileContext
 
     private FileContext() { }
 
+    /// <summary>
+    /// Creates a new file context instance
+    /// </summary>
+    /// <param name="name">File context name</param>
+    /// <returns cref="FileContent"></returns>
+    /// <exception cref="FileContextNotValidException"></exception>
     public static FileContext Create(string name)
     {
         var validator = new FileContextValidator();
@@ -34,6 +40,11 @@ public class FileContext
         throw exception;
     }
 
+    /// <summary>
+    /// Updates the file context name   
+    /// </summary>
+    /// <param name="name">The updated file context name</param>
+    /// <exception cref="FileContextNotValidException"></exception>
     public void UpdateName(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -48,6 +59,11 @@ public class FileContext
         DateModified = DateTime.UtcNow;
     }
 
+    /// <summary>
+    /// Sets the file context content
+    /// </summary>
+    /// <param name="content">File content to set</param>
+    /// <exception cref="FileContentAlreadySetException"></exception>
     public void SetContent(FileContent content)
     {
         if (Content is not null)

@@ -22,7 +22,6 @@ public class FileContextController : BaseController
         var request = new GetFileContextById(Guid.Parse(guidId));
 
         var result = await Mediator.Send(request, cancellationToken);
-
         if (result.IsError)
             return HandleErrorResponse(result.Errors);
             
@@ -37,6 +36,7 @@ public class FileContextController : BaseController
     {
         var contentStream = request.File.OpenReadStream();
 
+        // Sending a stream to the conversion process
         var conversionRequest = new ConvertSubtitleFile(contentStream, conversionType);
         var conversionResult = await Mediator.Send(conversionRequest, cancellationToken);
         if (conversionResult.IsError)
@@ -44,9 +44,10 @@ public class FileContextController : BaseController
 
         contentStream = conversionResult.Payload!;
 
+        // Sending a stream to the post conversion process if any post conversion options are specified
         if (request.PostConversionOptions is not null && request.PostConversionOptions.Any())
         {
-            var postConversionRequest = new PostConvertFile(conversionResult.Payload!, conversionType, request.PostConversionOptions);
+            var postConversionRequest = new PostConvertFile(contentStream, conversionType, request.PostConversionOptions);
             var postConversionResult = await Mediator.Send(postConversionRequest, cancellationToken);
             if (postConversionResult.IsError)
                 return HandleErrorResponse(postConversionResult.Errors);
@@ -54,7 +55,9 @@ public class FileContextController : BaseController
             contentStream = postConversionResult.Payload!;
         }
 
-        var createContextRequest = new CreateFileContext(request.File.FileName, contentStream);
+        // Sending a request to create a file context
+        var fileContextName = Path.ChangeExtension(request.File.FileName, ".txt");
+        var createContextRequest = new CreateFileContext(fileContextName, contentStream);
         var fileContextResult = await Mediator.Send(createContextRequest, cancellationToken);
         if (fileContextResult.IsError)
             return HandleErrorResponse(fileContextResult.Errors);
@@ -71,7 +74,6 @@ public class FileContextController : BaseController
         var request = new UpdateFileContextName(Guid.Parse(guidId), name);
 
         var result = await Mediator.Send(request, cancellationToken);
-
         if (result.IsError)
             return HandleErrorResponse(result.Errors);
 
