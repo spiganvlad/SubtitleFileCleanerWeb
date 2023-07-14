@@ -28,7 +28,8 @@ public class CreateFileContextHandler : IRequestHandler<CreateFileContext, Opera
         {
             var fileContext = FileContext.Create(request.FileName);
 
-            var createFileContent = new CreateFileContent(fileContext.FileContextId.ToString(), request.ContentStream);
+            var fileContentPath = Path.Combine("Unauthorized", fileContext.FileContextId.ToString());
+            var createFileContent = new CreateFileContent(fileContentPath, request.ContentStream);
             var fileContentResult = await _mediator.Send(createFileContent, cancellationToken);
             if (fileContentResult.IsError)
             {

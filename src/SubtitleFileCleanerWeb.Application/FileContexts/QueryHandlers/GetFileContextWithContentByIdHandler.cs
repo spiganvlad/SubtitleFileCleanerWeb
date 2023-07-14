@@ -35,7 +35,8 @@ public class GetFileContextWithContentByIdHandler : IRequestHandler<GetFileConte
                 return result;
             }
 
-            var getFileContent = new GetFileContentById(fileContext.FileContextId.ToString());
+            var fileContextPath = Path.Combine("Unauthorized", fileContext.FileContextId.ToString());
+            var getFileContent = new GetFileContentById(fileContextPath);
             var fileContentResult = await _mediator.Send(getFileContent, cancellationToken);
             if (fileContentResult.IsError)
             {

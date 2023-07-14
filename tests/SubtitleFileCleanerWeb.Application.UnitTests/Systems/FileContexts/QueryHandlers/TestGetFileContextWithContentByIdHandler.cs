@@ -36,7 +36,7 @@ public class TestGetFileContextWithContentByIdHandler
         _dbContextMock.Setup(db => db.FileContexts)
             .ReturnsDbSet(fileContexts);
 
-        var getFileContent = new GetFileContentById(searchedContext.FileContextId.ToString());
+        var getFileContent = new GetFileContentById("Unauthorized\\" + searchedContext.FileContextId.ToString());
         var fileContentResult = new OperationResult<FileContent>()
         { Payload = searchedContent };
         _mediatorMock.Setup(m => m.Send(getFileContent, cancellationToken))
@@ -102,7 +102,7 @@ public class TestGetFileContextWithContentByIdHandler
         _dbContextMock.Setup(db => db.FileContexts)
             .ReturnsDbSet(fileContexts);
 
-        var getFileContent = new GetFileContentById(searchedFileContext.FileContextId.ToString());
+        var getFileContent = new GetFileContentById("Unauthorized\\" + searchedFileContext.FileContextId.ToString());
         var errorMessage = "Test unexpected error occurred";
         var fileContentResult = new OperationResult<FileContent>();
         fileContentResult.AddError(ErrorCode.UnknownError, errorMessage);
