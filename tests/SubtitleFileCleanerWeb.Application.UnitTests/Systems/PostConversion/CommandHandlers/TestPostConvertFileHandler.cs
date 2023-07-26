@@ -23,17 +23,16 @@ public class TestPostConvertFileHandler
         // Arrange
         var contentStream = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 });
         var expectedContentStream = new MemoryStream(new byte[] { 1, 3, 5 }, false);
-        var conversionType = ConversionType.Ass;
         var conversionOptions = new PostConversionOption[2];
-        conversionOptions[0] = PostConversionOption.DeleteTags;
+        conversionOptions[0] = PostConversionOption.DeleteAssTags;
         conversionOptions[1] = PostConversionOption.ToOneLine;
         var cancellationToken = new CancellationToken();
 
         var processorResult = new OperationResult<Stream> { Payload = expectedContentStream };
-        _processorMock.Setup(p => p.ProcessAsync(contentStream, conversionType, cancellationToken, conversionOptions))
+        _processorMock.Setup(p => p.ProcessAsync(contentStream, cancellationToken, conversionOptions))
             .ReturnsAsync(processorResult);
 
-        var request = new PostConvertFile(contentStream, conversionType, conversionOptions);
+        var request = new PostConvertFile(contentStream, conversionOptions);
 
         var handler = new PostConvertFileHandler(_processorMock.Object);
 
@@ -41,8 +40,8 @@ public class TestPostConvertFileHandler
         var result = await handler.Handle(request, cancellationToken);
 
         // Assert
-        _processorMock.Verify(p => p.ProcessAsync(It.IsAny<Stream>(), It.IsAny<ConversionType>(),
-            It.IsAny<CancellationToken>(), It.IsAny<PostConversionOption[]>()), Times.Once());
+        _processorMock.Verify(p => p.ProcessAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>(),
+            It.IsAny<PostConversionOption[]>()), Times.Once());
 
         result.Should().NotBeNull()
             .And.NotBeInErrorState()
@@ -58,17 +57,16 @@ public class TestPostConvertFileHandler
     {
         // Arrange
         var contentStream = new MemoryStream();
-        var conversionType = ConversionType.Ass;
         var conversionOptions = Array.Empty<PostConversionOption>();
         var cancellationToken = new CancellationToken();
 
         string errorMessage = "Test unexpected error occurred";
         var processorResult = new OperationResult<Stream>();
         processorResult.AddError(ErrorCode.UnknownError, errorMessage);
-        _processorMock.Setup(p => p.ProcessAsync(contentStream, conversionType, cancellationToken, conversionOptions))
+        _processorMock.Setup(p => p.ProcessAsync(contentStream, cancellationToken, conversionOptions))
             .ReturnsAsync(processorResult);
 
-        var request = new PostConvertFile(contentStream, conversionType, conversionOptions);
+        var request = new PostConvertFile(contentStream, conversionOptions);
 
         var handler = new PostConvertFileHandler(_processorMock.Object);
 
@@ -76,8 +74,8 @@ public class TestPostConvertFileHandler
         var result = await handler.Handle(request, cancellationToken);
 
         // Assert
-        _processorMock.Verify(p => p.ProcessAsync(It.IsAny<Stream>(), It.IsAny<ConversionType>(),
-            It.IsAny<CancellationToken>(), It.IsAny<PostConversionOption[]>()), Times.Once());
+        _processorMock.Verify(p => p.ProcessAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>(),
+            It.IsAny<PostConversionOption[]>()), Times.Once());
 
         result.Should().NotBeNull()
             .And.BeInErrorState()
@@ -90,15 +88,14 @@ public class TestPostConvertFileHandler
     {
         // Arrange
         var contentStream = new MemoryStream();
-        var conversionType = ConversionType.Ass;
         var conversionOptions = Array.Empty<PostConversionOption>();
         var cancellationToken = new CancellationToken();
 
         var exceptionMessage = "Test unexpected exception occurred";
-        _processorMock.Setup(p => p.ProcessAsync(contentStream, conversionType, cancellationToken, conversionOptions))
+        _processorMock.Setup(p => p.ProcessAsync(contentStream, cancellationToken, conversionOptions))
             .ThrowsAsync(new Exception(exceptionMessage));
 
-        var request = new PostConvertFile(contentStream, conversionType, conversionOptions);
+        var request = new PostConvertFile(contentStream, conversionOptions);
 
         var handler = new PostConvertFileHandler(_processorMock.Object);
 

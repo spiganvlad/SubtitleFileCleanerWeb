@@ -20,7 +20,7 @@ public class PostConvertFileHandler : IRequestHandler<PostConvertFile, Operation
 
         try
         {
-            var postConversionResult = await _processor.ProcessAsync(request.ContentStream, request.ConversionType,
+            var postConversionResult = await _processor.ProcessAsync(request.ContentStream,
                 cancellationToken, request.ConversionOptions);
             if (postConversionResult.IsError)
             {

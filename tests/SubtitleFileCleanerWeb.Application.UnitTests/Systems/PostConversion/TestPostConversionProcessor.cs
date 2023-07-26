@@ -2,9 +2,8 @@
 using Moq;
 using SubtitleFileCleanerWeb.Application.Abstractions;
 using SubtitleFileCleanerWeb.Application.Enums;
-using SubtitleFileCleanerWeb.Application.Exceptions;
+using SubtitleFileCleanerWeb.Application.Models;
 using SubtitleFileCleanerWeb.Application.PostConversion;
-using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.Reflection;
 
 namespace SubtitleFileCleanerWeb.Application.UnitTests.Systems.PostConversion;
 
@@ -17,7 +16,7 @@ public class TestPostConversionProcessor
     {
         _converter = new Mock<IPostConverter>();
         _converter.SetupGet(c => c.PostConversionOption)
-            .Returns(PostConversionOption.DeleteTags);
+            .Returns(PostConversionOption.DeleteAssTags);
 
         _converters = new List<IPostConverter> { _converter.Object };
     }
@@ -27,22 +26,22 @@ public class TestPostConversionProcessor
     {
         // Arrange
         var contentStream = new MemoryStream(new byte[] { 1, 2, 3, 4, 5, }, false);
-        var conversionType = ConversionType.Ass;
         var cancellationToken = new CancellationToken();
-        var conversionOption = PostConversionOption.DeleteTags;
+        var conversionOption = PostConversionOption.DeleteAssTags;
 
-        var converterResult = new MemoryStream(new byte[] { 2, 4, 5 }, false);
-        _converter.Setup(c => c.ConvertAsync(contentStream, conversionType, cancellationToken))
+        var convertedContent = new MemoryStream(new byte[] { 2, 4, 5 }, false);
+        var converterResult = new OperationResult<Stream> { Payload = convertedContent };
+        _converter.Setup(c => c.ConvertAsync(contentStream, cancellationToken))
             .ReturnsAsync(converterResult);
 
         var processor = new PostConversionProcessor(_converters);
 
         // Act
-        var result = await processor.ProcessAsync(contentStream, conversionType, cancellationToken, conversionOption);
+        var result = await processor.ProcessAsync(contentStream, cancellationToken, conversionOption);
 
         // Assert
         _converter.VerifyGet(c => c.PostConversionOption, Times.Once());
-        _converter.Verify(c => c.ConvertAsync(It.IsAny<Stream>(), It.IsAny<ConversionType>(), It.IsAny<CancellationToken>()), Times.Once());
+        _converter.Verify(c => c.ConvertAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Once());
 
         result.Should().NotBeNull()
             .And.NotBeInErrorState()
@@ -50,36 +49,38 @@ public class TestPostConversionProcessor
             .And.HaveNotDefaultPayload()
             
             .Which.Should().BeReadOnly()
-            .And.HaveLength(converterResult.Length);
+            .And.HaveLength(convertedContent.Length);
     }
-
+    
     [Fact]
     public async Task ProcessAsync_WithTwoConverters_ReturnValid()
     {
         // Arrange
         var contentStream = new MemoryStream();
-        var conversionType = ConversionType.Ass;
         var cancellationToken = new CancellationToken();
         var conversionOptions = new PostConversionOption[2];
-        conversionOptions[0] = PostConversionOption.DeleteTags;
-        conversionOptions[1] = PostConversionOption.ToOneLine;
+        conversionOptions[0] = PostConversionOption.DeleteAssTags;
+        conversionOptions[1] = PostConversionOption.DeleteBasicTags;
 
-        var firstConverterResult = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 }, false);
-        _converter.Setup(c => c.ConvertAsync(contentStream, conversionType, cancellationToken))
+        var firstConvertedContent = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 }, false);
+        var firstConverterResult = new OperationResult<Stream> { Payload = firstConvertedContent };
+        _converter.Setup(c => c.ConvertAsync(contentStream, cancellationToken))
             .ReturnsAsync(firstConverterResult);
 
-        var secondConverterResult = new MemoryStream(new byte[] { 1, 4, 5 }, false);
+        var secondConvertedContent = new MemoryStream(new byte[] { 1, 4, 5 }, false);
+        var secondConverterResult = new OperationResult<Stream> { Payload = secondConvertedContent };
+
         var secondConverter = new Mock<IPostConverter>();
         secondConverter.SetupGet(c => c.PostConversionOption)
-            .Returns(PostConversionOption.ToOneLine);
-        secondConverter.Setup(c => c.ConvertAsync(firstConverterResult, conversionType, cancellationToken))
+            .Returns(PostConversionOption.DeleteBasicTags);
+        secondConverter.Setup(c => c.ConvertAsync(firstConverterResult.Payload, cancellationToken))
             .ReturnsAsync(secondConverterResult);
 
         _converters.Add(secondConverter.Object);
         var processor = new PostConversionProcessor(_converters);
 
         // Act
-        var result = await processor.ProcessAsync(contentStream, conversionType, cancellationToken, conversionOptions);
+        var result = await processor.ProcessAsync(contentStream, cancellationToken, conversionOptions);
 
         // Assert
         result.Should().NotBeNull()
@@ -88,7 +89,7 @@ public class TestPostConversionProcessor
             .And.HaveNotDefaultPayload()
             
             .Which.Should().BeReadOnly()
-            .And.HaveLength(secondConverterResult.Length);
+            .And.HaveLength(secondConvertedContent.Length);
     }
 
     [Fact]
@@ -96,14 +97,13 @@ public class TestPostConversionProcessor
     {
         // Arrange
         var contentStream = new MemoryStream();
-        var conversionType = ConversionType.Ass;
         var cancellationToken = new CancellationToken();
         var conversionOption = PostConversionOption.ToOneLine;
 
         var processor = new PostConversionProcessor(_converters);
 
         // Act
-        var result = await processor.ProcessAsync(contentStream, conversionType, cancellationToken, conversionOption);
+        var result = await processor.ProcessAsync(contentStream, cancellationToken, conversionOption);
 
         // Assert
         result.Should().NotBeNull()
@@ -114,48 +114,21 @@ public class TestPostConversionProcessor
     }
 
     [Fact]
-    public async Task ProcessAsync_WithNotConvertibleContent_ReturnUnprocessableContentError()
-    {
-        // Arrange
-        var contentStream = new MemoryStream();
-        var conversionType = ConversionType.Ass;
-        var cancellationToken = new CancellationToken();
-        var conversionOption = PostConversionOption.DeleteTags;
-
-        var exceptionMessage = "Test content is unprocessable";
-        var exception = InnerExceptionsCreator.Create<NotConvertibleContentException>(exceptionMessage);
-        _converter.Setup(c => c.ConvertAsync(contentStream, conversionType, cancellationToken))
-            .ThrowsAsync(exception);
-
-        var processor = new PostConversionProcessor(_converters);
-
-        // Act
-        var result = await processor.ProcessAsync(contentStream, conversionType, cancellationToken, conversionOption);
-
-        // Assert
-        result.Should().NotBeNull()
-            .And.BeInErrorState()
-            .And.HaveSingleError(ErrorCode.UnprocessableContent, exceptionMessage)
-            .And.HaveDefaultPayload();
-    }
-
-    [Fact]
     public async Task ProcessAsync_WithUnexpectedError_ReturnUnknownError()
     {
         // Arrange
         var contentStream = new MemoryStream();
-        var conversionType = ConversionType.Ass;
         var cancellationToken = new CancellationToken();
-        var conversionOption = PostConversionOption.DeleteTags;
+        var conversionOption = PostConversionOption.DeleteAssTags;
 
         var exceptionMessage = "Test unexpected error occurred";
-        _converter.Setup(c => c.ConvertAsync(contentStream, conversionType, cancellationToken))
+        _converter.Setup(c => c.ConvertAsync(contentStream, cancellationToken))
             .ThrowsAsync(new Exception(exceptionMessage));
 
         var processor = new PostConversionProcessor(_converters);
 
         // Act
-        var result = await processor.ProcessAsync(contentStream, conversionType, cancellationToken, conversionOption);
+        var result = await processor.ProcessAsync(contentStream, cancellationToken, conversionOption);
 
         // Assert
         result.Should().NotBeNull()

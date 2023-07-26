@@ -1,13 +1,14 @@
 ﻿using SubtitleBytesClearFormatting.Cleaners;
+using SubtitleBytesClearFormatting.TagsGenerate;
 using SubtitleFileCleanerWeb.Application.Abstractions;
 using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.Models;
 
 namespace SubtitleFileCleanerWeb.Application.PostConversion.PostConverters;
 
-public class ToOneLineConverter : IPostConverter
+public class DeleteBasicTagsConverter : IPostConverter
 {
-    public PostConversionOption PostConversionOption => PostConversionOption.ToOneLine;
+    public PostConversionOption PostConversionOption => PostConversionOption.DeleteBasicTags;
 
     public async Task<OperationResult<Stream>> ConvertAsync(Stream contentStream, CancellationToken cancellationToken)
     {
@@ -18,7 +19,8 @@ public class ToOneLineConverter : IPostConverter
             var content = new byte[contentStream.Length];
             await contentStream.ReadAsync(content, cancellationToken);
 
-            var convertedContent = await TxtCleaner.ToOneLineAsync(content);
+            var tags = TagsCollectionGeneretor.GetBasicTags();
+            var convertedContent = await TxtCleaner.DeleteTagsAsync(content, tags);
 
             if (convertedContent.Length == 0)
             {

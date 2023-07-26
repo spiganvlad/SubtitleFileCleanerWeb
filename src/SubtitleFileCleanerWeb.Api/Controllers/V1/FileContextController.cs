@@ -47,7 +47,7 @@ public class FileContextController : BaseController
         // Sending a stream to the post conversion process if any post conversion options are specified
         if (request.PostConversionOptions is not null && request.PostConversionOptions.Any())
         {
-            var postConversionRequest = new PostConvertFile(contentStream, conversionType, request.PostConversionOptions);
+            var postConversionRequest = new PostConvertFile(contentStream, request.PostConversionOptions);
             var postConversionResult = await Mediator.Send(postConversionRequest, cancellationToken);
             if (postConversionResult.IsError)
                 return HandleErrorResponse(postConversionResult.Errors);

@@ -1,6 +1,5 @@
 ﻿using SubtitleFileCleanerWeb.Application.Abstractions;
 using SubtitleFileCleanerWeb.Application.Enums;
-using SubtitleFileCleanerWeb.Application.Exceptions;
 using SubtitleFileCleanerWeb.Application.Models;
 
 namespace SubtitleFileCleanerWeb.Application.PostConversion;
@@ -14,7 +13,7 @@ public class PostConversionProcessor : IPostConversionProcessor
         _converters = converters;
     }
 
-    public async Task<OperationResult<Stream>> ProcessAsync(Stream contentStream, ConversionType conversionType,
+    public async Task<OperationResult<Stream>> ProcessAsync(Stream contentStream,
         CancellationToken cancellationToken, params PostConversionOption[] options)
     {
         var result = new OperationResult<Stream>();
@@ -29,8 +28,14 @@ public class PostConversionProcessor : IPostConversionProcessor
                 {
                     if (converter.PostConversionOption == option)
                     {
-                        contentStream = await converter.ConvertAsync(contentStream, conversionType, cancellationToken);
+                        var conversionResult = await converter.ConvertAsync(contentStream, cancellationToken);
+                        if (conversionResult.IsError)
+                        {
+                            result.CopyErrors(conversionResult.Errors);
+                            return result;
+                        }
 
+                        contentStream = conversionResult.Payload!;
                         optionFulfilled = true;
                         break;
                     }
@@ -45,10 +50,6 @@ public class PostConversionProcessor : IPostConversionProcessor
             }
 
             result.Payload = contentStream;
-        }
-        catch (NotConvertibleContentException ex)
-        {
-            result.AddError(ErrorCode.UnprocessableContent, ex.Message);
         }
         catch (Exception ex)
         {

@@ -4,5 +4,5 @@ using SubtitleFileCleanerWeb.Application.Models;
 
 namespace SubtitleFileCleanerWeb.Application.PostConversion.Commands;
 
-public record PostConvertFile(Stream ContentStream, ConversionType ConversionType,
+public record PostConvertFile(Stream ContentStream,
     PostConversionOption[] ConversionOptions) : IRequest<OperationResult<Stream>>;

@@ -2,6 +2,8 @@
 
 public enum PostConversionOption
 {
-    DeleteTags,
+    DeleteAssTags,
+    DeleteBasicTags,
+    DeleteSubTags,
     ToOneLine
 }

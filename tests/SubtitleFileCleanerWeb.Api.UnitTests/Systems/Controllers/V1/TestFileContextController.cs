@@ -112,7 +112,7 @@ public class TestFileContextController
         var formFileMock = new Mock<IFormFile>();
         var conversionType = ConversionType.Ass;
         var postConversionOptions = new PostConversionOption[2];
-        postConversionOptions[0] = PostConversionOption.DeleteTags;
+        postConversionOptions[0] = PostConversionOption.DeleteAssTags;
         postConversionOptions[1] = PostConversionOption.ToOneLine;
         var cancellationToken = new CancellationToken();
         
@@ -130,7 +130,7 @@ public class TestFileContextController
         _mediatorMock.Setup(m => m.Send(convertFile, cancellationToken))
             .ReturnsAsync(conversionResult);
 
-        var postConvertFile = new PostConvertFile(conversionResultStream, conversionType, postConversionOptions);
+        var postConvertFile = new PostConvertFile(conversionResultStream, postConversionOptions);
         var postConversionResultStream = new MemoryStream(new byte[] { 1, 4 });
         var postConversionResult = new OperationResult<Stream>() { Payload = postConversionResultStream };
         _mediatorMock.Setup(m => m.Send(postConvertFile, cancellationToken))
@@ -223,7 +223,7 @@ public class TestFileContextController
         // Arrange
         var formFileMock = new Mock<IFormFile>();
         var conversionType = ConversionType.Ass;
-        var postConversionOptions = new PostConversionOption[] { PostConversionOption.DeleteTags };
+        var postConversionOptions = new PostConversionOption[] { PostConversionOption.DeleteAssTags };
         var cancellationToken = new CancellationToken();
 
         formFileMock.Setup(ff => ff.OpenReadStream())
@@ -233,7 +233,7 @@ public class TestFileContextController
         _mediatorMock.Setup(m => m.Send(convertFile, cancellationToken))
             .ReturnsAsync(new OperationResult<Stream> { Payload = Stream.Null });
 
-        var postConvertFile = new PostConvertFile(Stream.Null, conversionType, postConversionOptions);
+        var postConvertFile = new PostConvertFile(Stream.Null, postConversionOptions);
         var postConvertResult = new OperationResult<Stream>();
         var errorMessage = "Test unknown error occurred.";
         postConvertResult.AddError(ErrorCode.UnknownError, errorMessage);
