@@ -11,18 +11,17 @@ public class TestInMemoryBlobStorageContext
     {
         // Arrange
         var path = string.Empty;
-        var contentStream = new MemoryStream();
+        var content = new byte[3]; 
         var cancellationToken = new CancellationToken();
 
         var inMemoryStorage = new InMemoryBlobStorageContext();
-        inMemoryStorage.StorageContext.Add(path, contentStream);
+        inMemoryStorage.StorageContext.Add(path, content);
 
         // Act
         var result = await inMemoryStorage.GetContentStreamAsync(path, cancellationToken);
 
         // Assert
-        result.Should().NotBeNull();
-        result!.Length.Should().Be(contentStream.Length);
+        result.Should().NotBeNull().And.HaveLength(content.Length);
     }
 
     [Fact]
@@ -46,7 +45,8 @@ public class TestInMemoryBlobStorageContext
     {
         // Arrange
         var path = string.Empty;
-        var contentStream = new MemoryStream();
+        var content = new byte[3];
+        var contentStream = new MemoryStream(content);
         var cancellationToken = new CancellationToken();
 
         var inMemoryStorage = new InMemoryBlobStorageContext();
@@ -57,8 +57,11 @@ public class TestInMemoryBlobStorageContext
         // Assert
         inMemoryStorage.StorageContext.Should().NotBeEmpty()
             .And.ContainSingle()
-            .And.ContainKey(path)
-            .And.ContainValue(contentStream);
+            .And.ContainKey(path);
+
+        inMemoryStorage.StorageContext[path].Should().NotBeNull()
+            .And.HaveCount(content.Length)
+            .And.ContainInOrder(content);
     }
 
     [Fact]
@@ -66,11 +69,12 @@ public class TestInMemoryBlobStorageContext
     {
         // Arrange
         var path = string.Empty;
-        var contentStream = new MemoryStream();
+        var content = new byte[3];
+        var contentStream = new MemoryStream(content);
         var cancellationToken = new CancellationToken();
 
         var inMemoryStorage = new InMemoryBlobStorageContext();
-        inMemoryStorage.StorageContext.Add(path, contentStream);
+        inMemoryStorage.StorageContext.Add(path, content);
 
         // Act
         var act = async () =>
@@ -88,11 +92,11 @@ public class TestInMemoryBlobStorageContext
     {
         // Arrange
         var path = string.Empty;
-        var contentStream = new MemoryStream();
+        var content = new byte[3];
         var cancellationToken = new CancellationToken();
 
         var inMemoryStorage = new InMemoryBlobStorageContext();
-        inMemoryStorage.StorageContext.Add(path, contentStream);
+        inMemoryStorage.StorageContext.Add(path, content);
 
         // Act
         await inMemoryStorage.DeleteContentAsync(path, cancellationToken);
