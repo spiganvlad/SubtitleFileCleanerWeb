@@ -2,20 +2,22 @@
 using Moq;
 using SubtitleFileCleanerWeb.Application.Abstractions;
 using SubtitleFileCleanerWeb.Application.Enums;
-using SubtitleFileCleanerWeb.Application.Exceptions;
+using SubtitleFileCleanerWeb.Application.Models;
 using SubtitleFileCleanerWeb.Application.SubtitleConversion;
-using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.Reflection;
 
 namespace SubtitleFileCleanerWeb.Application.UnitTests.Systems.SubtitleConversion;
 
 public class TestSubtitleConversionProcessor
 {
     private readonly Mock<ISubtitleConverter> _assConverterMock;
+    private readonly List<ISubtitleConverter> _converters;
 
     public TestSubtitleConversionProcessor()
     {
         _assConverterMock = new Mock<ISubtitleConverter>();
         _assConverterMock.Setup(c => c.ConversionType).Returns(ConversionType.Ass);
+
+        _converters = new List<ISubtitleConverter> { _assConverterMock.Object };
     }
 
     [Fact]
@@ -27,11 +29,11 @@ public class TestSubtitleConversionProcessor
         var cancellationToken = new CancellationToken();
 
         var expectedContentStream = new MemoryStream(new byte[] { 2, 4 }, false);
+        var converterResult = new OperationResult<Stream> { Payload = expectedContentStream };
         _assConverterMock.Setup(c => c.ConvertAsync(contentStream, cancellationToken))
-            .ReturnsAsync(expectedContentStream);
+            .ReturnsAsync(converterResult);
 
-        var converters = new List<ISubtitleConverter> { _assConverterMock.Object };
-        var processor = new SubtitleConversionProcessor(converters);
+        var processor = new SubtitleConversionProcessor(_converters);
 
         // Act
         var result = await processor.ProcessAsync(contentStream, conversionType, cancellationToken);
@@ -57,8 +59,7 @@ public class TestSubtitleConversionProcessor
         var conversionType = ConversionType.Srt;
         var cancellationToken = new CancellationToken();
 
-        var converters = new List<ISubtitleConverter> { _assConverterMock.Object };
-        var processor = new SubtitleConversionProcessor(converters);
+        var processor = new SubtitleConversionProcessor(_converters);
 
         // Act
         var result = await processor.ProcessAsync(contentStream, conversionType, cancellationToken);
@@ -74,28 +75,33 @@ public class TestSubtitleConversionProcessor
     }
 
     [Fact]
-    public async Task ProcessAsync_WithUnprocessableContent_ReturnUnprocessableContentError()
+    public async Task ProcessAsync_WithConverterError_RaiseError()
     {
         // Arrange
         var contentStream = new MemoryStream();
+        var converterType = ConversionType.Ass;
         var cancellationToken = new CancellationToken();
 
-        var exception = InnerExceptionsCreator.Create<NotConvertibleContentException>("Unprocessable content exception");
-        _assConverterMock.Setup(c => c.ConvertAsync(contentStream, cancellationToken))
-            .ThrowsAsync(exception);
+        var errorMessage = "Test unexpected error occurred.";
+        var errorCode = ErrorCode.UnknownError;
 
-        var converters = new List<ISubtitleConverter> { _assConverterMock.Object };
-        var processor = new SubtitleConversionProcessor(converters);
+        var converterResult = new OperationResult<Stream>();
+        converterResult.AddError(errorCode, errorMessage);
+        _assConverterMock.Setup(c => c.ConvertAsync(contentStream, cancellationToken))
+            .ReturnsAsync(converterResult);
+
+        var processor = new SubtitleConversionProcessor(_converters);
 
         // Act
-        var result = await processor.ProcessAsync(contentStream, ConversionType.Ass, cancellationToken);
+        var result = await processor.ProcessAsync(contentStream, converterType, cancellationToken);
 
         // Assert
+        _assConverterMock.VerifyGet(c => c.ConversionType, Times.Once());
         _assConverterMock.Verify(c => c.ConvertAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Once());
 
         result.Should().NotBeNull()
             .And.BeInErrorState()
-            .And.HaveSingleError(ErrorCode.UnprocessableContent, exception.Message)
+            .And.HaveSingleError(errorCode, errorMessage)
             .And.HaveDefaultPayload();
     }
 
@@ -110,8 +116,7 @@ public class TestSubtitleConversionProcessor
         _assConverterMock.Setup(c => c.ConvertAsync(contentStream, cancellationToken))
             .ThrowsAsync(new Exception(exceptionMessage));
 
-        var converters = new List<ISubtitleConverter> { _assConverterMock.Object };
-        var processor = new SubtitleConversionProcessor(converters);
+        var processor = new SubtitleConversionProcessor(_converters);
 
         // Act
         var result = await processor.ProcessAsync(contentStream, ConversionType.Ass, cancellationToken);

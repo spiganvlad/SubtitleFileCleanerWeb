@@ -1,6 +1,5 @@
 ﻿using SubtitleFileCleanerWeb.Application.Abstractions;
 using SubtitleFileCleanerWeb.Application.Enums;
-using SubtitleFileCleanerWeb.Application.Exceptions;
 using SubtitleFileCleanerWeb.Application.Models;
 
 namespace SubtitleFileCleanerWeb.Application.SubtitleConversion
@@ -25,17 +24,20 @@ namespace SubtitleFileCleanerWeb.Application.SubtitleConversion
                 {
                     if (c.ConversionType == conversionType)
                     {
-                        result.Payload = await c.ConvertAsync(contentStream, cancellationToken);
+                        var conversionResult = await c.ConvertAsync(contentStream, cancellationToken);
+                        if (conversionResult.IsError)
+                        {
+                            result.CopyErrors(conversionResult.Errors);
+                            return result;
+                        }
+
+                        result.Payload = conversionResult.Payload;
                         return result;
                     }
                 }
 
                 result.AddError(ErrorCode.SubtitleConversionException,
                     string.Format(SubtitleConversionErrorMessages.SubtitleConverterNotFound, conversionType));
-            }
-            catch (NotConvertibleContentException ex)
-            {
-                result.AddError(ErrorCode.UnprocessableContent, ex.Message);
             }
             catch (Exception ex)
             {
