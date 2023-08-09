@@ -13,7 +13,5 @@ public class MvcRegister : IServicesRegister
 
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
-
-        
     }
 }

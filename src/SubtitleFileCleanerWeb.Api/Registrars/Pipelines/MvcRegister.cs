@@ -6,6 +6,8 @@ public class MvcRegister : IPipelineRegister
     {
         app.UseHttpsRedirection();
 
+        app.UseCors();
+
         app.UseAuthorization();
 
         app.MapControllers();
