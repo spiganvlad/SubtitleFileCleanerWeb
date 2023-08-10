@@ -48,7 +48,7 @@ public class TestFileContextController
         var cancellationToken = new CancellationToken();
 
         var fileContextName = "FooName";
-        var fileContext = FileContext.Create(fileContextName);
+        var fileContext = FileContext.Create(fileContextName, 1);
         var mediatorResult = new OperationResult<FileContext> { Payload = fileContext };
 
         _mediatorMock.Setup(m => m.Send(It.IsAny<GetFileContextById>(), cancellationToken))
@@ -137,7 +137,7 @@ public class TestFileContextController
             .ReturnsAsync(postConversionResult);
 
         var createContext = new CreateFileContext(formFileName + ".txt", postConversionResultStream);
-        var fileContext = FileContext.Create(formFileName);
+        var fileContext = FileContext.Create(formFileName, 1);
         var createContextResult = new OperationResult<FileContext> { Payload = fileContext };
         _mediatorMock.Setup(m => m.Send(createContext, cancellationToken))
             .ReturnsAsync(createContextResult);
@@ -326,7 +326,7 @@ public class TestFileContextController
         var cancellationToken = new CancellationToken();
         var fileContextName = "FooName";
 
-        var fileContext = FileContext.Create(fileContextName);
+        var fileContext = FileContext.Create(fileContextName, 1);
         var mediatorResult = new OperationResult<FileContext> { Payload = fileContext };
 
         _mediatorMock.Setup(m => m.Send(It.IsAny<UpdateFileContextName>(), cancellationToken))

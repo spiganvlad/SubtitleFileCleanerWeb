@@ -8,9 +8,9 @@ public static class FileContextFixture
     {
         return new List<FileContext>
         {
-            FileContext.Create("FirstFileName"),
-            FileContext.Create("SecondFileName"),
-            FileContext.Create("ThirdFileName")
+            FileContext.Create("FirstFileName", 1),
+            FileContext.Create("SecondFileName", 2),
+            FileContext.Create("ThirdFileName", 3)
         };
     }
 }

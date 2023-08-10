@@ -7,8 +7,9 @@ public class FileContext
 {
     public Guid FileContextId { get; private set; }
     public string Name { get; private set; } = null!;
+    public long ContentSize { get; private set; }
     public FileContent? Content { get; private set; }
-    public DateTime DateCreated { get; private set; }
+    public DateTime DateCreated { get; private set; } 
     public DateTime DateModified { get; private set; }
 
     private FileContext() { }
@@ -17,9 +18,10 @@ public class FileContext
     /// Creates a new file context instance
     /// </summary>
     /// <param name="name">File context name</param>
-    /// <returns cref="FileContent"></returns>
+    /// <param name="contentSize">File context content size</param>
+    /// <returns cref="FileContext"></returns>
     /// <exception cref="FileContextNotValidException"></exception>
-    public static FileContext Create(string name)
+    public static FileContext Create(string name, long contentSize)
     {
         var validator = new FileContextValidator();
 
@@ -27,6 +29,7 @@ public class FileContext
         {
             FileContextId = Guid.NewGuid(),
             Name = name,
+            ContentSize = contentSize,
             DateCreated = DateTime.UtcNow,
             DateModified = DateTime.UtcNow
         };
@@ -68,7 +71,7 @@ public class FileContext
     {
         if (Content is not null)
             throw new FileContentAlreadySetException("Cannot set file content. It is already set.");
-        
+
         Content = content;
     }
 }

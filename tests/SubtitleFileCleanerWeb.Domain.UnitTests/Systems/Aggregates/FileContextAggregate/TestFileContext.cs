@@ -8,18 +8,20 @@ namespace SubtitleFileCleanerWeb.Domain.UnitTests.Systems.Aggregates.FileContext
 public class TestFileContext
 {
     [Fact]
-    public void Create_WithFooName_ReturnValid()
+    public void Create_WithValidParameters_ReturnValid()
     {
         // Arrange
         var name = "FooName";
+        var contentSize = 1;
 
         // Act
-        var fileContext = FileContext.Create(name);
+        var fileContext = FileContext.Create(name, contentSize);
 
         // Assert
         fileContext.Should().NotBeNull();
         fileContext.FileContextId.Should().NotBeEmpty();
         fileContext.Name.Should().Be(name);
+        fileContext.ContentSize.Should().Be(contentSize);
         fileContext.DateCreated.Should().BeCloseTo(DateTime.UtcNow, 1.Minutes());
         fileContext.DateModified.Should().BeCloseTo(DateTime.UtcNow, 1.Minutes());
     }
@@ -29,19 +31,20 @@ public class TestFileContext
     {
         // Arrange
         string name = null!;
+        var contentSize = 1;
 
         // Act
         var act = () =>
         {
-            var fileContext = FileContext.Create(name);
+            var fileContext = FileContext.Create(name, contentSize);
         };
 
         // Assert
         var exception = act.Should().ThrowExactly<FileContextNotValidException>()
-            .WithMessage("File context is not valid.").And;
+            .WithMessage("File context is not valid.")
 
-        exception.ValidationErrors.Should().ContainSingle();
-        exception.ValidationErrors[0].Should().Be("File context name cannot be null.");
+            .And.ValidationErrors.Should().ContainSingle()
+            .Which.Should().Be("File context name cannot be null.");
     }
 
     [Fact]
@@ -49,19 +52,41 @@ public class TestFileContext
     {
         // Arrange
         var name = string.Empty;
+        var contentSize = 1;
 
         // Act
         var act = () =>
         {
-            var fileContext = FileContext.Create(name);
+            var fileContext = FileContext.Create(name, contentSize);
         };
 
         // Assert
-        var exception = act.Should().ThrowExactly<FileContextNotValidException>()
-            .WithMessage("File context is not valid.").And;
+        act.Should().ThrowExactly<FileContextNotValidException>()
+            .WithMessage("File context is not valid.")
 
-        exception.ValidationErrors.Should().ContainSingle();
-        exception.ValidationErrors[0].Should().Be("File context name cannot be empty.");
+            .And.ValidationErrors.Should().ContainSingle()
+            .Which.Should().Be("File context name cannot be empty.");
+    }
+
+    [Fact]
+    public void Create_WithZeroContentLength_ThrowException()
+    {
+        // Arrange
+        var name = "FooName";
+        var contentSize = 0;
+
+        // Act
+        var act = () =>
+        {
+            var fileContext = FileContext.Create(name, contentSize);
+        };
+
+        // Assert
+        act.Should().ThrowExactly<FileContextNotValidException>()
+            .WithMessage("File context is not valid.")
+
+            .And.ValidationErrors.Should().ContainSingle()
+            .Which.Should().Be("File context content size must be greater then 0.");  
     }
 
     [Fact]
@@ -69,8 +94,9 @@ public class TestFileContext
     {
         // Arrange
         var name = "FooName";
+        var contentSize = 1;
 
-        var fileContext = FileContext.Create("NameToUpdate");
+        var fileContext = FileContext.Create("NameToUpdate", contentSize);
 
         var idBeforeUpdate = fileContext.FileContextId;
         var dateCreatedBeforeUpdate = fileContext.DateCreated;
@@ -82,6 +108,7 @@ public class TestFileContext
         // Assert
         fileContext.FileContextId.Should().Be(idBeforeUpdate);
         fileContext.Name.Should().Be(name);
+        fileContext.ContentSize.Should().Be(contentSize);
         fileContext.DateCreated.Should().Be(dateCreatedBeforeUpdate);
         fileContext.DateModified.Should().NotBe(dateModifiedBeforeUpdate)
             .And.BeCloseTo(DateTime.UtcNow, 1.Minutes());
@@ -92,7 +119,8 @@ public class TestFileContext
     {
         // Arrange
         string name = null!;
-        var fileContext = FileContext.Create("NameToUpdate");
+        var contentSize = 1;
+        var fileContext = FileContext.Create("NameToUpdate", contentSize);
 
         // Act
         var act = () =>
@@ -101,11 +129,11 @@ public class TestFileContext
         };
 
         // Assert
-        var exception = act.Should().ThrowExactly<FileContextNotValidException>()
-            .WithMessage("Cannot update file context. File context name is not valid.").And;
+        act.Should().ThrowExactly<FileContextNotValidException>()
+            .WithMessage("Cannot update file context. File context name is not valid.")
 
-        exception.ValidationErrors.Should().ContainSingle();
-        exception.ValidationErrors[0].Should().Be("The provided name is either null or white space.");
+            .And.ValidationErrors.Should().ContainSingle()
+            .Which.Should().Be("The provided name is either null or white space.");
     }
 
     [Fact]
@@ -113,7 +141,8 @@ public class TestFileContext
     {
         // Arrange
         var name = string.Empty;
-        var fileContext = FileContext.Create("NameToUpdate");
+        var contentSize = 1;
+        var fileContext = FileContext.Create("NameToUpdate", contentSize);
 
         // Act
         var act = () =>
@@ -122,11 +151,11 @@ public class TestFileContext
         };
 
         // Assert
-        var exception = act.Should().ThrowExactly<FileContextNotValidException>()
-            .WithMessage("Cannot update file context. File context name is not valid.").And;
+        act.Should().ThrowExactly<FileContextNotValidException>()
+            .WithMessage("Cannot update file context. File context name is not valid.")
 
-        exception.ValidationErrors.Should().ContainSingle();
-        exception.ValidationErrors[0].Should().Be("The provided name is either null or white space.");
+            .And.ValidationErrors.Should().ContainSingle()
+            .Which.Should().Be("The provided name is either null or white space.");
     }
 
     [Fact]
@@ -136,7 +165,7 @@ public class TestFileContext
         var content = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 }, false);
         var fileContent = FileContent.Create(content);
 
-        var fileContext = FileContext.Create("FooName");
+        var fileContext = FileContext.Create("FooName", content.Length);
 
         // Act
         fileContext.SetContent(fileContent);
@@ -154,7 +183,7 @@ public class TestFileContext
         var content = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 }, false);
         var fileContent = FileContent.Create(content);
 
-        var fileContext = FileContext.Create("FooName");
+        var fileContext = FileContext.Create("FooName", content.Length);
         fileContext.SetContent(fileContent);
 
         // Act

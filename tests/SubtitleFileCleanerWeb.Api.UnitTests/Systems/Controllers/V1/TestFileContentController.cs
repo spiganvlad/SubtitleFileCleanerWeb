@@ -39,7 +39,7 @@ public class TestFileContentController
         var cancellationToken = new CancellationToken();
 
         var fileContextName = "FooName";
-        var fileContext = FileContext.Create(fileContextName);
+        var fileContext = FileContext.Create(fileContextName, 1);
 
         var contentStream = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 }, false);
         var fileContent = FileContent.Create(contentStream);
