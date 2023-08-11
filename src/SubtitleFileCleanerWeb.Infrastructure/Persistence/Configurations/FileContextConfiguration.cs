@@ -8,6 +8,6 @@ public class FileContextConfiguration : IEntityTypeConfiguration<FileContext>
 {
     public void Configure(EntityTypeBuilder<FileContext> builder)
     {
-        builder.Ignore(f => f.Content);
+        builder.Ignore(f => f.FileContent);
     }
 }

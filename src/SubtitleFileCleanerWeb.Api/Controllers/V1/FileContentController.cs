@@ -18,7 +18,7 @@ public class FileContentController : BaseController
         if (result.IsError)
             return HandleErrorResponse(result.Errors);
 
-        var fs = new FileStreamResult(result.Payload!.Content!.Content, "application/octet-stream")
+        var fs = new FileStreamResult(result.Payload!.FileContent!.Content, "application/octet-stream")
         { FileDownloadName = result.Payload.Name };
 
         return fs;

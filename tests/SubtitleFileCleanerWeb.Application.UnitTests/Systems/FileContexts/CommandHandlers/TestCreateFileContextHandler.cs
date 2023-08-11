@@ -63,7 +63,7 @@ public class TestCreateFileContextHandler
             .Which;
 
         payload.FileContextId.Should().NotBeEmpty();
-        payload.Content.Should().NotBeNull().And.Be(mediatorResult.Payload);
+        payload.FileContent.Should().NotBeNull().And.Be(mediatorResult.Payload);
         payload.Name.Should().NotBeNull().And.Be(request.FileName);
         payload.ContentSize.Should().Be(content.Length);
         payload.DateCreated.Should().BeCloseTo(DateTime.UtcNow, 1.Minutes());

@@ -61,7 +61,7 @@ public class TestGetFileContextWithContentByIdHandler
             .Which;
 
         payload.Should().Be(searchedContext);
-        payload.Content.Should().NotBeNull().And.Be(searchedContent);
+        payload.FileContent.Should().NotBeNull().And.Be(searchedContent);
     }
 
     [Fact]
