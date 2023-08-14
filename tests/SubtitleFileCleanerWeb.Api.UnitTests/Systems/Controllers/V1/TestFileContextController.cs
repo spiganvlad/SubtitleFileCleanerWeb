@@ -42,65 +42,73 @@ public class TestFileContextController
     }
     
     [Fact]
-    public async Task GetById_WithExistingId_ReturnOkObjectResult()
+    public async Task GetById_WithOperationSuccess_ReturnOkObjectResult()
     {
         // Arrange
+        var guidId = Guid.Empty;
+        var name = "FooName";
+        var contentSize = 1;
         var cancellationToken = new CancellationToken();
 
-        var fileContextName = "FooName";
-        var fileContext = FileContext.Create(fileContextName, 1);
-        var mediatorResult = new OperationResult<FileContext> { Payload = fileContext };
+        var mediatorRequest = new GetFileContextById(guidId);
 
-        _mediatorMock.Setup(m => m.Send(It.IsAny<GetFileContextById>(), cancellationToken))
+        var fileContext = FileContext.Create(name, contentSize);
+        var mediatorResult = new OperationResult<FileContext> { Payload = fileContext };
+        _mediatorMock.Setup(m => m.Send(mediatorRequest, cancellationToken))
             .ReturnsAsync(mediatorResult);
 
+        var mapperResult = new FileContextResponse { Name = name };
         _mapperMock.Setup(m => m.Map<FileContext, FileContextResponse>(fileContext))
-            .Returns(new FileContextResponse { Name = fileContextName });
+            .Returns(mapperResult);
 
         // Act
-        var result = await _controller.GetById(Guid.Empty.ToString(), cancellationToken);
+        var result = await _controller.GetById(guidId.ToString(), cancellationToken);
 
         // Assert
         _mediatorMock.Verify(m => m.Send(It.IsAny<GetFileContextById>(), It.IsAny<CancellationToken>()), Times.Once);
         _mapperMock.Verify(m => m.Map<FileContext, FileContextResponse>(It.IsAny<FileContext>()), Times.Once);
 
-        result.Should().NotBeNull().And.BeOfType<OkObjectResult>()
+        result.Should().NotBeNull()
+            .And.BeOfType<OkObjectResult>()
 
             .Which.Should().HaveStatusCode(200)
             .And.HaveNotNullValue()
             .And.HaveValueOfType<FileContextResponse>()
 
-            .Which.Name.Should().Be(fileContextName);
+            .Which.Should().Be(mapperResult);
     }
 
     [Fact]
-    public async Task GetById_WithNonExistingId_ReturnNotFoundResponse()
+    public async Task GetById_WithOperationError_ReturnBadRequestResponse()
     {
         // Arrange
+        var guidId = Guid.Empty;
         var cancellationToken = new CancellationToken();
 
-        var errorMessage = "Test not found error message";
-        var mediatorResult = new OperationResult<FileContext>();
-        mediatorResult.AddError(ErrorCode.NotFound, errorMessage);
+        var mediatorRequest = new GetFileContextById(guidId);
 
-        _mediatorMock.Setup(m => m.Send(It.IsAny<GetFileContextById>(), cancellationToken))
+        var errorMessage = "Test unknown error occurred.";
+        var mediatorResult = new OperationResult<FileContext>();
+        mediatorResult.AddError(ErrorCode.UnknownError, errorMessage);
+        _mediatorMock.Setup(m => m.Send(mediatorRequest, cancellationToken))
             .ReturnsAsync(mediatorResult);
 
         // Act
-        var result = await _controller.GetById(Guid.Empty.ToString(), cancellationToken);
+        var result = await _controller.GetById(guidId.ToString(), cancellationToken);
 
         // Assert
         _mediatorMock.Verify(m => m.Send(It.IsAny<GetFileContextById>(), It.IsAny<CancellationToken>()), Times.Once());
         _mapperMock.Verify(m => m.Map<FileContext, FileContextResponse>(It.IsAny<FileContext>()), Times.Never());
 
-        result.Should().NotBeNull().And.BeOfType<NotFoundObjectResult>()
+        result.Should().NotBeNull()
+            .And.BeOfType<BadRequestObjectResult>()
 
-            .Which.Should().HaveStatusCode(404)
+            .Which.Should().HaveStatusCode(400)
             .And.HaveNotNullValue()
             .And.HaveValueOfType<ErrorResponse>()
 
-            .Which.Should().HaveStatusCode(404)
-            .And.HaveStatusPhrase("Not Found")
+            .Which.Should().HaveStatusCode(400)
+            .And.HaveStatusPhrase("Bad Request")
             .And.HaveTimeStampCloseTo(DateTime.UtcNow, 1.Minutes())
             .And.HaveSingleError(errorMessage);
     }
@@ -320,95 +328,145 @@ public class TestFileContextController
     }
 
     [Fact]
-    public async Task UpdateName_WithValidParameters_ReturnOkObjectResponse()
+    public async Task UpdateName_WithOperationSuccess_ReturnOkObjectResponse()
     {
         // Arrange
+        var guidId = Guid.Empty;
+        var name = "FooName";
+        var contentSize = 1;
         var cancellationToken = new CancellationToken();
-        var fileContextName = "FooName";
 
-        var fileContext = FileContext.Create(fileContextName, 1);
+        var mediatorRequest = new UpdateFileContextName(guidId, name);
+
+        var fileContext = FileContext.Create(name, contentSize);
         var mediatorResult = new OperationResult<FileContext> { Payload = fileContext };
-
-        _mediatorMock.Setup(m => m.Send(It.IsAny<UpdateFileContextName>(), cancellationToken))
+        _mediatorMock.Setup(m => m.Send(mediatorRequest, cancellationToken))
             .ReturnsAsync(mediatorResult);
 
+        var mapperResult = new FileContextResponse { Name = name };
         _mapperMock.Setup(m => m.Map<FileContext, FileContextResponse>(fileContext))
-            .Returns(new FileContextResponse { Name = fileContextName });
+            .Returns(mapperResult);
 
         // Act
-        var result = await _controller.UpdateName(Guid.Empty.ToString(), string.Empty, cancellationToken);
+        var result = await _controller.UpdateName(guidId.ToString(), name, cancellationToken);
 
         // Assert
         _mediatorMock.Verify(m => m.Send(It.IsAny<UpdateFileContextName>(), It.IsAny<CancellationToken>()), Times.Once);
         _mapperMock.Verify(m => m.Map<FileContext, FileContextResponse>(It.IsAny<FileContext>()), Times.Once());
 
-        result.Should().NotBeNull().And.BeOfType<OkObjectResult>()
+        result.Should().NotBeNull()
+            .And.BeOfType<OkObjectResult>()
 
             .Which.Should().HaveStatusCode(200)
             .And.HaveNotNullValue()
             .And.HaveValueOfType<FileContextResponse>()
 
-            .Which.Name.Should().Be(fileContextName);
+            .Which.Name.Should().Be(name);
     }
 
     [Fact]
-    public async Task UpdateName_WithNonExistingId_ReturnNotFoundResponse()
+    public async Task UpdateName_WithOperationError_ReturnBadRequestResponse()
     {
         // Arrange
+        var guidId = Guid.Empty;
+        var name = string.Empty;
         var cancellationToken = new CancellationToken();
-        var errorMessage = "Test not found error message";
 
+        var mediatorRequest = new UpdateFileContextName(guidId, name);
+
+        var errorMessage = "Test unknown error occurred.";
         var mediatorResult = new OperationResult<FileContext>();
-        mediatorResult.AddError(ErrorCode.NotFound, errorMessage);
-
-        _mediatorMock.Setup(m => m.Send(It.IsAny<UpdateFileContextName>(), cancellationToken))
+        mediatorResult.AddError(ErrorCode.UnknownError, errorMessage);
+        _mediatorMock.Setup(m => m.Send(mediatorRequest, cancellationToken))
             .ReturnsAsync(mediatorResult);
 
         // Act
-        var result = await _controller.UpdateName(Guid.Empty.ToString(), string.Empty, cancellationToken);
-
-        // Assert
-        _mediatorMock.Verify(m => m.Send(It.IsAny<UpdateFileContextName>(), It.IsAny<CancellationToken>()), Times.Once());
-        _mapperMock.Verify(m => m.Map<FileContext, FileContextResponse>(It.IsAny<FileContext>()), Times.Never());
-
-        result.Should().NotBeNull().And.BeOfType<NotFoundObjectResult>()
-            
-            .Which.Should().HaveStatusCode(404)
-            .And.HaveNotNullValue()
-            .And.HaveValueOfType<ErrorResponse>()
-            
-            .Which.Should().HaveStatusCode(404)
-            .And.HaveStatusPhrase("Not Found")
-            .And.HaveTimeStampCloseTo(DateTime.UtcNow, 1.Minutes())
-            .And.HaveSingleError(errorMessage);
-    }
-
-    [Fact]
-    public async Task UpdateName_WithNotValidName_ReturnBadRequestResponse()
-    {
-        // Arrange
-        var cancellationToken = new CancellationToken();
-        var errorMessage = "Test not valid error message";
-
-        var mediatorResult = new OperationResult<FileContext>();
-        mediatorResult.AddError(ErrorCode.ValidationError, errorMessage);
-
-        _mediatorMock.Setup(m => m.Send(It.IsAny<UpdateFileContextName>(), cancellationToken))
-            .ReturnsAsync(mediatorResult);
-
-        // Act
-        var result = await _controller.UpdateName(Guid.Empty.ToString(), string.Empty, cancellationToken);
+        var result = await _controller.UpdateName(guidId.ToString(), name, cancellationToken);
 
         // Assert
         _mediatorMock.Verify(m => m.Send(It.IsAny<UpdateFileContextName>(), It.IsAny<CancellationToken>()), Times.Once());
         _mapperMock.Verify(m => m.Map<FileContext, FileContextResponse>(It.IsAny<FileContext>()), Times.Never());
 
         result.Should().NotBeNull().And.BeOfType<BadRequestObjectResult>()
-
+            
             .Which.Should().HaveStatusCode(400)
             .And.HaveNotNullValue()
             .And.HaveValueOfType<ErrorResponse>()
+            
+            .Which.Should().HaveStatusCode(400)
+            .And.HaveStatusPhrase("Bad Request")
+            .And.HaveTimeStampCloseTo(DateTime.UtcNow, 1.Minutes())
+            .And.HaveSingleError(errorMessage);
+    }
 
+    [Fact]
+    public async Task Delete_WithOperationSuccess_ReturnOkObjectResult()
+    {
+        // Arrange
+        var guidId = Guid.Empty;
+        var name = "FooName";
+        var contentSize = 1;
+        var cancellationToken = new CancellationToken();
+
+        var mediatorRequest = new DeleteFileContext(guidId);
+
+        var fileContext = FileContext.Create(name, contentSize);
+        var mediatorResult = new OperationResult<FileContext> { Payload = fileContext };
+        _mediatorMock.Setup(m => m.Send(mediatorRequest, cancellationToken))
+            .ReturnsAsync(mediatorResult);
+
+        var mapperResult = new FileContextResponse
+        { FileContextId = guidId, Name = name, ContentSize = contentSize };
+        _mapperMock.Setup(m => m.Map<FileContext, FileContextResponse>(fileContext))
+            .Returns(mapperResult);
+
+        // Act
+        var result = await _controller.Delete(guidId.ToString(), cancellationToken);
+
+        // Assert
+        _mediatorMock.Verify(m => m.Send(It.IsAny<DeleteFileContext>(), It.IsAny<CancellationToken>()), Times.Once());
+        _mapperMock.Verify(m => m.Map<FileContext, FileContextResponse>(It.IsAny<FileContext>()), Times.Once());
+
+        result.Should().NotBeNull()
+            .And.BeOfType<OkObjectResult>()
+            
+            .Which.Should().HaveStatusCode(200)
+            .And.HaveNotNullValue()
+            .And.HaveValueOfType<FileContextResponse>()
+            
+            .Which.Should().Be(mapperResult);
+    }
+
+    [Fact]
+    public async Task Delete_WithOperationError_ReturnBadRequestResponse()
+    {
+        // Arrange
+        var guidId = Guid.Empty;
+        var cancellationToken = new CancellationToken();
+
+        var mediatorRequest = new DeleteFileContext(guidId);
+
+        var errorMessage = "Test unknown error occurred.";
+        var mediatorResult = new OperationResult<FileContext>();
+        mediatorResult.AddError(ErrorCode.UnknownError, errorMessage);
+
+        _mediatorMock.Setup(m => m.Send(mediatorRequest, cancellationToken))
+            .ReturnsAsync(mediatorResult);
+
+        // Act
+        var result = await _controller.Delete(guidId.ToString(), cancellationToken);
+
+        // Assert
+        _mediatorMock.Verify(m => m.Send(It.IsAny<DeleteFileContext>(), It.IsAny<CancellationToken>()), Times.Once());
+        _mapperMock.Verify(m => m.Map<FileContext, FileContextResponse>(It.IsAny<FileContext>()), Times.Never());
+
+        result.Should().NotBeNull()
+            .And.BeOfType<BadRequestObjectResult>()
+            
+            .Which.Should().HaveStatusCode(400)
+            .And.HaveNotNullValue()
+            .And.HaveValueOfType<ErrorResponse>()
+            
             .Which.Should().HaveStatusCode(400)
             .And.HaveStatusPhrase("Bad Request")
             .And.HaveTimeStampCloseTo(DateTime.UtcNow, 1.Minutes())

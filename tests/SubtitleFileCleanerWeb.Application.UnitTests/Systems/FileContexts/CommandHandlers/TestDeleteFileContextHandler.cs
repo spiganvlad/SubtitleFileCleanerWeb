@@ -39,7 +39,7 @@ public class TestDeleteFileContextHandler
         var contextToRemove = _fileContexts.Last();
         var cancellationToken = new CancellationToken();
 
-        var deleteContent = new DeleteFileContent(contextToRemove.FileContextId.ToString());
+        var deleteContent = new DeleteFileContent("Unauthorized\\" + contextToRemove.FileContextId.ToString());
         var mediatorResult = new OperationResult<bool> { Payload = true };
         _mediatorMock.Setup(m => m.Send(deleteContent, cancellationToken))
             .ReturnsAsync(mediatorResult);
@@ -103,7 +103,7 @@ public class TestDeleteFileContextHandler
         var contextToDelete = _fileContexts.Last();
         var cancellationToken = new CancellationToken();
 
-        var deleteFileContent = new DeleteFileContent(contextToDelete.FileContextId.ToString());
+        var deleteFileContent = new DeleteFileContent("Unauthorized\\" + contextToDelete.FileContextId.ToString());
         var fileContentResult = new OperationResult<bool>();
         var errorMessage = "Test unexpected error occurred";
         fileContentResult.AddError(ErrorCode.UnknownError, errorMessage);

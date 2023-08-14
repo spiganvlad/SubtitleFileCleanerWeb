@@ -36,7 +36,8 @@ public class DeleteFileContextHandler : IRequestHandler<DeleteFileContext, Opera
                 return result;
             }
 
-            var deleteContent = new DeleteFileContent(fileContext.FileContextId.ToString());
+            var fileContentPath = Path.Combine("Unauthorized", fileContext.FileContextId.ToString());
+            var deleteContent = new DeleteFileContent(fileContentPath);
             var contentResult = await _mediator.Send(deleteContent, cancellationToken);
             if (contentResult.IsError)
             {

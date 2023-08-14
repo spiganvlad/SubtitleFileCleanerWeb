@@ -80,4 +80,19 @@ public class FileContextController : BaseController
         var response = Mapper.Map<FileContext, FileContextResponse>(result.Payload!);
         return Ok(response);
     }
+
+    [HttpDelete]
+    [Route(ApiRoutes.Common.GuidIdRoute)]
+    [ValidateGuid("guidId")]
+    public async Task<IActionResult> Delete(string guidId, CancellationToken cancellationToken)
+    {
+        var request = new DeleteFileContext(Guid.Parse(guidId));
+
+        var result = await Mediator.Send(request, cancellationToken);
+        if (result.IsError)
+            return HandleErrorResponse(result.Errors);
+
+        var response = Mapper.Map<FileContext, FileContextResponse>(result.Payload!);
+        return Ok(response);
+    }
 }
