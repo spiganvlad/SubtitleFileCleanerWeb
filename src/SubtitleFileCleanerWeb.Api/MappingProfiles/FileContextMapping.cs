@@ -8,6 +8,8 @@ public class FileContextMapping : Profile
 {
     public FileContextMapping()
     {
-        CreateMap<FileContext, FileContextResponse>();
+        CreateMap<FileContext, FileContextResponse>()
+            .ForMember(fcr => fcr.Id, fc => fc.MapFrom(fc => fc.FileContextId))
+            .ForMember(fcr => fcr.Size, fc => fc.MapFrom(fc => fc.ContentSize));
     }
 }

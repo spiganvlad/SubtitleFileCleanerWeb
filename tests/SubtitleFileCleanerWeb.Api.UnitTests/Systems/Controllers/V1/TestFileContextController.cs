@@ -57,7 +57,8 @@ public class TestFileContextController
         _mediatorMock.Setup(m => m.Send(mediatorRequest, cancellationToken))
             .ReturnsAsync(mediatorResult);
 
-        var mapperResult = new FileContextResponse { Name = name };
+        var mapperResult = new FileContextResponse
+        { Id = guidId, Name = name, Size = contentSize };
         _mapperMock.Setup(m => m.Map<FileContext, FileContextResponse>(fileContext))
             .Returns(mapperResult);
 
@@ -151,7 +152,7 @@ public class TestFileContextController
             .ReturnsAsync(createContextResult);
 
         var fileContextResponse = new FileContextResponse
-        { FileContextId = createContextResult.Payload.FileContextId, Name = createContextResult.Payload.Name };
+        { Id = createContextResult.Payload.FileContextId, Name = createContextResult.Payload.Name };
         _mapperMock.Setup(m => m.Map<FileContext, FileContextResponse>(fileContext))
             .Returns(fileContextResponse);
 
@@ -343,7 +344,8 @@ public class TestFileContextController
         _mediatorMock.Setup(m => m.Send(mediatorRequest, cancellationToken))
             .ReturnsAsync(mediatorResult);
 
-        var mapperResult = new FileContextResponse { Name = name };
+        var mapperResult = new FileContextResponse 
+        { Id = guidId, Name = name, Size = contentSize };
         _mapperMock.Setup(m => m.Map<FileContext, FileContextResponse>(fileContext))
             .Returns(mapperResult);
 
@@ -361,7 +363,7 @@ public class TestFileContextController
             .And.HaveNotNullValue()
             .And.HaveValueOfType<FileContextResponse>()
 
-            .Which.Name.Should().Be(name);
+            .Which.Should().Be(mapperResult);
     }
 
     [Fact]
@@ -416,7 +418,7 @@ public class TestFileContextController
             .ReturnsAsync(mediatorResult);
 
         var mapperResult = new FileContextResponse
-        { FileContextId = guidId, Name = name, ContentSize = contentSize };
+        { Id = guidId, Name = name, Size = contentSize };
         _mapperMock.Setup(m => m.Map<FileContext, FileContextResponse>(fileContext))
             .Returns(mapperResult);
 
