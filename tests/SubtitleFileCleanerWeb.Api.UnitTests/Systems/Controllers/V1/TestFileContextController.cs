@@ -115,7 +115,7 @@ public class TestFileContextController
     }
 
     [Fact]
-    public async Task CreateConvertedContext_WithValidParameters_ReturnOkResponse()
+    public async Task CreateConvertedContext_WithOperationSuccess_ReturnOkResponse()
     {
         // Arrange
         var formFileMock = new Mock<IFormFile>();
@@ -146,20 +146,20 @@ public class TestFileContextController
             .ReturnsAsync(postConversionResult);
 
         var createContext = new CreateFileContext(formFileName + ".txt", postConversionResultStream);
-        var fileContext = FileContext.Create(formFileName, 1);
+        var fileContext = FileContext.Create(formFileName, postConversionResultStream.Length);
         var createContextResult = new OperationResult<FileContext> { Payload = fileContext };
         _mediatorMock.Setup(m => m.Send(createContext, cancellationToken))
             .ReturnsAsync(createContextResult);
 
         var fileContextResponse = new FileContextResponse
-        { Id = createContextResult.Payload.FileContextId, Name = createContextResult.Payload.Name };
+        { Id = fileContext.FileContextId, Name = fileContext.Name, Size = fileContext.ContentSize };
         _mapperMock.Setup(m => m.Map<FileContext, FileContextResponse>(fileContext))
             .Returns(fileContextResponse);
 
         var request = new FileContextCreateConverted(formFileMock.Object, postConversionOptions);
 
         // Act
-        var result = await _controller.CreateConvertedContext(conversionType, request, cancellationToken);
+        var result = await _controller.CreateFromConversion(conversionType, request, cancellationToken);
 
         // Assert
         formFileMock.Verify(ff => ff.OpenReadStream(), Times.Once());
@@ -181,7 +181,7 @@ public class TestFileContextController
     }
 
     [Fact]
-    public async Task CreateConvertedContext_WithSubtitleConversionError_ReturnBadRequestResponse()
+    public async Task CreateConvertedContext_WithSubtitleConversionOperationError_ReturnBadRequestResponse()
     {
         // Arrange
         var formFileMock = new Mock<IFormFile>();
@@ -201,7 +201,7 @@ public class TestFileContextController
         var request = new FileContextCreateConverted(formFileMock.Object);
 
         // Act
-        var result = await _controller.CreateConvertedContext(conversionType, request, cancellationToken);
+        var result = await _controller.CreateFromConversion(conversionType, request, cancellationToken);
 
         // Assert
         formFileMock.Verify(ff => ff.OpenReadStream(), Times.Once());
@@ -227,7 +227,7 @@ public class TestFileContextController
     }
 
     [Fact]
-    public async Task CreateConvertedContext_WithPostConversionError_ReturnBadRequestResponse()
+    public async Task CreateConvertedContext_WithPostConversionOperationError_ReturnBadRequestResponse()
     {
         // Arrange
         var formFileMock = new Mock<IFormFile>();
@@ -252,7 +252,7 @@ public class TestFileContextController
         var request = new FileContextCreateConverted(formFileMock.Object, postConversionOptions);
 
         // Act
-        var result = await _controller.CreateConvertedContext(conversionType, request, cancellationToken);
+        var result = await _controller.CreateFromConversion(conversionType, request, cancellationToken);
 
         // Assert
         formFileMock.Verify(ff => ff.OpenReadStream(), Times.Once());
@@ -277,7 +277,7 @@ public class TestFileContextController
     }
 
     [Fact]
-    public async Task CreateConvertedContext_WithFileContextError_ReturnBadRequestError()
+    public async Task CreateConvertedContext_WithFileContextOperationError_ReturnBadRequestError()
     {
         // Arrange
         var formFileMock = new Mock<IFormFile>();
@@ -304,7 +304,7 @@ public class TestFileContextController
         var request = new FileContextCreateConverted(formFileMock.Object);
 
         // Act
-        var result = await _controller.CreateConvertedContext(conversionType, request, cancellationToken);
+        var result = await _controller.CreateFromConversion(conversionType, request, cancellationToken);
 
         // Assert
         formFileMock.Verify(ff => ff.OpenReadStream(), Times.Once());

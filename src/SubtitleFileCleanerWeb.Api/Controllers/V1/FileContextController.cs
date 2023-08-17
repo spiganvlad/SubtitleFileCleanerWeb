@@ -32,7 +32,7 @@ public class FileContextController : BaseController
     [HttpPost]
     [Route(ApiRoutes.FileContext.ConversionType)]
     [ValidateModel]
-    public async Task<IActionResult> CreateConvertedContext(ConversionType conversionType, FileContextCreateConverted request, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateFromConversion(ConversionType conversionType, FileContextCreateConverted request, CancellationToken cancellationToken)
     {
         var contentStream = request.File.OpenReadStream();
 
@@ -45,7 +45,7 @@ public class FileContextController : BaseController
         contentStream = conversionResult.Payload!;
 
         // Sending a stream to the post conversion process if any post conversion options are specified
-        if (request.PostConversionOptions is not null && request.PostConversionOptions.Any())
+        if (request.PostConversionOptions is not null && request.PostConversionOptions.Length != 0)
         {
             var postConversionRequest = new PostConvertFile(contentStream, request.PostConversionOptions);
             var postConversionResult = await Mediator.Send(postConversionRequest, cancellationToken);
