@@ -28,12 +28,12 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Contracts.FileContexts.Re
             // Arrange
             var formFile = new FormFile(null!, 0, 1, string.Empty, "FooName.test");
 
-            var dto = new FileContextCreateConverted(formFile, 0);
+            var request = new CreateFromConversionRequest(formFile, 0);
 
-            var validator = new FileContextCreateConvertedValidator(_optionsMock.Object);
+            var validator = new CreateFromConversionValidator(_optionsMock.Object);
 
             // Act
-            var result = validator.Validate(dto);
+            var result = validator.Validate(request);
 
             // Assert
             _optionsMock.VerifyGet(o => o.Value, Times.Exactly(2));
@@ -46,12 +46,12 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Contracts.FileContexts.Re
         public void Validate_WithNullFormFile_ReturnInvalid()
         {
             // Arrange
-            var dto = new FileContextCreateConverted(null!, 0);
+            var request = new CreateFromConversionRequest(null!, 0);
 
-            var validator = new FileContextCreateConvertedValidator(_optionsMock.Object);
+            var validator = new CreateFromConversionValidator(_optionsMock.Object);
 
             // Act
-            var result = validator.Validate(dto);
+            var result = validator.Validate(request);
 
             // Assert
             _optionsMock.VerifyGet(o => o.Value, Times.Exactly(2));
@@ -67,12 +67,12 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Contracts.FileContexts.Re
             // Arrange
             var formFile = new FormFile(null!, 0, 0, string.Empty, "FooName.test");
 
-            var dto = new FileContextCreateConverted(formFile, 0);
+            var request = new CreateFromConversionRequest(formFile, 0);
 
-            var validator = new FileContextCreateConvertedValidator(_optionsMock.Object);
+            var validator = new CreateFromConversionValidator(_optionsMock.Object);
 
             // Act
-            var result = validator.Validate(dto);
+            var result = validator.Validate(request);
 
             // Assert
             _optionsMock.VerifyGet(o => o.Value, Times.Exactly(2));
@@ -88,12 +88,12 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Contracts.FileContexts.Re
             // Arrange
             var formFile = new FormFile(null!, 0, _formFileOptions.MaxFileLength, string.Empty, "FooName.test");
 
-            var dto = new FileContextCreateConverted(formFile, 0);
+            var request = new CreateFromConversionRequest(formFile, 0);
 
-            var validator = new FileContextCreateConvertedValidator(_optionsMock.Object);
+            var validator = new CreateFromConversionValidator(_optionsMock.Object);
 
             // Act
-            var result = validator.Validate(dto);
+            var result = validator.Validate(request);
 
             // Assert
             _optionsMock.VerifyGet(o => o.Value, Times.Exactly(2));
@@ -109,12 +109,12 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Contracts.FileContexts.Re
             // Arrange
             var formFile = new FormFile(null!, 0, 1, string.Empty, null!);
 
-            var dto = new FileContextCreateConverted(formFile, 0);
+            var request = new CreateFromConversionRequest(formFile, 0);
 
-            var validator = new FileContextCreateConvertedValidator(_optionsMock.Object);
+            var validator = new CreateFromConversionValidator(_optionsMock.Object);
 
             // Act
-            var result = validator.Validate(dto);
+            var result = validator.Validate(request);
 
             // Assert
             _optionsMock.VerifyGet(o => o.Value, Times.Exactly(2));
@@ -130,12 +130,12 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Contracts.FileContexts.Re
             // Arrange
             var formFile = new FormFile(null!, 0, 1, string.Empty, string.Empty);
 
-            var dto = new FileContextCreateConverted(formFile, 0);
+            var request = new CreateFromConversionRequest(formFile, 0);
 
-            var validator = new FileContextCreateConvertedValidator(_optionsMock.Object);
+            var validator = new CreateFromConversionValidator(_optionsMock.Object);
 
             // Act
-            var result = validator.Validate(dto);
+            var result = validator.Validate(request);
 
             // Assert
             _optionsMock.VerifyGet(o => o.Value, Times.Exactly(2));
@@ -151,12 +151,12 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Contracts.FileContexts.Re
             // Arrange
             var formFile = new FormFile(null!, 0, 1, string.Empty, "     ");
 
-            var dto = new FileContextCreateConverted(formFile, 0);
+            var request = new CreateFromConversionRequest(formFile, 0);
 
-            var validator = new FileContextCreateConvertedValidator(_optionsMock.Object);
+            var validator = new CreateFromConversionValidator(_optionsMock.Object);
 
             // Act
-            var result = validator.Validate(dto);
+            var result = validator.Validate(request);
 
             // Assert
             _optionsMock.VerifyGet(o => o.Value, Times.Exactly(2));

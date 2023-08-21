@@ -32,7 +32,7 @@ public class FileContextController : BaseController
     [HttpPost]
     [Route(ApiRoutes.FileContext.ConversionType)]
     [ValidateModel]
-    public async Task<IActionResult> CreateFromConversion(ConversionType conversionType, FileContextCreateConverted request, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateFromConversion(ConversionType conversionType, CreateFromConversionRequest request, CancellationToken cancellationToken)
     {
         var contentStream = request.File.OpenReadStream();
 
@@ -69,11 +69,12 @@ public class FileContextController : BaseController
     [HttpPatch]
     [Route(ApiRoutes.Common.GuidIdRoute)]
     [ValidateGuid("guidId")]
-    public async Task<IActionResult> UpdateName(string guidId, string name, CancellationToken cancellationToken)
+    [ValidateModel]
+    public async Task<IActionResult> UpdateName(string guidId, [FromBody] UpdateNameRequest request, CancellationToken cancellationToken)
     {
-        var request = new UpdateFileContextName(Guid.Parse(guidId), name);
+        var updateRequest = new UpdateFileContextName(Guid.Parse(guidId), request.Name);
 
-        var result = await Mediator.Send(request, cancellationToken);
+        var result = await Mediator.Send(updateRequest, cancellationToken);
         if (result.IsError)
             return HandleErrorResponse(result.Errors);
 

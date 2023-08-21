@@ -156,7 +156,7 @@ public class TestFileContextController
         _mapperMock.Setup(m => m.Map<FileContext, FileContextResponse>(fileContext))
             .Returns(fileContextResponse);
 
-        var request = new FileContextCreateConverted(formFileMock.Object, postConversionOptions);
+        var request = new CreateFromConversionRequest(formFileMock.Object, postConversionOptions);
 
         // Act
         var result = await _controller.CreateFromConversion(conversionType, request, cancellationToken);
@@ -198,7 +198,7 @@ public class TestFileContextController
         _mediatorMock.Setup(m => m.Send(convertFile, cancellationToken))
             .ReturnsAsync(conversionResult);
 
-        var request = new FileContextCreateConverted(formFileMock.Object);
+        var request = new CreateFromConversionRequest(formFileMock.Object);
 
         // Act
         var result = await _controller.CreateFromConversion(conversionType, request, cancellationToken);
@@ -249,7 +249,7 @@ public class TestFileContextController
         _mediatorMock.Setup(m => m.Send(postConvertFile, cancellationToken))
             .ReturnsAsync(postConvertResult);
 
-        var request = new FileContextCreateConverted(formFileMock.Object, postConversionOptions);
+        var request = new CreateFromConversionRequest(formFileMock.Object, postConversionOptions);
 
         // Act
         var result = await _controller.CreateFromConversion(conversionType, request, cancellationToken);
@@ -301,7 +301,7 @@ public class TestFileContextController
         _mediatorMock.Setup(m => m.Send(createContext, cancellationToken))
             .ReturnsAsync(createContextResult);
 
-        var request = new FileContextCreateConverted(formFileMock.Object);
+        var request = new CreateFromConversionRequest(formFileMock.Object);
 
         // Act
         var result = await _controller.CreateFromConversion(conversionType, request, cancellationToken);
@@ -349,8 +349,10 @@ public class TestFileContextController
         _mapperMock.Setup(m => m.Map<FileContext, FileContextResponse>(fileContext))
             .Returns(mapperResult);
 
+        var request = new UpdateNameRequest(name);
+
         // Act
-        var result = await _controller.UpdateName(guidId.ToString(), name, cancellationToken);
+        var result = await _controller.UpdateName(guidId.ToString(), request, cancellationToken);
 
         // Assert
         _mediatorMock.Verify(m => m.Send(It.IsAny<UpdateFileContextName>(), It.IsAny<CancellationToken>()), Times.Once);
@@ -382,8 +384,10 @@ public class TestFileContextController
         _mediatorMock.Setup(m => m.Send(mediatorRequest, cancellationToken))
             .ReturnsAsync(mediatorResult);
 
+        var request = new UpdateNameRequest(name);
+
         // Act
-        var result = await _controller.UpdateName(guidId.ToString(), name, cancellationToken);
+        var result = await _controller.UpdateName(guidId.ToString(), request, cancellationToken);
 
         // Assert
         _mediatorMock.Verify(m => m.Send(It.IsAny<UpdateFileContextName>(), It.IsAny<CancellationToken>()), Times.Once());
