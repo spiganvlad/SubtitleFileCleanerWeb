@@ -22,7 +22,7 @@ public abstract class BaseConverter<TCleaner> : ISubtitleConverter
             var convertedContent = await new TCleaner().DeleteFormattingAsync(content);
             if (convertedContent.Count == 0)
             {
-                result.AddError(ErrorCode.SubtitleConversionException, SubtitleConversionErrorMessages.NoContentProduced);
+                result.AddError(ErrorCode.UnprocessableContent, SubtitleConversionErrorMessages.NoContentProduced);
                 return result;
             }
 

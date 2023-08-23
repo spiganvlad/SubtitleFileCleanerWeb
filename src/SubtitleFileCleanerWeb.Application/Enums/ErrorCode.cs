@@ -2,8 +2,8 @@
 
 public enum ErrorCode
 {
-    UnprocessableContent = 402,
     NotFound = 404,
+    UnprocessableContent = 422,
 
     // Validation errors should be in the range 600-699
     ValidationError = 600,
