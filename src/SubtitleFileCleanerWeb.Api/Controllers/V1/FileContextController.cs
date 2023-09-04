@@ -56,8 +56,7 @@ public class FileContextController : BaseController
         }
 
         // Sending a request to create a file context
-        var fileContextName = Path.ChangeExtension(request.File.FileName, ".txt");
-        var createContextRequest = new CreateFileContext(fileContextName, contentStream);
+        var createContextRequest = new CreateFileContext(request.File.FileName, contentStream);
         var fileContextResult = await Mediator.Send(createContextRequest, cancellationToken);
         if (fileContextResult.IsError)
             return HandleErrorResponse(fileContextResult.Errors);

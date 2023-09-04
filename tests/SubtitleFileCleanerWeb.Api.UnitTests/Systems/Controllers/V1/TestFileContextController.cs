@@ -145,7 +145,7 @@ public class TestFileContextController
         _mediatorMock.Setup(m => m.Send(postConvertFile, cancellationToken))
             .ReturnsAsync(postConversionResult);
 
-        var createContext = new CreateFileContext(formFileName + ".txt", postConversionResultStream);
+        var createContext = new CreateFileContext(formFileName, postConversionResultStream);
         var fileContext = FileContext.Create(formFileName, postConversionResultStream.Length);
         var createContextResult = new OperationResult<FileContext> { Payload = fileContext };
         _mediatorMock.Setup(m => m.Send(createContext, cancellationToken))

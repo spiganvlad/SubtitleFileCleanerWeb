@@ -37,12 +37,13 @@ public class TestCreateFileContextHandler
         var content = new byte[] { 1, 2, 3, 4, 5 };
         var contentStream = new MemoryStream(content);
         var cancellationToken = new CancellationToken();
-
-        var request = new CreateFileContext(contextName, contentStream);
+        
         var mediatorResult = new OperationResult<FileContent>
         { Payload = FileContent.Create(new MemoryStream(content, false)) };
         _mediatorMock.Setup(m => m.Send(It.IsAny<CreateFileContent>(), cancellationToken))
             .ReturnsAsync(mediatorResult);
+
+        var request = new CreateFileContext(contextName, contentStream);
 
         var handler = new CreateFileContextHandler(_mediatorMock.Object, _dbContextMock.Object);
 
@@ -64,7 +65,7 @@ public class TestCreateFileContextHandler
 
         payload.FileContextId.Should().NotBeEmpty();
         payload.FileContent.Should().NotBeNull().And.Be(mediatorResult.Payload);
-        payload.Name.Should().NotBeNull().And.Be(request.FileName);
+        payload.Name.Should().NotBeNull().And.Be(request.FileName + ".txt");
         payload.ContentSize.Should().Be(content.Length);
         payload.DateCreated.Should().BeCloseTo(DateTime.UtcNow, 1.Minutes());
         payload.DateModified.Should().BeCloseTo(DateTime.UtcNow, 1.Minutes());
