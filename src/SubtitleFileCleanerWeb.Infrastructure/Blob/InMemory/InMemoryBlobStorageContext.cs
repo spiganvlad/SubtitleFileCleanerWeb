@@ -1,6 +1,6 @@
 ﻿using SubtitleFileCleanerWeb.Infrastructure.Exceptions;
 
-namespace SubtitleFileCleanerWeb.Infrastructure.Blob;
+namespace SubtitleFileCleanerWeb.Infrastructure.Blob.InMemory;
 
 public class InMemoryBlobStorageContext : IBlobStorageContext
 {

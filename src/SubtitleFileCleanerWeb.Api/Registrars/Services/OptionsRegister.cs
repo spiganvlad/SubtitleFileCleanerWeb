@@ -8,7 +8,7 @@ namespace SubtitleFileCleanerWeb.Api.Registrars.Services
         public void Register(WebApplicationBuilder builder)
         {
             builder.Services.AddOptions<FormFileOptions>()
-                .Bind(builder.Configuration.GetSection(ConfigurationKeys.FormFileConfig));
+                .Bind(builder.Configuration.GetRequiredSection(ConfigurationKeys.FormFile));
         }
     }
 }
