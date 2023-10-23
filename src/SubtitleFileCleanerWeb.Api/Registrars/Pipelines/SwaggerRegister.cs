@@ -1,4 +1,6 @@
-﻿namespace SubtitleFileCleanerWeb.Api.Registrars.Pipelines;
+﻿using Microsoft.AspNetCore.Mvc.ApiExplorer;
+
+namespace SubtitleFileCleanerWeb.Api.Registrars.Pipelines;
 
 public class SwaggerRegister : IPipelineRegister
 {
@@ -7,7 +9,16 @@ public class SwaggerRegister : IPipelineRegister
         if (app.Environment.IsDevelopment())
         {
             app.UseSwagger();
-            app.UseSwaggerUI();
+            app.UseSwaggerUI(options =>
+            {
+                var apiProvider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
+
+                foreach (var description in apiProvider.ApiVersionDescriptions)
+                {
+                    options.SwaggerEndpoint($"/swagger/{description.GroupName}/swagger.json",
+                        $"SubtitleFileCleanerWeb.Api {description.GroupName}");
+                }
+            });
         }
     }
 }

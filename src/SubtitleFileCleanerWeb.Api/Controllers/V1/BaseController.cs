@@ -7,6 +7,9 @@ using SubtitleFileCleanerWeb.Application.Models;
 
 namespace SubtitleFileCleanerWeb.Api.Controllers.V1;
 
+[ApiController]
+[ApiVersion("1.0")]
+[Route(ApiRoutes.BaseRoute)]
 public class BaseController : ControllerBase
 {
     private IMediator? _mediatorInstance;

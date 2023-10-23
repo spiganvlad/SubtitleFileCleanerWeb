@@ -4,7 +4,6 @@ using SubtitleFileCleanerWeb.Application.FileContexts.Queries;
 
 namespace SubtitleFileCleanerWeb.Api.Controllers.V1;
 
-[Route(ApiRoutes.BaseRoute)]
 public class FileContentController : BaseController
 {
     [HttpGet]

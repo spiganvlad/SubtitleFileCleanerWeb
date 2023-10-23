@@ -11,7 +11,6 @@ using SubtitleFileCleanerWeb.Domain.Aggregates.FileContextAggregate;
 
 namespace SubtitleFileCleanerWeb.Api.Controllers.V1;
 
-[Route(ApiRoutes.BaseRoute)]
 public class FileContextController : BaseController
 {
     [HttpGet]
@@ -32,7 +31,7 @@ public class FileContextController : BaseController
     [HttpPost]
     [Route(ApiRoutes.FileContext.ConversionType)]
     [ValidateModel]
-    public async Task<IActionResult> CreateFromConversion(ConversionType conversionType, CreateFromConversionRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateFromConversion(ConversionType conversionType, [FromForm] CreateFromConversionRequest request, CancellationToken cancellationToken)
     {
         var contentStream = request.File.OpenReadStream();
 

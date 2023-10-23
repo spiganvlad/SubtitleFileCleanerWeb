@@ -6,12 +6,9 @@ public class MvcRegister : IServicesRegister
 {
     public void Register(WebApplicationBuilder builder)
     {
-        builder.Services.AddControllers(options =>
+        builder.Services.AddControllers(config =>
         {
-            options.Filters.Add<ApiExceptionFilterAttribute>();
+            config.Filters.Add<ApiExceptionFilterAttribute>();
         });
-
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
     }
 }
