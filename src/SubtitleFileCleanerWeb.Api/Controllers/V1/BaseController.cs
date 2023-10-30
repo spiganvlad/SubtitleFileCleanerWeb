@@ -10,7 +10,7 @@ namespace SubtitleFileCleanerWeb.Api.Controllers.V1;
 [ApiController]
 [ApiVersion("1.0")]
 [Route(ApiRoutes.BaseRoute)]
-public class BaseController : ControllerBase
+public abstract class BaseController : ControllerBase
 {
     private IMediator? _mediatorInstance;
     private IMapper? _mapper;
