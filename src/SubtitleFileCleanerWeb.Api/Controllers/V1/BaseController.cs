@@ -15,8 +15,8 @@ public abstract class BaseController : ControllerBase
     private IMediator? _mediatorInstance;
     private IMapper? _mapper;
 
-    protected IMediator Mediator => _mediatorInstance ??= (IMediator)HttpContext.RequestServices.GetService(typeof(IMediator))!;
-    protected IMapper Mapper => _mapper ??= (IMapper)HttpContext.RequestServices.GetService(typeof(IMapper))!;
+    protected IMediator Mediator => _mediatorInstance ??= HttpContext.RequestServices.GetService<IMediator>()!;
+    protected IMapper Mapper => _mapper ??= HttpContext.RequestServices.GetService<IMapper>()!;
 
     protected IActionResult HandleErrorResponse(List<Error> errors)
     {
