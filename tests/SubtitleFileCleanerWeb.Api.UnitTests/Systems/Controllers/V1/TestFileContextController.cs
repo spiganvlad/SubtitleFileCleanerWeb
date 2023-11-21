@@ -115,7 +115,7 @@ public class TestFileContextController
     }
 
     [Fact]
-    public async Task CreateConvertedContext_WithOperationSuccess_ReturnOkResponse()
+    public async Task CreateConvertedContext_WithOperationSuccess_ReturnCreatedResponse()
     {
         // Arrange
         var formFileMock = new Mock<IFormFile>();
@@ -171,9 +171,9 @@ public class TestFileContextController
 
         _mapperMock.Verify(m => m.Map<FileContext, FileContextResponse>(It.IsAny<FileContext>()), Times.Once());
 
-        result.Should().NotBeNull().And.BeOfType<OkObjectResult>()
+        result.Should().NotBeNull().And.BeOfType<CreatedAtActionResult>()
             
-            .Which.Should().HaveStatusCode(200)
+            .Which.Should().HaveStatusCode(201)
             .And.HaveNotNullValue()
             .And.HaveValueOfType<FileContextResponse>()
             

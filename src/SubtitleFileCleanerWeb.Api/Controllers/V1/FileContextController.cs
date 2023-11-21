@@ -61,7 +61,7 @@ public class FileContextController : BaseController
             return HandleErrorResponse(fileContextResult.Errors);
 
         var response = Mapper.Map<FileContext, FileContextResponse>(fileContextResult.Payload!);
-        return Ok(response);
+        return CreatedAtAction(nameof(GetById), new { guidId = fileContextResult.Payload!.FileContextId }, response);
     }
 
     [HttpPatch]
