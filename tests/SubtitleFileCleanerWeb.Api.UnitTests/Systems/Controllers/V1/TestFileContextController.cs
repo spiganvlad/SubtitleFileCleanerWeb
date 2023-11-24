@@ -66,8 +66,8 @@ public class TestFileContextController
         var result = await _controller.GetById(guidId.ToString(), cancellationToken);
 
         // Assert
-        _mediatorMock.Verify(m => m.Send(It.IsAny<GetFileContextById>(), It.IsAny<CancellationToken>()), Times.Once);
-        _mapperMock.Verify(m => m.Map<FileContext, FileContextResponse>(It.IsAny<FileContext>()), Times.Once);
+        _mediatorMock.Verify(m => m.Send(It.IsAny<GetFileContextById>(), It.IsAny<CancellationToken>()), Times.Once());
+        _mapperMock.Verify(m => m.Map<FileContext, FileContextResponse>(It.IsAny<FileContext>()), Times.Once());
 
         result.Should().NotBeNull()
             .And.BeOfType<OkObjectResult>()
@@ -355,7 +355,7 @@ public class TestFileContextController
         var result = await _controller.UpdateName(guidId.ToString(), request, cancellationToken);
 
         // Assert
-        _mediatorMock.Verify(m => m.Send(It.IsAny<UpdateFileContextName>(), It.IsAny<CancellationToken>()), Times.Once);
+        _mediatorMock.Verify(m => m.Send(It.IsAny<UpdateFileContextName>(), It.IsAny<CancellationToken>()), Times.Once());
         _mapperMock.Verify(m => m.Map<FileContext, FileContextResponse>(It.IsAny<FileContext>()), Times.Once());
 
         result.Should().NotBeNull()

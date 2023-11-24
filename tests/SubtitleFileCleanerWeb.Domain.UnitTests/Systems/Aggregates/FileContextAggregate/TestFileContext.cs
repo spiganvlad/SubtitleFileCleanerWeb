@@ -34,10 +34,7 @@ public class TestFileContext
         var contentSize = 1;
 
         // Act
-        var act = () =>
-        {
-            var fileContext = FileContext.Create(name, contentSize);
-        };
+        var act = () => FileContext.Create(name, contentSize);
 
         // Assert
         var exception = act.Should().ThrowExactly<FileContextNotValidException>()
@@ -55,10 +52,7 @@ public class TestFileContext
         var contentSize = 1;
 
         // Act
-        var act = () =>
-        {
-            var fileContext = FileContext.Create(name, contentSize);
-        };
+        var act = () => FileContext.Create(name, contentSize);
 
         // Assert
         act.Should().ThrowExactly<FileContextNotValidException>()
@@ -76,10 +70,7 @@ public class TestFileContext
         var contentSize = 0;
 
         // Act
-        var act = () =>
-        {
-            var fileContext = FileContext.Create(name, contentSize);
-        };
+        var act = () => FileContext.Create(name, contentSize);
 
         // Assert
         act.Should().ThrowExactly<FileContextNotValidException>()
@@ -123,10 +114,7 @@ public class TestFileContext
         var fileContext = FileContext.Create("NameToUpdate", contentSize);
 
         // Act
-        var act = () =>
-        {
-            fileContext.UpdateName(name);
-        };
+        var act = () => fileContext.UpdateName(name);
 
         // Assert
         act.Should().ThrowExactly<FileContextNotValidException>()
@@ -145,10 +133,7 @@ public class TestFileContext
         var fileContext = FileContext.Create("NameToUpdate", contentSize);
 
         // Act
-        var act = () =>
-        {
-            fileContext.UpdateName(name);
-        };
+        var act = () => fileContext.UpdateName(name);
 
         // Assert
         act.Should().ThrowExactly<FileContextNotValidException>()
@@ -187,10 +172,7 @@ public class TestFileContext
         fileContext.SetContent(fileContent);
 
         // Act
-        var act = () =>
-        {
-            fileContext.SetContent(fileContent);
-        };
+        var act = () => fileContext.SetContent(fileContent);
 
         // Assert
         act.Should().ThrowExactly<FileContentAlreadySetException>()

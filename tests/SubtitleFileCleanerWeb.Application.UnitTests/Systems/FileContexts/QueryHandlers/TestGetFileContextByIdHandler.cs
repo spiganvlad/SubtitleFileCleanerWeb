@@ -36,7 +36,7 @@ public class TestGetFileContextByIdHandler
         var result = await handler.Handle(request, cancellationToken);
 
         // Assert
-        _dbContextMock.Verify(db => db.FileContexts, Times.Once);
+        _dbContextMock.Verify(db => db.FileContexts, Times.Once());
 
         result.Should().NotBeNull()
             .And.NotBeInErrorState()

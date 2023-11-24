@@ -77,10 +77,7 @@ public class TestInMemoryBlobStorageContext
         inMemoryStorage.StorageContext.Add(path, content);
 
         // Act
-        var act = async () =>
-        {
-            await inMemoryStorage.CreateContentAsync(path, contentStream, cancellationToken);
-        };
+        var act = async () => await inMemoryStorage.CreateContentAsync(path, contentStream, cancellationToken);
 
         // Assert
         await act.Should().ThrowAsync<BlobStorageOperationException>()
@@ -115,10 +112,8 @@ public class TestInMemoryBlobStorageContext
         var inMemoryStorage = new InMemoryBlobStorageContext();
 
         // Act
-        var act = async () =>
-        {
-            await inMemoryStorage.DeleteContentAsync(path, cancellationToken);
-        };
+        var act = async () => await inMemoryStorage.DeleteContentAsync(path, cancellationToken);
+
 
         // Assert
         await act.Should().ThrowAsync<BlobStorageOperationException>().WithMessage($"No blob content was found on path: {path}");

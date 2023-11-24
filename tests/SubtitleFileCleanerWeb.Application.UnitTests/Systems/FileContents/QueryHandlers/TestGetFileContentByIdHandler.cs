@@ -34,7 +34,7 @@ public class TestGetFileContentByIdHandler
         var result = await handler.Handle(request, cancellationToken);
 
         // Assert
-        _blobContextMock.Verify(bc => bc.GetContentStreamAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+        _blobContextMock.Verify(bc => bc.GetContentStreamAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once());
 
         result.Should().NotBeNull()
             .And.NotBeInErrorState()

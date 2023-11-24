@@ -54,7 +54,7 @@ public class TestCreateFileContextHandler
         _mediatorMock.Verify(m => m.Send(It.IsAny<CreateFileContent>(), It.IsAny<CancellationToken>()), Times.Once());
 
         _dbContextMock.Verify(db => db.FileContexts, Times.Once());
-        _dbContextMock.Verify(db => db.FileContexts.Add(It.IsAny<FileContext>()), Times.Once);
+        _dbContextMock.Verify(db => db.FileContexts.Add(It.IsAny<FileContext>()), Times.Once());
         _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once());
 
         var payload = result.Should().NotBeNull()
@@ -145,7 +145,7 @@ public class TestCreateFileContextHandler
         var result = await handler.Handle(request, cancellationToken);
 
         // Assert
-        _mediatorMock.Verify(m => m.Send(It.IsAny<CreateFileContent>(), It.IsAny<CancellationToken>()), Times.Once);
+        _mediatorMock.Verify(m => m.Send(It.IsAny<CreateFileContent>(), It.IsAny<CancellationToken>()), Times.Once());
 
         _dbContextMock.Verify(db => db.FileContexts, Times.Never());
         _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never());

@@ -28,10 +28,7 @@ public class TestFileContent
         MemoryStream contentStream = null!;
 
         // Act
-        var act = () =>
-        {
-            var fileContent = FileContent.Create(contentStream);
-        };
+        var act = () => FileContent.Create(contentStream);
 
         // Assert
         act.Should().ThrowExactly<FileContentNotValidException>()
@@ -48,10 +45,7 @@ public class TestFileContent
         var contentStream = new MemoryStream(Array.Empty<byte>());
 
         // Act
-        var act = () =>
-        {
-            var fileContent = FileContent.Create(contentStream);
-        };
+        var act = () => FileContent.Create(contentStream);
 
         // Assert
         var exception = act.Should().ThrowExactly<FileContentNotValidException>()
@@ -68,10 +62,7 @@ public class TestFileContent
         var contentStream = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 }, true);
 
         // Act
-        var act = () =>
-        {
-            var fileContent = FileContent.Create(contentStream);
-        };
+        var act = () => FileContent.Create(contentStream);
 
         // Assert
         act.Should().ThrowExactly<FileContentNotValidException>()

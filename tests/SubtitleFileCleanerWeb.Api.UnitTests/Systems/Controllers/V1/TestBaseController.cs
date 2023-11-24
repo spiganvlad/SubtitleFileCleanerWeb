@@ -25,7 +25,7 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Controllers.V1
             var errorMessage = "Test unknown error occurred.";
             var errors = new List<Error>
             {
-                new Error { Code = ErrorCode.UnknownError, Message = errorMessage }
+                new() { Code = ErrorCode.UnknownError, Message = errorMessage }
             };
 
             // Act
@@ -54,8 +54,8 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Controllers.V1
 
             var errors = new List<Error>
             {
-                new Error { Code = ErrorCode.UnknownError, Message = firstErrorMessage },
-                new Error { Code = ErrorCode.UnknownError, Message = secondErrorMessage }
+                new() { Code = ErrorCode.UnknownError, Message = firstErrorMessage },
+                new() { Code = ErrorCode.UnknownError, Message = secondErrorMessage }
             };
 
             // Act
@@ -83,7 +83,7 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Controllers.V1
             var errorMessage = "Test not found error occurred.";
             var errors = new List<Error>
             {
-                new Error { Code = ErrorCode.NotFound, Message = errorMessage }
+                new() { Code = ErrorCode.NotFound, Message = errorMessage }
             };
 
             // Act
@@ -110,7 +110,7 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Controllers.V1
             var errorMessage = "Test unprocessable content error occurred";
             var errors = new List<Error> 
             {
-                new Error { Code = ErrorCode.UnprocessableContent, Message = errorMessage }
+                new() { Code = ErrorCode.UnprocessableContent, Message = errorMessage }
             };
 
             // Act

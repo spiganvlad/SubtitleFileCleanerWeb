@@ -41,7 +41,7 @@ public class TestUpdateFileContextNameHandler
         // Assert
         _dbContextMock.Verify(db => db.FileContexts, Times.Exactly(2));
         _dbContextMock.Verify(db => db.FileContexts.Update(It.IsAny<FileContext>()), Times.Once());
-        _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once());
 
         result.Should().NotBeNull()
             .And.NotBeInErrorState()
@@ -90,7 +90,7 @@ public class TestUpdateFileContextNameHandler
         var result = await handler.Handle(request, cancellationToken);
 
         // Assert
-        _dbContextMock.Verify(db => db.FileContexts, Times.Once);
+        _dbContextMock.Verify(db => db.FileContexts, Times.Once());
         _dbContextMock.Verify(db => db.FileContexts.Update(It.IsAny<FileContext>()), Times.Never());
         _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never());
 
