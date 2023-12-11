@@ -21,8 +21,8 @@ public class TestUpdateNameValidator
         var result = validator.Validate(request);
 
         // Assert
-        result.Should().NotBeNull();
-        result.IsValid.Should().BeTrue();
+        result.Should().NotBeNull()
+            .And.BeValid();
     }
 
     [Fact]
@@ -49,6 +49,24 @@ public class TestUpdateNameValidator
     {
         // Arrange
         var name = string.Empty;
+
+        var request = new UpdateNameRequest(name);
+
+        var validator = new UpdateNameValidator();
+
+        // Act
+        var result = validator.Validate(request);
+
+        // Assert
+        result.Should().NotBeNull()
+            .And.NotBeValid()
+            .And.HaveSingleError("Update name must not be empty.");
+    }
+
+    [Fact]
+    public void Validate_WithWhiteSpaceName_ReturnInvalid()
+    {
+        var name = "     ";
 
         var request = new UpdateNameRequest(name);
 

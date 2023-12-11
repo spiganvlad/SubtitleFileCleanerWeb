@@ -13,17 +13,19 @@ public class TestGetFileContentByIdHandler
 
     public TestGetFileContentByIdHandler()
     {
-        _blobContextMock = new Mock<IBlobStorageContext>();
+        _blobContextMock = new();
     }
 
     [Fact]
     public async Task Handle_WithExistingId_ReturnValid()
     {
         // Arrange
-        var contentStream = new MemoryStream(new byte[] { 1, 2, 3, 4, 5}, false);
-        var cancellationToken = new CancellationToken();
+        var contentStream = new MemoryStream(new byte[] { 1 }, false);
 
-        _blobContextMock.Setup(bc => bc.GetContentStreamAsync(string.Empty, cancellationToken))
+        _blobContextMock.Setup(
+            bc => bc.GetContentStreamAsync(
+                string.Empty,
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(contentStream);
 
         var request = new GetFileContentById(string.Empty);
@@ -31,10 +33,14 @@ public class TestGetFileContentByIdHandler
         var handler = new GetFileContentByIdHandler(_blobContextMock.Object);
 
         // Act
-        var result = await handler.Handle(request, cancellationToken);
+        var result = await handler.Handle(request, default);
 
         // Assert
-        _blobContextMock.Verify(bc => bc.GetContentStreamAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once());
+        _blobContextMock.Verify(
+            bc => bc.GetContentStreamAsync(
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
 
         result.Should().NotBeNull()
             .And.NotBeInErrorState()
@@ -50,9 +56,10 @@ public class TestGetFileContentByIdHandler
     public async Task Handle_WithNonExistentId_ReturnNotFoundError()
     {
         // Arrange
-        var cancellationToken = new CancellationToken();
-
-        _blobContextMock.Setup(bc => bc.GetContentStreamAsync(string.Empty, cancellationToken))
+        _blobContextMock.Setup(
+            bc => bc.GetContentStreamAsync(
+                string.Empty,
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(() => null);
 
         var request = new GetFileContentById(string.Empty);
@@ -60,10 +67,14 @@ public class TestGetFileContentByIdHandler
         var handler = new GetFileContentByIdHandler(_blobContextMock.Object);
 
         // Act
-        var result = await handler.Handle(request, cancellationToken);
+        var result = await handler.Handle(request, default);
 
         // Assert
-        _blobContextMock.Verify(bc => bc.GetContentStreamAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once());
+        _blobContextMock.Verify(
+            bc => bc.GetContentStreamAsync(
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
 
         result.Should().NotBeNull()
             .And.BeInErrorState()
@@ -75,20 +86,25 @@ public class TestGetFileContentByIdHandler
     public async Task Handle_WithWritableStreamFromBlob_ReturnValidationError()
     {
         // Arrange
-        var cancellationToken = new CancellationToken();
-
-        _blobContextMock.Setup(bc => bc.GetContentStreamAsync(string.Empty, cancellationToken))
-            .ReturnsAsync(() => new MemoryStream(new byte[] { 1, 2, 3, 4, 5 }, true));
+        _blobContextMock.Setup(
+            bc => bc.GetContentStreamAsync(
+                string.Empty,
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(() => new MemoryStream(new byte[] { 1 }, true));
 
         var request = new GetFileContentById(string.Empty);
 
         var handler = new GetFileContentByIdHandler(_blobContextMock.Object);
 
         // Act
-        var result = await handler.Handle(request, cancellationToken);
+        var result = await handler.Handle(request, default);
 
         // Assert
-        _blobContextMock.Verify(bc => bc.GetContentStreamAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once());
+        _blobContextMock.Verify(
+            bc => bc.GetContentStreamAsync(
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
 
         result.Should().NotBeNull()
             .And.BeInErrorState()
@@ -100,11 +116,11 @@ public class TestGetFileContentByIdHandler
     public async Task Handle_WithUnexpectedError_ReturnUnknownError()
     {
         // Arrange
-
-        var cancellationToken = new CancellationToken();
-
         var exceptionMessage = "Unexpected error occurred";
-        _blobContextMock.Setup(bc => bc.GetContentStreamAsync(string.Empty, cancellationToken))
+        _blobContextMock.Setup(
+            bc => bc.GetContentStreamAsync(
+                string.Empty,
+                It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception(exceptionMessage));
 
         var request = new GetFileContentById(string.Empty);
@@ -112,10 +128,14 @@ public class TestGetFileContentByIdHandler
         var handler = new GetFileContentByIdHandler(_blobContextMock.Object);
 
         // Act
-        var result = await handler.Handle(request, cancellationToken);
+        var result = await handler.Handle(request, default);
 
         // Assert
-        _blobContextMock.Verify(bc => bc.GetContentStreamAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once());
+        _blobContextMock.Verify(
+            bc => bc.GetContentStreamAsync(
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
 
         result.Should().NotBeNull()
             .And.BeInErrorState()

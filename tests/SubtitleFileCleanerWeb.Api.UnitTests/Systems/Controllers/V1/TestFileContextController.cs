@@ -29,45 +29,62 @@ public class TestFileContextController
 
     public TestFileContextController()
     {
-        _mediatorMock = new Mock<IMediator>();
-        _mapperMock = new Mock<IMapper>();
+        _mediatorMock = new();
+        _mapperMock = new();
 
         var httpContext = new HttpContextMockBuilder()
             .SetupIMediator(_mediatorMock)
             .SetupIMapper(_mapperMock)
             .Build();
 
-        _controller = new FileContextController();
+        _controller = new();
         _controller.ControllerContext.HttpContext = httpContext;
     }
     
     [Fact]
-    public async Task GetById_WithOperationSuccess_ReturnOkObjectResult()
+    public async Task GetById_WithValidRequest_ReturnOkObjectResult()
     {
         // Arrange
         var guidId = Guid.Empty;
         var name = "FooName";
         var contentSize = 1;
-        var cancellationToken = new CancellationToken();
-
-        var mediatorRequest = new GetFileContextById(guidId);
 
         var fileContext = FileContext.Create(name, contentSize);
-        var mediatorResult = new OperationResult<FileContext> { Payload = fileContext };
-        _mediatorMock.Setup(m => m.Send(mediatorRequest, cancellationToken))
+
+        var mediatorResult = new OperationResult<FileContext>
+        {
+            Payload = fileContext
+        };
+
+        _mediatorMock.Setup(
+            m => m.Send(
+                It.Is<GetFileContextById>(x => x.FileContextId == guidId),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(mediatorResult);
 
         var mapperResult = new FileContextResponse
-        { Id = guidId, Name = name, Size = contentSize };
+        {
+            Id = guidId,
+            Name = name,
+            Size = contentSize
+        };
+
         _mapperMock.Setup(m => m.Map<FileContext, FileContextResponse>(fileContext))
             .Returns(mapperResult);
 
         // Act
-        var result = await _controller.GetById(guidId.ToString(), cancellationToken);
+        var result = await _controller.GetById(guidId.ToString(), default);
 
         // Assert
-        _mediatorMock.Verify(m => m.Send(It.IsAny<GetFileContextById>(), It.IsAny<CancellationToken>()), Times.Once());
-        _mapperMock.Verify(m => m.Map<FileContext, FileContextResponse>(It.IsAny<FileContext>()), Times.Once());
+        _mediatorMock.Verify(
+            m => m.Send(
+                It.IsAny<GetFileContextById>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
+
+        _mapperMock.Verify(
+            m => m.Map<FileContext, FileContextResponse>(It.IsAny<FileContext>()),
+            Times.Once());
 
         result.Should().NotBeNull()
             .And.BeOfType<OkObjectResult>()
@@ -80,26 +97,35 @@ public class TestFileContextController
     }
 
     [Fact]
-    public async Task GetById_WithOperationError_ReturnBadRequestResponse()
+    public async Task GetById_WithRequestFailure_ReturnBadRequestResponse()
     {
         // Arrange
         var guidId = Guid.Empty;
-        var cancellationToken = new CancellationToken();
 
-        var mediatorRequest = new GetFileContextById(guidId);
+        var mediatorResult = new OperationResult<FileContext>();
 
         var errorMessage = "Test unknown error occurred.";
-        var mediatorResult = new OperationResult<FileContext>();
-        mediatorResult.AddError(ErrorCode.UnknownError, errorMessage);
-        _mediatorMock.Setup(m => m.Send(mediatorRequest, cancellationToken))
+        mediatorResult.AddError((ErrorCode)(-1), errorMessage);
+
+        _mediatorMock.Setup(
+            m => m.Send(
+                It.Is<GetFileContextById>(x => x.FileContextId == guidId),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(mediatorResult);
 
         // Act
-        var result = await _controller.GetById(guidId.ToString(), cancellationToken);
+        var result = await _controller.GetById(guidId.ToString(), default);
 
         // Assert
-        _mediatorMock.Verify(m => m.Send(It.IsAny<GetFileContextById>(), It.IsAny<CancellationToken>()), Times.Once());
-        _mapperMock.Verify(m => m.Map<FileContext, FileContextResponse>(It.IsAny<FileContext>()), Times.Never());
+        _mediatorMock.Verify(
+            m => m.Send(
+                It.IsAny<GetFileContextById>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
+
+        _mapperMock.Verify(
+            m => m.Map<FileContext, FileContextResponse>(It.IsAny<FileContext>()),
+            Times.Never());
 
         result.Should().NotBeNull()
             .And.BeOfType<BadRequestObjectResult>()
@@ -115,17 +141,19 @@ public class TestFileContextController
     }
 
     [Fact]
-    public async Task CreateConvertedContext_WithOperationSuccess_ReturnCreatedResponse()
+    public async Task CreateConvertedContext_WithValidRequest_ReturnCreatedResponse()
     {
         // Arrange
-        var formFileMock = new Mock<IFormFile>();
         var conversionType = ConversionType.Ass;
-        var postConversionOptions = new PostConversionOption[2];
-        postConversionOptions[0] = PostConversionOption.DeleteAssTags;
-        postConversionOptions[1] = PostConversionOption.ToOneLine;
-        var cancellationToken = new CancellationToken();
-        
-        var formFileStream = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 });
+        var postConversionOptions = new PostConversionOption[]
+        {
+            PostConversionOption.DeleteAssTags,
+            PostConversionOption.ToOneLine
+        };
+
+        var formFileMock = new Mock<IFormFile>();
+
+        var formFileStream = new MemoryStream(new byte[] { 1, 2, 3 });
         formFileMock.Setup(ff => ff.OpenReadStream())
             .Returns(formFileStream);
 
@@ -133,45 +161,91 @@ public class TestFileContextController
         formFileMock.SetupGet(ff => ff.FileName)
             .Returns(formFileName);
 
-        var convertFile = new ConvertSubtitleFile(formFileStream, conversionType);
-        var conversionResultStream = new MemoryStream(new byte[] { 1, 2, 4, 5 });
-        var conversionResult = new OperationResult<Stream>() { Payload = conversionResultStream };
-        _mediatorMock.Setup(m => m.Send(convertFile, cancellationToken))
+        var conversionResultStream = new MemoryStream(new byte[] { 1, 2 });
+        var conversionResult = new OperationResult<Stream>
+        {
+            Payload = conversionResultStream
+        };
+
+        _mediatorMock.Setup(
+            m => m.Send(
+                It.Is<ConvertSubtitleFile>(x => 
+                    x.ContentStream == formFileStream &&
+                    x.ConversionType == conversionType), 
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(conversionResult);
 
-        var postConvertFile = new PostConvertFile(conversionResultStream, postConversionOptions);
-        var postConversionResultStream = new MemoryStream(new byte[] { 1, 4 });
-        var postConversionResult = new OperationResult<Stream>() { Payload = postConversionResultStream };
-        _mediatorMock.Setup(m => m.Send(postConvertFile, cancellationToken))
+        var postConversionResultStream = new MemoryStream(new byte[] { 1 });
+        var postConversionResult = new OperationResult<Stream>
+        {
+            Payload = postConversionResultStream
+        };
+
+        _mediatorMock.Setup(
+            m => m.Send(
+                It.Is<PostConvertFile>(x =>
+                    x.ContentStream == conversionResultStream &&
+                    x.ConversionOptions == postConversionOptions),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(postConversionResult);
 
-        var createContext = new CreateFileContext(formFileName, postConversionResultStream);
         var fileContext = FileContext.Create(formFileName, postConversionResultStream.Length);
-        var createContextResult = new OperationResult<FileContext> { Payload = fileContext };
-        _mediatorMock.Setup(m => m.Send(createContext, cancellationToken))
+        var createContextResult = new OperationResult<FileContext>
+        {
+            Payload = fileContext
+        };
+
+        _mediatorMock.Setup(
+            m => m.Send(
+                It.Is<CreateFileContext>(x =>
+                    x.FileName == formFileName &&
+                    x.ContentStream == postConversionResultStream),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(createContextResult);
 
         var fileContextResponse = new FileContextResponse
-        { Id = fileContext.FileContextId, Name = fileContext.Name, Size = fileContext.ContentSize };
+        {
+            Id = fileContext.FileContextId,
+            Name = fileContext.Name,
+            Size = fileContext.ContentSize
+        };
+
         _mapperMock.Setup(m => m.Map<FileContext, FileContextResponse>(fileContext))
             .Returns(fileContextResponse);
 
         var request = new CreateFromConversionRequest(formFileMock.Object, postConversionOptions);
 
         // Act
-        var result = await _controller.CreateFromConversion(conversionType, request, cancellationToken);
+        var result = await _controller.CreateFromConversion(conversionType, request, default);
 
         // Assert
         formFileMock.Verify(ff => ff.OpenReadStream(), Times.Once());
         formFileMock.VerifyGet(ff => ff.FileName, Times.Once());
 
-        _mediatorMock.Verify(m => m.Send(It.IsAny<ConvertSubtitleFile>(), It.IsAny<CancellationToken>()), Times.Once());
-        _mediatorMock.Verify(m => m.Send(It.IsAny<PostConvertFile>(), It.IsAny<CancellationToken>()), Times.Once());
-        _mediatorMock.Verify(m => m.Send(It.IsAny<CreateFileContext>(), It.IsAny<CancellationToken>()), Times.Once());
+        _mediatorMock.Verify(
+            m => m.Send(
+                It.IsAny<ConvertSubtitleFile>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
 
-        _mapperMock.Verify(m => m.Map<FileContext, FileContextResponse>(It.IsAny<FileContext>()), Times.Once());
+        _mediatorMock.Verify(
+            m => m.Send(
+                It.IsAny<PostConvertFile>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
 
-        result.Should().NotBeNull().And.BeOfType<CreatedAtActionResult>()
+        _mediatorMock.Verify(
+            m => m.Send(
+                It.IsAny<CreateFileContext>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
+
+        _mapperMock.Verify(
+            m => m.Map<FileContext, FileContextResponse>(It.IsAny<FileContext>()),
+            Times.Once());
+
+        result.Should().NotBeNull()
+            .And.BeOfType<CreatedAtActionResult>()
             
             .Which.Should().HaveStatusCode(201)
             .And.HaveNotNullValue()
@@ -181,40 +255,63 @@ public class TestFileContextController
     }
 
     [Fact]
-    public async Task CreateConvertedContext_WithSubtitleConversionOperationError_ReturnBadRequestResponse()
+    public async Task CreateConvertedContext_WithSubtitleConversionRequestFailure_ReturnBadRequestResponse()
     {
         // Arrange
-        var formFileMock = new Mock<IFormFile>();
         var conversionType = ConversionType.Ass;
-        var cancellationToken = new CancellationToken();
 
+        var formFileMock = new Mock<IFormFile>();
+
+        var nullStream = Stream.Null;
         formFileMock.Setup(ff => ff.OpenReadStream())
-            .Returns(Stream.Null);
+            .Returns(nullStream);
 
-        var convertFile = new ConvertSubtitleFile(Stream.Null, conversionType);
         var conversionResult = new OperationResult<Stream>();
+
         var errorMessage = "Test unknown error occurred.";
-        conversionResult.AddError(ErrorCode.UnknownError, errorMessage);
-        _mediatorMock.Setup(m => m.Send(convertFile, cancellationToken))
+        conversionResult.AddError((ErrorCode)(-1), errorMessage);
+
+        _mediatorMock.Setup(
+            m => m.Send(
+                It.Is<ConvertSubtitleFile>(x => 
+                    x.ContentStream == nullStream &&
+                    x.ConversionType == conversionType),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(conversionResult);
 
         var request = new CreateFromConversionRequest(formFileMock.Object);
 
         // Act
-        var result = await _controller.CreateFromConversion(conversionType, request, cancellationToken);
+        var result = await _controller.CreateFromConversion(conversionType, request, default);
 
         // Assert
         formFileMock.Verify(ff => ff.OpenReadStream(), Times.Once());
         formFileMock.VerifyGet(ff => ff.FileName, Times.Never());
 
-        _mediatorMock.Verify(m => m.Send(It.IsAny<ConvertSubtitleFile>(), It.IsAny<CancellationToken>()), Times.Once());
-        _mediatorMock.Verify(m => m.Send(It.IsAny<PostConvertFile>(), It.IsAny<CancellationToken>()), Times.Never());
-        _mediatorMock.Verify(m => m.Send(It.IsAny<CreateFileContext>(), It.IsAny<CancellationToken>()), Times.Never());
+        _mediatorMock.Verify(
+            m => m.Send(
+                It.IsAny<ConvertSubtitleFile>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
 
-        _mapperMock.Verify(m => m.Map<FileContext, FileContextResponse>(It.IsAny<FileContext>()), Times.Never());
+        _mediatorMock.Verify(
+            m => m.Send(
+                It.IsAny<PostConvertFile>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never());
 
+        _mediatorMock.Verify(
+            m => m.Send(
+                It.IsAny<CreateFileContext>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never());
 
-        result.Should().NotBeNull().And.BeOfType<BadRequestObjectResult>()
+        _mapperMock.Verify(
+            m => m.Map<FileContext, FileContextResponse>(It.IsAny<FileContext>()),
+            Times.Never());
+
+        result.Should().NotBeNull()
+            .And.BeOfType<BadRequestObjectResult>()
             
             .Which.Should().HaveStatusCode(400)
             .And.HaveNotNullValue()
@@ -227,44 +324,75 @@ public class TestFileContextController
     }
 
     [Fact]
-    public async Task CreateConvertedContext_WithPostConversionOperationError_ReturnBadRequestResponse()
+    public async Task CreateConvertedContext_WithPostConversionRequestFailure_ReturnBadRequestResponse()
     {
         // Arrange
-        var formFileMock = new Mock<IFormFile>();
         var conversionType = ConversionType.Ass;
-        var postConversionOptions = new PostConversionOption[] { PostConversionOption.DeleteAssTags };
-        var cancellationToken = new CancellationToken();
+        var postConversionOptions = new PostConversionOption[]
+        { 
+            PostConversionOption.DeleteAssTags
+        };
 
+        var formFileMock = new Mock<IFormFile>();
+
+        var nullStream = Stream.Null;
         formFileMock.Setup(ff => ff.OpenReadStream())
-            .Returns(Stream.Null);
+            .Returns(nullStream);
 
-        var convertFile = new ConvertSubtitleFile(Stream.Null, conversionType);
-        _mediatorMock.Setup(m => m.Send(convertFile, cancellationToken))
-            .ReturnsAsync(new OperationResult<Stream> { Payload = Stream.Null });
+        _mediatorMock.Setup(
+            m => m.Send(
+                It.Is<ConvertSubtitleFile>(x =>
+                    x.ContentStream == nullStream &&
+                    x.ConversionType == conversionType),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperationResult<Stream> { Payload = nullStream });
 
-        var postConvertFile = new PostConvertFile(Stream.Null, postConversionOptions);
         var postConvertResult = new OperationResult<Stream>();
+
         var errorMessage = "Test unknown error occurred.";
-        postConvertResult.AddError(ErrorCode.UnknownError, errorMessage);
-        _mediatorMock.Setup(m => m.Send(postConvertFile, cancellationToken))
+        postConvertResult.AddError((ErrorCode)(-1), errorMessage);
+
+        _mediatorMock.Setup(
+            m => m.Send(
+                It.Is<PostConvertFile>(x => 
+                    x.ContentStream == nullStream &&
+                    x.ConversionOptions == postConversionOptions),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(postConvertResult);
 
         var request = new CreateFromConversionRequest(formFileMock.Object, postConversionOptions);
 
         // Act
-        var result = await _controller.CreateFromConversion(conversionType, request, cancellationToken);
+        var result = await _controller.CreateFromConversion(conversionType, request, default);
 
         // Assert
         formFileMock.Verify(ff => ff.OpenReadStream(), Times.Once());
         formFileMock.VerifyGet(ff => ff.FileName, Times.Never());
 
-        _mediatorMock.Verify(m => m.Send(It.IsAny<ConvertSubtitleFile>(), It.IsAny<CancellationToken>()), Times.Once());
-        _mediatorMock.Verify(m => m.Send(It.IsAny<PostConvertFile>(), It.IsAny<CancellationToken>()), Times.Once());
-        _mediatorMock.Verify(m => m.Send(It.IsAny<CreateFileContext>(), It.IsAny<CancellationToken>()), Times.Never());
+        _mediatorMock.Verify(
+            m => m.Send(
+                It.IsAny<ConvertSubtitleFile>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
 
-        _mapperMock.Verify(m => m.Map<FileContext, FileContextResponse>(It.IsAny<FileContext>()), Times.Never());
+        _mediatorMock.Verify(
+            m => m.Send(
+                It.IsAny<PostConvertFile>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
 
-        result.Should().NotBeNull().And.BeOfType<BadRequestObjectResult>()
+        _mediatorMock.Verify(
+            m => m.Send(
+                It.IsAny<CreateFileContext>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never());
+
+        _mapperMock.Verify(
+            m => m.Map<FileContext, FileContextResponse>(It.IsAny<FileContext>()),
+            Times.Never());
+
+        result.Should().NotBeNull()
+            .And.BeOfType<BadRequestObjectResult>()
 
             .Which.Should().HaveStatusCode(400)
             .And.HaveNotNullValue()
@@ -277,46 +405,74 @@ public class TestFileContextController
     }
 
     [Fact]
-    public async Task CreateConvertedContext_WithFileContextOperationError_ReturnBadRequestError()
+    public async Task CreateConvertedContext_WithFileContextRequestFailure_ReturnBadRequestError()
     {
         // Arrange
-        var formFileMock = new Mock<IFormFile>();
         var conversionType = ConversionType.Ass;
-        var cancellationToken = new CancellationToken();
 
+        var formFileMock = new Mock<IFormFile>();
+
+        var nullStream = Stream.Null;
         formFileMock.Setup(ff => ff.OpenReadStream())
-            .Returns(Stream.Null);
+            .Returns(nullStream);
 
         formFileMock.SetupGet(ff => ff.FileName)
             .Returns(string.Empty);
 
-        var convertFile = new ConvertSubtitleFile(Stream.Null, conversionType);
-        _mediatorMock.Setup(m => m.Send(convertFile, cancellationToken))
+        _mediatorMock.Setup(
+            m => m.Send(
+                It.Is<ConvertSubtitleFile>(x => 
+                    x.ContentStream == nullStream &&
+                    x.ConversionType == conversionType),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(new OperationResult<Stream> { Payload = Stream.Null });
 
-        var createContext = new CreateFileContext(string.Empty, Stream.Null);
         var createContextResult = new OperationResult<FileContext>();
+
         var errorMessage = "Test unknown error occurred";
-        createContextResult.AddError(ErrorCode.UnknownError, errorMessage);
-        _mediatorMock.Setup(m => m.Send(createContext, cancellationToken))
+        createContextResult.AddError((ErrorCode)(-1), errorMessage);
+
+        _mediatorMock.Setup(
+            m => m.Send(
+                It.Is<CreateFileContext>(x => 
+                    x.FileName == string.Empty &&
+                    x.ContentStream == nullStream),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(createContextResult);
 
         var request = new CreateFromConversionRequest(formFileMock.Object);
 
         // Act
-        var result = await _controller.CreateFromConversion(conversionType, request, cancellationToken);
+        var result = await _controller.CreateFromConversion(conversionType, request, default);
 
         // Assert
         formFileMock.Verify(ff => ff.OpenReadStream(), Times.Once());
         formFileMock.VerifyGet(ff => ff.FileName, Times.Once());
 
-        _mediatorMock.Verify(m => m.Send(It.IsAny<ConvertSubtitleFile>(), It.IsAny<CancellationToken>()), Times.Once());
-        _mediatorMock.Verify(m => m.Send(It.IsAny<PostConvertFile>(), It.IsAny<CancellationToken>()), Times.Never());
-        _mediatorMock.Verify(m => m.Send(It.IsAny<CreateFileContext>(), It.IsAny<CancellationToken>()), Times.Once());
+        _mediatorMock.Verify(
+            m => m.Send(
+                It.IsAny<ConvertSubtitleFile>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
 
-        _mapperMock.Verify(m => m.Map<FileContext, FileContextResponse>(It.IsAny<FileContext>()), Times.Never());
+        _mediatorMock.Verify(
+            m => m.Send(
+                It.IsAny<PostConvertFile>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never());
 
-        result.Should().NotBeNull().And.BeOfType<BadRequestObjectResult>()
+        _mediatorMock.Verify(
+            m => m.Send(
+                It.IsAny<CreateFileContext>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
+
+        _mapperMock.Verify(
+            m => m.Map<FileContext, FileContextResponse>(It.IsAny<FileContext>()),
+            Times.Never());
+
+        result.Should().NotBeNull()
+            .And.BeOfType<BadRequestObjectResult>()
 
             .Which.Should().HaveStatusCode(400)
             .And.HaveNotNullValue()
@@ -329,34 +485,52 @@ public class TestFileContextController
     }
 
     [Fact]
-    public async Task UpdateName_WithOperationSuccess_ReturnOkObjectResponse()
+    public async Task UpdateName_WithValidRequest_ReturnOkObjectResponse()
     {
         // Arrange
         var guidId = Guid.Empty;
         var name = "FooName";
         var contentSize = 1;
-        var cancellationToken = new CancellationToken();
-
-        var mediatorRequest = new UpdateFileContextName(guidId, name);
 
         var fileContext = FileContext.Create(name, contentSize);
-        var mediatorResult = new OperationResult<FileContext> { Payload = fileContext };
-        _mediatorMock.Setup(m => m.Send(mediatorRequest, cancellationToken))
+        var mediatorResult = new OperationResult<FileContext>
+        {
+            Payload = fileContext
+        };
+
+        _mediatorMock.Setup(
+            m => m.Send(
+                It.Is<UpdateFileContextName>(x => 
+                    x.FileContextId == guidId &&
+                    x.FileName == name), 
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(mediatorResult);
 
         var mapperResult = new FileContextResponse 
-        { Id = guidId, Name = name, Size = contentSize };
+        { 
+            Id = guidId,
+            Name = name,
+            Size = contentSize
+        };
+
         _mapperMock.Setup(m => m.Map<FileContext, FileContextResponse>(fileContext))
             .Returns(mapperResult);
 
         var request = new UpdateNameRequest(name);
 
         // Act
-        var result = await _controller.UpdateName(guidId.ToString(), request, cancellationToken);
+        var result = await _controller.UpdateName(guidId.ToString(), request, default);
 
         // Assert
-        _mediatorMock.Verify(m => m.Send(It.IsAny<UpdateFileContextName>(), It.IsAny<CancellationToken>()), Times.Once());
-        _mapperMock.Verify(m => m.Map<FileContext, FileContextResponse>(It.IsAny<FileContext>()), Times.Once());
+        _mediatorMock.Verify(
+            m => m.Send(
+                It.IsAny<UpdateFileContextName>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
+
+        _mapperMock.Verify(
+            m => m.Map<FileContext, FileContextResponse>(It.IsAny<FileContext>()),
+            Times.Once());
 
         result.Should().NotBeNull()
             .And.BeOfType<OkObjectResult>()
@@ -369,31 +543,43 @@ public class TestFileContextController
     }
 
     [Fact]
-    public async Task UpdateName_WithOperationError_ReturnBadRequestResponse()
+    public async Task UpdateName_WithRequestFailure_ReturnBadRequestResponse()
     {
         // Arrange
         var guidId = Guid.Empty;
         var name = string.Empty;
-        var cancellationToken = new CancellationToken();
 
-        var mediatorRequest = new UpdateFileContextName(guidId, name);
-
-        var errorMessage = "Test unknown error occurred.";
         var mediatorResult = new OperationResult<FileContext>();
-        mediatorResult.AddError(ErrorCode.UnknownError, errorMessage);
-        _mediatorMock.Setup(m => m.Send(mediatorRequest, cancellationToken))
+        
+        var errorMessage = "Test unknown error occurred.";
+        mediatorResult.AddError((ErrorCode)(-1), errorMessage);
+
+        _mediatorMock.Setup(
+            m => m.Send(
+                It.Is<UpdateFileContextName>(x =>
+                    x.FileContextId == guidId &&
+                    x.FileName == name),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(mediatorResult);
 
         var request = new UpdateNameRequest(name);
 
         // Act
-        var result = await _controller.UpdateName(guidId.ToString(), request, cancellationToken);
+        var result = await _controller.UpdateName(guidId.ToString(), request, default);
 
         // Assert
-        _mediatorMock.Verify(m => m.Send(It.IsAny<UpdateFileContextName>(), It.IsAny<CancellationToken>()), Times.Once());
-        _mapperMock.Verify(m => m.Map<FileContext, FileContextResponse>(It.IsAny<FileContext>()), Times.Never());
+        _mediatorMock.Verify(
+            m => m.Send(
+                It.IsAny<UpdateFileContextName>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
 
-        result.Should().NotBeNull().And.BeOfType<BadRequestObjectResult>()
+        _mapperMock.Verify(
+            m => m.Map<FileContext,FileContextResponse>(It.IsAny<FileContext>()),
+            Times.Never());
+
+        result.Should().NotBeNull()
+            .And.BeOfType<BadRequestObjectResult>()
             
             .Which.Should().HaveStatusCode(400)
             .And.HaveNotNullValue()
@@ -406,32 +592,48 @@ public class TestFileContextController
     }
 
     [Fact]
-    public async Task Delete_WithOperationSuccess_ReturnOkObjectResult()
+    public async Task Delete_WithValidRequest_ReturnOkObjectResult()
     {
         // Arrange
         var guidId = Guid.Empty;
         var name = "FooName";
         var contentSize = 1;
-        var cancellationToken = new CancellationToken();
-
-        var mediatorRequest = new DeleteFileContext(guidId);
 
         var fileContext = FileContext.Create(name, contentSize);
-        var mediatorResult = new OperationResult<FileContext> { Payload = fileContext };
-        _mediatorMock.Setup(m => m.Send(mediatorRequest, cancellationToken))
+        var mediatorResult = new OperationResult<FileContext>
+        { 
+            Payload = fileContext
+        };
+
+        _mediatorMock.Setup(
+            m => m.Send(
+                It.Is<DeleteFileContext>(x => x.FileContextId == guidId),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(mediatorResult);
 
         var mapperResult = new FileContextResponse
-        { Id = guidId, Name = name, Size = contentSize };
+        {
+            Id = guidId,
+            Name = name,
+            Size = contentSize
+        };
+
         _mapperMock.Setup(m => m.Map<FileContext, FileContextResponse>(fileContext))
             .Returns(mapperResult);
 
         // Act
-        var result = await _controller.Delete(guidId.ToString(), cancellationToken);
+        var result = await _controller.Delete(guidId.ToString(), default);
 
         // Assert
-        _mediatorMock.Verify(m => m.Send(It.IsAny<DeleteFileContext>(), It.IsAny<CancellationToken>()), Times.Once());
-        _mapperMock.Verify(m => m.Map<FileContext, FileContextResponse>(It.IsAny<FileContext>()), Times.Once());
+        _mediatorMock.Verify(
+            m => m.Send(
+                It.IsAny<DeleteFileContext>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
+
+        _mapperMock.Verify(
+            m => m.Map<FileContext, FileContextResponse>(It.IsAny<FileContext>()),
+            Times.Once());
 
         result.Should().NotBeNull()
             .And.BeOfType<OkObjectResult>()
@@ -444,27 +646,35 @@ public class TestFileContextController
     }
 
     [Fact]
-    public async Task Delete_WithOperationError_ReturnBadRequestResponse()
+    public async Task Delete_WithRequestFailure_ReturnBadRequestResponse()
     {
         // Arrange
         var guidId = Guid.Empty;
-        var cancellationToken = new CancellationToken();
 
-        var mediatorRequest = new DeleteFileContext(guidId);
+        var mediatorResult = new OperationResult<FileContext>();
 
         var errorMessage = "Test unknown error occurred.";
-        var mediatorResult = new OperationResult<FileContext>();
-        mediatorResult.AddError(ErrorCode.UnknownError, errorMessage);
+        mediatorResult.AddError((ErrorCode)(-1), errorMessage);
 
-        _mediatorMock.Setup(m => m.Send(mediatorRequest, cancellationToken))
+        _mediatorMock.Setup(
+            m => m.Send(
+                It.Is<DeleteFileContext>(x => x.FileContextId == guidId),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(mediatorResult);
 
         // Act
-        var result = await _controller.Delete(guidId.ToString(), cancellationToken);
+        var result = await _controller.Delete(guidId.ToString(), default);
 
         // Assert
-        _mediatorMock.Verify(m => m.Send(It.IsAny<DeleteFileContext>(), It.IsAny<CancellationToken>()), Times.Once());
-        _mapperMock.Verify(m => m.Map<FileContext, FileContextResponse>(It.IsAny<FileContext>()), Times.Never());
+        _mediatorMock.Verify(
+            m => m.Send(
+                It.IsAny<DeleteFileContext>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
+
+        _mapperMock.Verify(
+            m => m.Map<FileContext, FileContextResponse>(It.IsAny<FileContext>()),
+            Times.Never());
 
         result.Should().NotBeNull()
             .And.BeOfType<BadRequestObjectResult>()

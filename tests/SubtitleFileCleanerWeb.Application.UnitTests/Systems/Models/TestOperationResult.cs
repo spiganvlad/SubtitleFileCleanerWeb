@@ -11,8 +11,8 @@ public class TestOperationResult
     {
         // Arrange
         var result = new OperationResult<bool>();
-        var enumValue = ErrorCode.NotFound;
-        var message = "Test error";
+        var enumValue = (ErrorCode)(-1);
+        var message = "Test error.";
 
         // Act
         result.AddError(enumValue, message);
@@ -28,7 +28,7 @@ public class TestOperationResult
     {
         // Arrange
         var result = new OperationResult<bool>();
-        var message = "Test error";
+        var message = "Test error.";
 
         // Act
         result.AddUnknownError(message);
@@ -43,9 +43,23 @@ public class TestOperationResult
     public void CopyErrors_WithErrorArray_WorksValid()
     {
         // Arrange
-        var firstError = new Error { Code = ErrorCode.UnknownError, Message = "Test unknown error occurred." };
-        var secondError = new Error { Code = ErrorCode.NotFound, Message = "Test not found error occurred." };
-        var thirdError = new Error { Code = ErrorCode.UnprocessableContent, Message = "Test unprocessable unknown error occurred." };
+        var firstError = new Error 
+        { 
+            Code = ErrorCode.UnknownError,
+            Message = "Test unknown error occurred."
+        };
+
+        var secondError = new Error
+        {
+            Code = ErrorCode.NotFound,
+            Message = "Test not found error occurred."
+        };
+
+        var thirdError = new Error
+        {
+            Code = ErrorCode.UnprocessableContent,
+            Message = "Test unprocessable unknown error occurred."
+        };
 
         var errors = new Error[] { firstError, secondError, thirdError };
 
@@ -69,9 +83,23 @@ public class TestOperationResult
     public void CopyErrors_WithInitialError_WorksValid()
     {
         // Arrange
-        var initialError = new Error { Code = ErrorCode.UnknownError, Message = "Test unknown initial error occurred." };
-        var firstError = new Error { Code = ErrorCode.UnknownError, Message = "Test first unknown error occurred." };
-        var secondError = new Error { Code = ErrorCode.NotFound, Message = "Test not found error occurred." };
+        var initialError = new Error
+        {
+            Code = ErrorCode.UnknownError,
+            Message = "Test unknown initial error occurred."
+        };
+
+        var firstError = new Error
+        {
+            Code = ErrorCode.UnknownError,
+            Message = "Test first unknown error occurred."
+        };
+
+        var secondError = new Error
+        {
+            Code = ErrorCode.NotFound,
+            Message = "Test not found error occurred."
+        };
 
         var errors = new List<Error> { firstError, secondError };
 

@@ -15,7 +15,7 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Controllers.V1
 
         public TestBaseController()
         {
-            _baseControllerWrapper = new BaseControllerWrapper();
+            _baseControllerWrapper = new();
         }
 
         [Fact]

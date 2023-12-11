@@ -19,7 +19,7 @@ public class TestUpdateFileContextNameHandler
     {
         _fileContexts = FileContextFixture.GetListOfThree();
 
-        _dbContextMock = new Mock<ApplicationDbContext>();
+        _dbContextMock = new();
         _dbContextMock.Setup(db => db.FileContexts)
             .ReturnsDbSet(_fileContexts);
     }
@@ -29,19 +29,26 @@ public class TestUpdateFileContextNameHandler
     {
         // Arrange
         var contextToUpdate = _fileContexts.Last();
-        var cancellationToken = new CancellationToken();
 
         var request = new UpdateFileContextName(contextToUpdate.FileContextId, "FooName");
 
         var handler = new UpdateFileContextNameHandler(_dbContextMock.Object);
 
         // Act
-        var result = await handler.Handle(request, cancellationToken);
+        var result = await handler.Handle(request, default);
 
         // Assert
-        _dbContextMock.Verify(db => db.FileContexts, Times.Exactly(2));
-        _dbContextMock.Verify(db => db.FileContexts.Update(It.IsAny<FileContext>()), Times.Once());
-        _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once());
+        _dbContextMock.VerifyGet(
+            db => db.FileContexts,
+            Times.Exactly(2));
+
+        _dbContextMock.Verify(
+            db => db.FileContexts.Update(It.IsAny<FileContext>()),
+            Times.Once());
+
+        _dbContextMock.Verify(
+            db => db.SaveChangesAsync(It.IsAny<CancellationToken>()),
+            Times.Once());
 
         result.Should().NotBeNull()
             .And.NotBeInErrorState()
@@ -55,19 +62,25 @@ public class TestUpdateFileContextNameHandler
     public async Task Handle_WithEmptyName_ReturnValidationError()
     {
         // Arrange
-        var cancellationToken = new CancellationToken();
-
         var request = new UpdateFileContextName(_fileContexts.Last().FileContextId, string.Empty);
 
         var handler = new UpdateFileContextNameHandler(_dbContextMock.Object);
 
         // Act
-        var result = await handler.Handle(request, cancellationToken);
+        var result = await handler.Handle(request, default);
 
         // Assert
-        _dbContextMock.Verify(db => db.FileContexts, Times.Once());
-        _dbContextMock.Verify(db => db.Update(It.IsAny<FileContext>()), Times.Never());
-        _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never());
+        _dbContextMock.VerifyGet(
+            db => db.FileContexts,
+            Times.Once());
+
+        _dbContextMock.Verify(
+            db => db.Update(It.IsAny<FileContext>()),
+            Times.Never());
+
+        _dbContextMock.Verify(
+            db => db.SaveChangesAsync(It.IsAny<CancellationToken>()),
+            Times.Never());
 
         result.Should().NotBeNull()
             .And.BeInErrorState()
@@ -80,19 +93,26 @@ public class TestUpdateFileContextNameHandler
     {
         // Arrange
         var fileContextId = Guid.Empty;
-        var cancellationToken = new CancellationToken();
 
-        var request = new UpdateFileContextName(fileContextId, "FooName");
+        var request = new UpdateFileContextName(Guid.Empty, "FooName");
 
         var handler = new UpdateFileContextNameHandler(_dbContextMock.Object);
 
         // Act
-        var result = await handler.Handle(request, cancellationToken);
+        var result = await handler.Handle(request, default);
 
         // Assert
-        _dbContextMock.Verify(db => db.FileContexts, Times.Once());
-        _dbContextMock.Verify(db => db.FileContexts.Update(It.IsAny<FileContext>()), Times.Never());
-        _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never());
+        _dbContextMock.VerifyGet(
+            db => db.FileContexts,
+            Times.Once());
+
+        _dbContextMock.Verify(
+            db => db.FileContexts.Update(It.IsAny<FileContext>()),
+            Times.Never());
+
+        _dbContextMock.Verify(
+            db => db.SaveChangesAsync(It.IsAny<CancellationToken>()),
+            Times.Never());
 
         result.Should().NotBeNull()
             .And.BeInErrorState()
@@ -104,10 +124,8 @@ public class TestUpdateFileContextNameHandler
     public async Task Handle_WithUnexpectedError_ReturnUnknownError()
     {
         // Arrange
-        var cancellationToken = new CancellationToken();
-
         var exceptionMessage = "Unexpected error occurred";
-        _dbContextMock.Setup(db => db.FileContexts)
+        _dbContextMock.SetupGet(db => db.FileContexts)
             .Throws(new Exception(exceptionMessage));
 
         var request = new UpdateFileContextName(Guid.Empty, "FooName");
@@ -115,11 +133,16 @@ public class TestUpdateFileContextNameHandler
         var handler = new UpdateFileContextNameHandler(_dbContextMock.Object);
 
         // Act
-        var result = await handler.Handle(request, cancellationToken);
+        var result = await handler.Handle(request, default);
 
         // Assert
-        _dbContextMock.Verify(db => db.FileContexts, Times.Once());
-        _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never());
+        _dbContextMock.VerifyGet(
+            db => db.FileContexts,
+            Times.Once());
+
+        _dbContextMock.Verify(
+            db => db.SaveChangesAsync(It.IsAny<CancellationToken>()),
+            Times.Never());
 
         result.Should().NotBeNull()
             .And.BeInErrorState()

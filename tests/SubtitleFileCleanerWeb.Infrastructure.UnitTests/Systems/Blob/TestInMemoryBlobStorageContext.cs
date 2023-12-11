@@ -11,17 +11,17 @@ public class TestInMemoryBlobStorageContext
     {
         // Arrange
         var path = string.Empty;
-        var content = new byte[3]; 
-        var cancellationToken = new CancellationToken();
+        var content = new byte[3];
 
         var inMemoryStorage = new InMemoryBlobStorageContext();
         inMemoryStorage.StorageContext.Add(path, content);
 
         // Act
-        var result = await inMemoryStorage.GetContentStreamAsync(path, cancellationToken);
+        var result = await inMemoryStorage.GetContentStreamAsync(path, default);
 
         // Assert
-        result.Should().NotBeNull().And.HaveLength(content.Length);
+        result.Should().NotBeNull()
+            .And.HaveLength(content.Length);
     }
 
     [Fact]
@@ -29,12 +29,11 @@ public class TestInMemoryBlobStorageContext
     {
         // Arrange
         var path = string.Empty;
-        var cancellationToken = new CancellationToken();
 
         var inMemoryStorage = new InMemoryBlobStorageContext();
 
         // Act
-        var result = await inMemoryStorage.GetContentStreamAsync(path, cancellationToken);
+        var result = await inMemoryStorage.GetContentStreamAsync(path, default);
 
         // Assert
         result.Should().BeNull();
@@ -47,12 +46,11 @@ public class TestInMemoryBlobStorageContext
         var path = string.Empty;
         var content = new byte[3];
         var contentStream = new MemoryStream(content);
-        var cancellationToken = new CancellationToken();
 
         var inMemoryStorage = new InMemoryBlobStorageContext();
 
         // Act
-        await inMemoryStorage.CreateContentAsync(path, contentStream, cancellationToken);
+        await inMemoryStorage.CreateContentAsync(path, contentStream, default);
 
         // Assert
         inMemoryStorage.StorageContext.Should().NotBeEmpty()
@@ -71,13 +69,13 @@ public class TestInMemoryBlobStorageContext
         var path = string.Empty;
         var content = new byte[3];
         var contentStream = new MemoryStream(content);
-        var cancellationToken = new CancellationToken();
 
         var inMemoryStorage = new InMemoryBlobStorageContext();
         inMemoryStorage.StorageContext.Add(path, content);
 
         // Act
-        var act = async () => await inMemoryStorage.CreateContentAsync(path, contentStream, cancellationToken);
+        var act = async () =>
+            await inMemoryStorage.CreateContentAsync(path, contentStream, default);
 
         // Assert
         await act.Should().ThrowAsync<BlobStorageOperationException>()
@@ -90,13 +88,12 @@ public class TestInMemoryBlobStorageContext
         // Arrange
         var path = string.Empty;
         var content = new byte[3];
-        var cancellationToken = new CancellationToken();
 
         var inMemoryStorage = new InMemoryBlobStorageContext();
         inMemoryStorage.StorageContext.Add(path, content);
 
         // Act
-        await inMemoryStorage.DeleteContentAsync(path, cancellationToken);
+        await inMemoryStorage.DeleteContentAsync(path, default);
 
         // Assert
         inMemoryStorage.StorageContext.Should().BeEmpty();
@@ -107,15 +104,15 @@ public class TestInMemoryBlobStorageContext
     {
         // Arrange
         var path = string.Empty;
-        var cancellationToken = new CancellationToken();
 
         var inMemoryStorage = new InMemoryBlobStorageContext();
 
         // Act
-        var act = async () => await inMemoryStorage.DeleteContentAsync(path, cancellationToken);
+        var act = async () => await inMemoryStorage.DeleteContentAsync(path, default);
 
 
         // Assert
-        await act.Should().ThrowAsync<BlobStorageOperationException>().WithMessage($"No blob content was found on path: {path}");
+        await act.Should().ThrowAsync<BlobStorageOperationException>()
+            .WithMessage($"No blob content was found on path: {path}");
     }
 }

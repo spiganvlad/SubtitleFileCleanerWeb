@@ -27,7 +27,9 @@ public class TestValidateGuidAttribute
 
         var actionExecutingContextMock = ActionExecutingContextMock.Create();
 
-        actionExecutingContextMock.SetupGet(ec => ec.ActionArguments).Returns(actionArguments);
+        actionExecutingContextMock.SetupGet(ec => ec.ActionArguments)
+            .Returns(actionArguments);
+
         actionExecutingContextMock.SetupSet(ec => ec.Result = It.IsAny<IActionResult>());
 
         var validateGuidFilter = new ValidateGuidAttribute(firstPropName, secondPropName);
@@ -35,9 +37,14 @@ public class TestValidateGuidAttribute
         // Act
         validateGuidFilter.OnActionExecuting(actionExecutingContextMock.Object);
 
-        // Asser
-        actionExecutingContextMock.VerifyGet(ec => ec.ActionArguments, Times.Exactly(2));
-        actionExecutingContextMock.VerifySet(ec => ec.Result = It.IsAny<IActionResult>(), Times.Never());
+        // Assert
+        actionExecutingContextMock.VerifyGet(
+            ec => ec.ActionArguments,
+            Times.Exactly(2));
+
+        actionExecutingContextMock.VerifySet(
+            ec => ec.Result = It.IsAny<IActionResult>(),
+            Times.Never());
     }
 
     [Fact]
@@ -51,7 +58,8 @@ public class TestValidateGuidAttribute
         };
 
         var actionExecutingContextMock = ActionExecutingContextMock.Create();
-        actionExecutingContextMock.SetupGet(ec => ec.ActionArguments).Returns(actionArguments);
+        actionExecutingContextMock.SetupGet(ec => ec.ActionArguments)
+            .Returns(actionArguments);
 
         var validateGuidFilter = new ValidateGuidAttribute("thirdPropName");
 
@@ -59,8 +67,13 @@ public class TestValidateGuidAttribute
         validateGuidFilter.OnActionExecuting(actionExecutingContextMock.Object);
 
         // Assert
-        actionExecutingContextMock.VerifyGet(ec => ec.ActionArguments, Times.Once());
-        actionExecutingContextMock.VerifySet(ec => ec.Result = It.IsAny<IActionResult>(), Times.Never());
+        actionExecutingContextMock.VerifyGet(
+            ec => ec.ActionArguments,
+            Times.Once());
+
+        actionExecutingContextMock.VerifySet(
+            ec => ec.Result = It.IsAny<IActionResult>(),
+            Times.Never());
     }
 
     [Fact]
@@ -79,7 +92,8 @@ public class TestValidateGuidAttribute
 
         var actionExecutingContextMock = ActionExecutingContextMock.Create();
 
-        actionExecutingContextMock.SetupGet(ec => ec.ActionArguments).Returns(actionArguments);
+        actionExecutingContextMock.SetupGet(ec => ec.ActionArguments)
+            .Returns(actionArguments);
 
         IActionResult? result = null;
         actionExecutingContextMock.SetupSet(ec => ec.Result = It.IsAny<BadRequestObjectResult>())
@@ -91,10 +105,16 @@ public class TestValidateGuidAttribute
         validateGuidFilter.OnActionExecuting(actionExecutingContextMock.Object);
 
         // Assert
-        actionExecutingContextMock.VerifyGet(ec => ec.ActionArguments, Times.Exactly(2));
-        actionExecutingContextMock.VerifySet(ec => ec.Result = It.IsAny<IActionResult>(), Times.Once());
+        actionExecutingContextMock.VerifyGet(
+            ec => ec.ActionArguments,
+            Times.Exactly(2));
 
-        var x = result.Should().NotBeNull().And.BeOfType<BadRequestObjectResult>()
+        actionExecutingContextMock.VerifySet(
+            ec => ec.Result = It.IsAny<IActionResult>(),
+            Times.Once());
+
+        var x = result.Should().NotBeNull()
+            .And.BeOfType<BadRequestObjectResult>()
 
             .Which.Should().HaveStatusCode(400)
             .And.HaveNotNullValue()

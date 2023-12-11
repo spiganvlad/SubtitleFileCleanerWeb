@@ -21,42 +21,49 @@ public class TestFileContentController
 
     public TestFileContentController()
     {
-        _mediatorMock = new Mock<IMediator>();
+        _mediatorMock = new();
 
         var httpContext = new HttpContextMockBuilder()
             .SetupIMediator(_mediatorMock)
             .Build();
 
-        _controller = new FileContentController();
+        _controller = new();
         _controller.ControllerContext.HttpContext = httpContext;
     }
 
     [Fact]
-    public async Task DownloadContent_WithExistedId_ReturnFileStreamResult()
+    public async Task DownloadContent_WithValidRequest_ReturnFileStreamResult()
     {
         // Arrange
-        var id = Guid.Empty.ToString();
-        var cancellationToken = new CancellationToken();
+        var guidId = Guid.Empty;
 
         var fileContextName = "FooName";
         var fileContext = FileContext.Create(fileContextName, 1);
 
-        var contentStream = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 }, false);
+        var contentStream = new MemoryStream(new byte[] { 1 }, false);
         var fileContent = FileContent.Create(contentStream);
-
-        var getContextWithContent = new GetFileContextWithContentById(Guid.Parse(id));
+        
+        fileContext.SetContent(fileContent);
         var fileContextResult = new OperationResult<FileContext> { Payload = fileContext };
-        fileContextResult.Payload.SetContent(fileContent);
-        _mediatorMock.Setup(m => m.Send(getContextWithContent, cancellationToken))
+
+        _mediatorMock.Setup(
+            m => m.Send(
+                It.Is<GetFileContextWithContentById>(x => x.FileContextId == guidId),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(fileContextResult);
 
         // Act
-        var result = await _controller.DownloadContent(id, cancellationToken);
+        var result = await _controller.DownloadContent(guidId.ToString(), default);
 
         // Assert
-        _mediatorMock.Verify(m => m.Send(It.IsAny<GetFileContextWithContentById>(), It.IsAny<CancellationToken>()), Times.Once());
+        _mediatorMock.Verify(
+            m => m.Send(
+                It.IsAny<GetFileContextWithContentById>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
 
-        var x = result.Should().NotBeNull().And.BeOfType<FileStreamResult>()
+        result.Should().NotBeNull()
+            .And.BeOfType<FileStreamResult>()
 
             .Which.Should().HaveContentType("application/octet-stream")
             .And.HaveFileDownloadName(fileContextName)
@@ -68,33 +75,41 @@ public class TestFileContentController
     }
 
     [Fact]
-    public async Task DownloadContent_WithNonExistentId_ReturnNotFoundResponse()
+    public async Task DownloadContent_WithRequestFailure_ReturnBadRequestResponse()
     {
         // Arrange
-        var id = Guid.Empty.ToString();
-        var cancellationToken = new CancellationToken();
+        var guidId = Guid.Empty;
 
-        var getContextWithContent = new GetFileContextWithContentById(Guid.Parse(id));
-        var errorMessage = "Test content not found error.";
         var fileContextResult = new OperationResult<FileContext>();
-        fileContextResult.AddError(ErrorCode.NotFound, errorMessage);
-        _mediatorMock.Setup(m => m.Send(getContextWithContent, cancellationToken))
+
+        var errorMessage = "Test content not found error.";
+        fileContextResult.AddError((ErrorCode)(-1), errorMessage);
+
+        _mediatorMock.Setup(
+            m => m.Send(
+                It.Is<GetFileContextWithContentById>(x => x.FileContextId == guidId),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(fileContextResult);
 
         // Act
-        var result = await _controller.DownloadContent(id, cancellationToken);
+        var result = await _controller.DownloadContent(guidId.ToString(), default);
 
         // Assert
-        _mediatorMock.Verify(m => m.Send(It.IsAny<GetFileContextWithContentById>(), It.IsAny<CancellationToken>()), Times.Once());
+        _mediatorMock.Verify(
+            m => m.Send(
+                It.IsAny<GetFileContextWithContentById>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
 
-        result.Should().NotBeNull().And.BeOfType<NotFoundObjectResult>()
+        result.Should().NotBeNull()
+            .And.BeOfType<BadRequestObjectResult>()
 
-            .Which.Should().HaveStatusCode(404)
+            .Which.Should().HaveStatusCode(400)
             .And.HaveNotNullValue()
             .And.HaveValueOfType<ErrorResponse>()
 
-            .Which.Should().HaveStatusCode(404)
-            .And.HaveStatusPhrase("Not Found")
+            .Which.Should().HaveStatusCode(400)
+            .And.HaveStatusPhrase("Bad Request")
             .And.HaveTimeStampCloseTo(DateTime.UtcNow, 1.Minutes())
             .And.HaveSingleError(errorMessage);
     }

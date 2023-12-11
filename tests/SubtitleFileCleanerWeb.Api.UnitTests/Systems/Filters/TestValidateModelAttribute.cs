@@ -23,7 +23,9 @@ public class TestValidateModelAttribute
         validateModelFilter.OnActionExecuting(actionExecutingContextMock.Object);
 
         // Assert
-        actionExecutingContextMock.VerifySet(ec => ec.Result = It.IsAny<IActionResult>(), Times.Never());
+        actionExecutingContextMock.VerifySet(
+            ec => ec.Result = It.IsAny<IActionResult>(),
+            Times.Never());
     }
 
     [Fact]
@@ -35,9 +37,9 @@ public class TestValidateModelAttribute
 
         var actionExecutingContextMock = ActionExecutingContextMock.Create();
 
-        var actionExecutingContextObject = actionExecutingContextMock.Object;
-        actionExecutingContextObject.ModelState.AddModelError("guidId", firstErrorMessage);
-        actionExecutingContextObject.ModelState.AddModelError("objectA", secondErrorMessage);
+        var actionExecutingContext = actionExecutingContextMock.Object;
+        actionExecutingContext.ModelState.AddModelError("guidId", firstErrorMessage);
+        actionExecutingContext.ModelState.AddModelError("objectA", secondErrorMessage);
 
         IActionResult? result = null;
         actionExecutingContextMock.SetupSet(ec => ec.Result = It.IsAny<BadRequestObjectResult>())
@@ -46,12 +48,15 @@ public class TestValidateModelAttribute
         var validateModelFilter = new ValidateModelAttribute();
 
         // Act
-        validateModelFilter.OnActionExecuting(actionExecutingContextMock.Object);
+        validateModelFilter.OnActionExecuting(actionExecutingContext);
 
         // Assert
-        actionExecutingContextMock.VerifySet(ec => ec.Result = It.IsAny<IActionResult>(), Times.Once());
+        actionExecutingContextMock.VerifySet(
+            ec => ec.Result = It.IsAny<IActionResult>(),
+            Times.Once());
 
-        result.Should().NotBeNull().And.BeOfType<BadRequestObjectResult>()
+        result.Should().NotBeNull()
+            .And.BeOfType<BadRequestObjectResult>()
 
             .Which.Should().HaveStatusCode(400)
             .And.HaveNotNullValue()

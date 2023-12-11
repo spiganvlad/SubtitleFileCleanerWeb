@@ -23,9 +23,9 @@ public class TestDeleteFileContextHandler
     {
         _fileContexts = FileContextFixture.GetListOfThree();
 
-        _mediatorMock = new Mock<IMediator>();
+        _mediatorMock = new();
 
-        _dbContextMock = new Mock<ApplicationDbContext>();
+        _dbContextMock = new();
         _dbContextMock.Setup(dbContext => dbContext.FileContexts).
             ReturnsDbSet(_fileContexts);
         _dbContextMock.Setup(db => db.FileContexts.Remove(It.IsAny<FileContext>()))
@@ -37,26 +37,39 @@ public class TestDeleteFileContextHandler
     {
         // Arrange
         var contextToRemove = _fileContexts.Last();
-        var cancellationToken = new CancellationToken();
+        var path = "Unauthorized\\" + contextToRemove.FileContextId.ToString();
 
-        var deleteContent = new DeleteFileContent("Unauthorized\\" + contextToRemove.FileContextId.ToString());
-        var mediatorResult = new OperationResult<bool> { Payload = true };
-        _mediatorMock.Setup(m => m.Send(deleteContent, cancellationToken))
-            .ReturnsAsync(mediatorResult);
+        _mediatorMock.Setup(
+            m => m.Send(
+                It.Is<DeleteFileContent>(x => x.Path == path),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new OperationResult<bool> { Payload = true });
 
         var request = new DeleteFileContext(contextToRemove.FileContextId);
 
         var handler = new DeleteFileContextHandler(_mediatorMock.Object, _dbContextMock.Object);
 
         // Act
-        var result = await handler.Handle(request, cancellationToken);
+        var result = await handler.Handle(request, default);
 
         // Assert
-        _mediatorMock.Verify(m => m.Send(It.IsAny<DeleteFileContent>(), It.IsAny<CancellationToken>()), Times.Once());
+        _mediatorMock.Verify(
+            m => m.Send(
+                It.IsAny<DeleteFileContent>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
 
-        _dbContextMock.Verify(db => db.FileContexts, Times.Exactly(2));
-        _dbContextMock.Verify(db => db.FileContexts.Remove(It.IsAny<FileContext>()), Times.Once());
-        _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once());
+        _dbContextMock.VerifyGet(
+            db => db.FileContexts,
+            Times.Exactly(2));
+
+        _dbContextMock.Verify(
+            db => db.FileContexts.Remove(It.IsAny<FileContext>()),
+            Times.Once());
+
+        _dbContextMock.Verify(
+            db => db.SaveChangesAsync(It.IsAny<CancellationToken>()),
+            Times.Once());
 
         result.Should().NotBeNull()
             .And.NotBeInErrorState()
@@ -65,28 +78,39 @@ public class TestDeleteFileContextHandler
             
             .Which.Should().Be(contextToRemove);
 
-        _fileContexts.Should().HaveCount(2).And.NotContain(contextToRemove);
+        _fileContexts.Should().HaveCount(2)
+            .And.NotContain(contextToRemove);
     }
 
     [Fact]
     public async Task Handle_WithNonExistentGuidId_ReturnNotFoundError()
     {
         // Arrange
-        var cancellationToken = new CancellationToken();
-
         var request = new DeleteFileContext(Guid.Empty);
 
         var handler = new DeleteFileContextHandler(_mediatorMock.Object, _dbContextMock.Object);
 
         // Act
-        var result = await handler.Handle(request, cancellationToken);
+        var result = await handler.Handle(request, default);
 
         // Assert
-        _mediatorMock.Verify(m => m.Send(It.IsAny<DeleteFileContent>(), It.IsAny<CancellationToken>()), Times.Never());
+        _mediatorMock.Verify(
+            m => m.Send(
+                It.IsAny<DeleteFileContent>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never());
 
-        _dbContextMock.Verify(db => db.FileContexts, Times.Once());
-        _dbContextMock.Verify(db => db.FileContexts.Remove(It.IsAny<FileContext>()), Times.Never());
-        _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never());
+        _dbContextMock.VerifyGet(
+            db => db.FileContexts,
+            Times.Once());
+
+        _dbContextMock.Verify(
+            db => db.FileContexts.Remove(It.IsAny<FileContext>()),
+            Times.Never());
+
+        _dbContextMock.Verify(
+            db => db.SaveChangesAsync(It.IsAny<CancellationToken>()),
+            Times.Never());
 
         result.Should().NotBeNull()
             .And.BeInErrorState()
@@ -101,13 +125,18 @@ public class TestDeleteFileContextHandler
     {
         // Arrange
         var contextToDelete = _fileContexts.Last();
-        var cancellationToken = new CancellationToken();
+        var path = "Unauthorized\\" + contextToDelete.FileContextId.ToString();
 
-        var deleteFileContent = new DeleteFileContent("Unauthorized\\" + contextToDelete.FileContextId.ToString());
         var fileContentResult = new OperationResult<bool>();
+
+        var errorCode = (ErrorCode)(-1);
         var errorMessage = "Test unexpected error occurred";
-        fileContentResult.AddError(ErrorCode.UnknownError, errorMessage);
-        _mediatorMock.Setup(m => m.Send(deleteFileContent, cancellationToken))
+        fileContentResult.AddError(errorCode, errorMessage);
+        
+        _mediatorMock.Setup(
+            m => m.Send(
+                It.Is<DeleteFileContent>(x => x.Path == path),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(fileContentResult);
 
         var request = new DeleteFileContext(contextToDelete.FileContextId);
@@ -115,17 +144,26 @@ public class TestDeleteFileContextHandler
         var handler = new DeleteFileContextHandler(_mediatorMock.Object, _dbContextMock.Object);
 
         // Act
-        var result = await handler.Handle(request, cancellationToken);
+        var result = await handler.Handle(request, default);
 
         // Assert
-        _mediatorMock.Verify(m => m.Send(It.IsAny<DeleteFileContent>(), It.IsAny<CancellationToken>()), Times.Once());
+        _mediatorMock.Verify(
+            m => m.Send(
+                It.IsAny<DeleteFileContent>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
 
-        _dbContextMock.Verify(db => db.FileContexts, Times.Once());
-        _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never());
+        _dbContextMock.VerifyGet(
+            db => db.FileContexts,
+            Times.Once());
+
+        _dbContextMock.Verify(
+            db => db.SaveChangesAsync(It.IsAny<CancellationToken>()),
+            Times.Never());
 
         result.Should().NotBeNull()
             .And.BeInErrorState()
-            .And.HaveSingleError(ErrorCode.UnknownError, errorMessage)
+            .And.HaveSingleError(errorCode, errorMessage)
             .And.HaveDefaultPayload();
     }
 
@@ -133,10 +171,8 @@ public class TestDeleteFileContextHandler
     public async Task Handle_WithUnknownError_ReturnUnknownError()
     {
         // Arrange
-        var cancellationToken = new CancellationToken();
-
         var exceptionMessage = "Unexpected error occurred";
-        _dbContextMock.Setup(db => db.FileContexts)
+        _dbContextMock.SetupGet(db => db.FileContexts)
             .Throws(new Exception(exceptionMessage));
 
         var request = new DeleteFileContext(Guid.Empty);
@@ -144,11 +180,16 @@ public class TestDeleteFileContextHandler
         var handler = new DeleteFileContextHandler(_mediatorMock.Object, _dbContextMock.Object);
 
         // Act
-        var result = await handler.Handle(request, cancellationToken);
+        var result = await handler.Handle(request, default);
 
         // Assert
-        _dbContextMock.Verify(db => db.FileContexts, Times.Once());
-        _dbContextMock.Verify(db => db.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never());
+        _dbContextMock.VerifyGet(
+            db => db.FileContexts,
+            Times.Once());
+
+        _dbContextMock.Verify(
+            db => db.SaveChangesAsync(It.IsAny<CancellationToken>()),
+            Times.Never());
 
         result.Should().NotBeNull()
             .And.BeInErrorState()

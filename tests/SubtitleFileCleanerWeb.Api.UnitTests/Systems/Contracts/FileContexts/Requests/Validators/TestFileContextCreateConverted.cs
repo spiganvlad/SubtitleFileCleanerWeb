@@ -15,8 +15,8 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Contracts.FileContexts.Re
         private readonly FormFileOptions _formFileOptions;
 
         public TestFileContextCreateConverted()
-        {
-            _optionsMock = new Mock<IOptions<FormFileOptions>>();
+        { 
+            _optionsMock = new();
 
             _formFileOptions = new FormFileOptions { MaxFileLength = 2 };
             _optionsMock.SetupGet(o => o.Value).Returns(_formFileOptions);
@@ -38,8 +38,8 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Contracts.FileContexts.Re
             // Assert
             _optionsMock.VerifyGet(o => o.Value, Times.Exactly(2));
 
-            result.Should().NotBeNull();
-            result.IsValid.Should().BeTrue();
+            result.Should().NotBeNull()
+                .And.BeValid();
         }
 
         [Fact]

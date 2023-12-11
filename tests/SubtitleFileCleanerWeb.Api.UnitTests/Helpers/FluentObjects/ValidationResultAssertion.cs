@@ -13,6 +13,13 @@ public class ValidationResultAssertion : ObjectAssertions<ValidationResult, Vali
         _andConstraintThis = new AndConstraint<ValidationResultAssertion>(this);
     }
 
+    public AndConstraint<ValidationResultAssertion> BeValid()
+    {
+        Subject.IsValid.Should().BeTrue();
+
+        return _andConstraintThis;
+    }
+
     public AndConstraint<ValidationResultAssertion> NotBeValid()
     {
         Subject.IsValid.Should().BeFalse();

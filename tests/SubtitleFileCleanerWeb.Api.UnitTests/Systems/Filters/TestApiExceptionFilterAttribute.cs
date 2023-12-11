@@ -15,8 +15,9 @@ public class TestApiExceptionFilterAttribute
     public void OnException_WithException_ReturnInternalServerErrorResponse()
     {
         // Arrange
-        var exceptionMessage = "Test unexpected error occurred.";
         var exceptionContextMock = ExceptionContextMock.Create();
+
+        var exceptionMessage = "Test unexpected error occurred.";
         exceptionContextMock.SetupGet(ec => ec.Exception.Message)
             .Returns(exceptionMessage);
 
@@ -32,7 +33,8 @@ public class TestApiExceptionFilterAttribute
         // Assert
         exceptionContextMock.VerifyGet(ec => ec.Exception.Message, Times.Once());
 
-        objectResult.Should().NotBeNull().And.BeOfType<ObjectResult>()
+        objectResult.Should().NotBeNull()
+            .And.BeOfType<ObjectResult>()
 
             .Which.Should().HaveStatusCode(500)
             .And.HaveNotNullValue()

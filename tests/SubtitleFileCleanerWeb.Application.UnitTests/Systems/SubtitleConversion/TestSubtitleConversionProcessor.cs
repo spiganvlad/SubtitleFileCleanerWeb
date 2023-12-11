@@ -9,38 +9,55 @@ namespace SubtitleFileCleanerWeb.Application.UnitTests.Systems.SubtitleConversio
 
 public class TestSubtitleConversionProcessor
 {
-    private readonly Mock<ISubtitleConverter> _assConverterMock;
+    private readonly Mock<ISubtitleConverter> _minusOneConverterMock;
     private readonly List<ISubtitleConverter> _converters;
 
     public TestSubtitleConversionProcessor()
     {
-        _assConverterMock = new Mock<ISubtitleConverter>();
-        _assConverterMock.Setup(c => c.ConversionType).Returns(ConversionType.Ass);
+        _minusOneConverterMock = new();
+        _minusOneConverterMock.SetupGet(c => c.ConversionType)
+            .Returns((ConversionType)(-1));
 
-        _converters = new List<ISubtitleConverter> { _assConverterMock.Object };
+        _converters = new List<ISubtitleConverter>
+        {
+            _minusOneConverterMock.Object
+        };
     }
 
     [Fact]
     public async Task ProcessAsync_WithValidParameters_ReturnValid()
     {
         // Arrange
-        var contentStream = new MemoryStream(new byte[] { 1, 2, 3, 4, 5 }, false);
-        var conversionType = ConversionType.Ass;
-        var cancellationToken = new CancellationToken();
+        var contentStream = new MemoryStream(new byte[] { 1, 2 }, false);
+        var conversionType = (ConversionType)(-1);
 
-        var expectedContentStream = new MemoryStream(new byte[] { 2, 4 }, false);
-        var converterResult = new OperationResult<Stream> { Payload = expectedContentStream };
-        _assConverterMock.Setup(c => c.ConvertAsync(contentStream, cancellationToken))
+        var expectedContentStream = new MemoryStream(new byte[] { 1 }, false);
+        var converterResult = new OperationResult<Stream>
+        {
+            Payload = expectedContentStream
+        };
+
+        _minusOneConverterMock.Setup(
+            c => c.ConvertAsync(
+                contentStream,
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(converterResult);
 
         var processor = new SubtitleConversionProcessor(_converters);
 
         // Act
-        var result = await processor.ProcessAsync(contentStream, conversionType, cancellationToken);
+        var result = await processor.ProcessAsync(contentStream, conversionType, default);
 
         // Assert
-        _assConverterMock.VerifyGet(c => c.ConversionType, Times.Once());
-        _assConverterMock.Verify(c => c.ConvertAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Once());
+        _minusOneConverterMock.VerifyGet(
+            c => c.ConversionType,
+            Times.Once());
+
+        _minusOneConverterMock.Verify(
+            c => c.ConvertAsync(
+                It.IsAny<Stream>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
 
         result.Should().NotBeNull()
             .And.NotBeInErrorState()
@@ -55,18 +72,24 @@ public class TestSubtitleConversionProcessor
     public async Task ProcessAsync_WithNonExistentConversionType_ReturnSubtitleConversionError()
     {
         // Arrange
-        var contentStream = new MemoryStream();
-        var conversionType = ConversionType.Srt;
-        var cancellationToken = new CancellationToken();
+        var contentStream = Stream.Null;
+        var conversionType = (ConversionType)(-2);
 
         var processor = new SubtitleConversionProcessor(_converters);
 
         // Act
-        var result = await processor.ProcessAsync(contentStream, conversionType, cancellationToken);
+        var result = await processor.ProcessAsync(contentStream, conversionType, default);
 
         // Assert
-        _assConverterMock.VerifyGet(c => c.ConversionType, Times.Once());
-        _assConverterMock.Verify(c => c.ConvertAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Never());
+        _minusOneConverterMock.VerifyGet(
+            c => c.ConversionType,
+            Times.Once());
+
+        _minusOneConverterMock.Verify(
+            c => c.ConvertAsync(
+                It.IsAny<Stream>(),
+                It.IsAny<CancellationToken>()),
+            Times.Never());
 
         result.Should().NotBeNull()
             .And.BeInErrorState()
@@ -78,26 +101,36 @@ public class TestSubtitleConversionProcessor
     public async Task ProcessAsync_WithConverterError_RaiseError()
     {
         // Arrange
-        var contentStream = new MemoryStream();
-        var converterType = ConversionType.Ass;
-        var cancellationToken = new CancellationToken();
-
-        var errorMessage = "Test unexpected error occurred.";
-        var errorCode = ErrorCode.UnknownError;
+        var contentStream = Stream.Null;
+        var converterType = (ConversionType)(-1);
 
         var converterResult = new OperationResult<Stream>();
+
+        var errorCode = (ErrorCode)(-1);
+        var errorMessage = "Test unexpected error occurred.";
         converterResult.AddError(errorCode, errorMessage);
-        _assConverterMock.Setup(c => c.ConvertAsync(contentStream, cancellationToken))
+
+        _minusOneConverterMock.Setup(
+            c => c.ConvertAsync(
+                contentStream,
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(converterResult);
 
         var processor = new SubtitleConversionProcessor(_converters);
 
         // Act
-        var result = await processor.ProcessAsync(contentStream, converterType, cancellationToken);
+        var result = await processor.ProcessAsync(contentStream, converterType, default);
 
         // Assert
-        _assConverterMock.VerifyGet(c => c.ConversionType, Times.Once());
-        _assConverterMock.Verify(c => c.ConvertAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Once());
+        _minusOneConverterMock.VerifyGet(
+            c => c.ConversionType,
+            Times.Once());
+
+        _minusOneConverterMock.Verify(
+            c => c.ConvertAsync(
+                It.IsAny<Stream>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
 
         result.Should().NotBeNull()
             .And.BeInErrorState()
@@ -109,21 +142,31 @@ public class TestSubtitleConversionProcessor
     public async Task ProcessAsync_WithUnknownException_ReturnUnknownError()
     {
         // Arrange
-        var contentStream = new MemoryStream();
-        var cancellationToken = new CancellationToken();
+        var contentStream = Stream.Null;
+        var converterType = (ConversionType)(-1);
 
         var exceptionMessage = "Unexpected error occurred";
-        _assConverterMock.Setup(c => c.ConvertAsync(contentStream, cancellationToken))
+        _minusOneConverterMock.Setup(
+            c => c.ConvertAsync(
+                contentStream,
+                It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception(exceptionMessage));
 
         var processor = new SubtitleConversionProcessor(_converters);
 
         // Act
-        var result = await processor.ProcessAsync(contentStream, ConversionType.Ass, cancellationToken);
+        var result = await processor.ProcessAsync(contentStream, converterType, default);
 
         // Assert
-        _assConverterMock.VerifyGet(c => c.ConversionType, Times.Once());
-        _assConverterMock.Verify(c => c.ConvertAsync(It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Once());
+        _minusOneConverterMock.VerifyGet(
+            c => c.ConversionType,
+            Times.Once());
+
+        _minusOneConverterMock.Verify(
+            c => c.ConvertAsync(
+                It.IsAny<Stream>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
 
         result.Should().NotBeNull()
             .And.BeInErrorState()

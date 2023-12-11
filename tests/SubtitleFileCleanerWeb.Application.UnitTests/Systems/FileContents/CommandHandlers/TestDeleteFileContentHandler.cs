@@ -15,26 +15,30 @@ public class TestDeleteFileContentHandler
 
     public TestDeleteFileContentHandler()
     {
-        _storageContext = new Mock<IBlobStorageContext>();
+        _storageContext = new();
     }
 
     [Fact]
     public async Task Handle_WithExistedContent_DeleteValid()
     {
         // Arrange
-        var cancellationToken = new CancellationToken();
-
-        _storageContext.Setup(sc => sc.DeleteContentAsync(string.Empty, cancellationToken));
+        _storageContext.Setup(sc => sc.DeleteContentAsync(
+            string.Empty,
+            It.IsAny<CancellationToken>()));
 
         var request = new DeleteFileContent(string.Empty);
 
         var handler = new DeleteFileContentHandler(_storageContext.Object);
 
         // Act
-        var result = await handler.Handle(request, cancellationToken);
+        var result = await handler.Handle(request, default);
 
         // Assert
-        _storageContext.Verify(sc => sc.DeleteContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once());
+        _storageContext.Verify(
+            sc => sc.DeleteContentAsync(
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
 
         result.Should().NotBeNull()
             .And.NotBeInErrorState()
@@ -46,11 +50,13 @@ public class TestDeleteFileContentHandler
     public async Task Handle_WithBlobStorageOperationException_ReturnBlobContextOperationExceptionError()
     {
         // Arrange
-        var cancellationToken = new CancellationToken();
-
         var exceptionMessage = "Test exception occurred";
         var exception = InnerExceptionsCreator.Create<BlobStorageOperationException>(exceptionMessage);
-        _storageContext.Setup(sc => sc.DeleteContentAsync(string.Empty, cancellationToken))
+
+        _storageContext.Setup(
+            sc => sc.DeleteContentAsync(
+                string.Empty,
+                It.IsAny<CancellationToken>()))
             .ThrowsAsync(exception);
 
         var request = new DeleteFileContent(string.Empty);
@@ -58,10 +64,14 @@ public class TestDeleteFileContentHandler
         var handler = new DeleteFileContentHandler(_storageContext.Object);
 
         // Act
-        var result = await handler.Handle(request, cancellationToken);
+        var result = await handler.Handle(request, default);
 
         // Assert
-        _storageContext.Verify(sc => sc.DeleteContentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once());
+        _storageContext.Verify(
+            sc => sc.DeleteContentAsync(
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
 
         result.Should().NotBeNull()
             .And.BeInErrorState()
@@ -73,20 +83,27 @@ public class TestDeleteFileContentHandler
     public async Task Handle_WithUnexpectedException_ReturnUnknownError()
     {
         // Arrange
-        var cancellationToken = new CancellationToken();
-
         var exceptionMessage = "Test unexpected error occurred.";
-        _storageContext.Setup(sc => sc.DeleteContentAsync(string.Empty, cancellationToken))
-            .Throws(new Exception(exceptionMessage));
+        _storageContext.Setup(
+            sc => sc.DeleteContentAsync(
+                string.Empty,
+                It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new Exception(exceptionMessage));
 
         var request = new DeleteFileContent(string.Empty);
 
         var handler = new DeleteFileContentHandler(_storageContext.Object);
 
         // Act
-        var result = await handler.Handle(request, cancellationToken);
+        var result = await handler.Handle(request, default);
 
         // Assert
+        _storageContext.Verify(
+            sc => sc.DeleteContentAsync(
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once());
+
         result.Should().NotBeNull()
             .And.BeInErrorState()
             .And.HaveSingleError(ErrorCode.UnknownError, exceptionMessage)

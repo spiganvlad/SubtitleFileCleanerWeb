@@ -16,7 +16,7 @@ public class TestGetFileContextByIdHandler
 
     public TestGetFileContextByIdHandler()
     {
-        _dbContextMock = new Mock<ApplicationDbContext>();
+        _dbContextMock = new();
     }
 
     [Fact]
@@ -27,16 +27,19 @@ public class TestGetFileContextByIdHandler
         var searchedContext = fileContexts.Last();
 
         var request = new GetFileContextById(searchedContext.FileContextId);
-        var cancellationToken = new CancellationToken();
 
-        _dbContextMock.Setup(db => db.FileContexts).ReturnsDbSet(fileContexts);
+        _dbContextMock.SetupGet(db => db.FileContexts)
+            .ReturnsDbSet(fileContexts);
+
         var handler = new GetFileContextByIdHandler(_dbContextMock.Object);
 
         // Act
-        var result = await handler.Handle(request, cancellationToken);
+        var result = await handler.Handle(request, default);
 
         // Assert
-        _dbContextMock.Verify(db => db.FileContexts, Times.Once());
+        _dbContextMock.VerifyGet(
+            db => db.FileContexts,
+            Times.Once());
 
         result.Should().NotBeNull()
             .And.NotBeInErrorState()
@@ -51,16 +54,19 @@ public class TestGetFileContextByIdHandler
     {
         // Arrange
         var request = new GetFileContextById(Guid.Empty);
-        var cancellationToken = new CancellationToken();
 
-        _dbContextMock.Setup(db => db.FileContexts).ReturnsDbSet(Enumerable.Empty<FileContext>());
+        _dbContextMock.SetupGet(db => db.FileContexts)
+            .ReturnsDbSet(Enumerable.Empty<FileContext>());
+
         var handler = new GetFileContextByIdHandler(_dbContextMock.Object);
 
         // Act
-        var result = await handler.Handle(request, cancellationToken);
+        var result = await handler.Handle(request, default);
 
         // Assert
-        _dbContextMock.Verify(x => x.FileContexts, Times.Once());
+        _dbContextMock.VerifyGet(
+            x => x.FileContexts,
+            Times.Once());
 
         result.Should().NotBeNull()
             .And.BeInErrorState()
@@ -73,17 +79,20 @@ public class TestGetFileContextByIdHandler
     {
         // Arrange
         var request = new GetFileContextById(Guid.Empty);
-        var cancellationToken = new CancellationToken();
 
         var exceptionError = "Unexcepted error occurred";
-        _dbContextMock.Setup(db => db.FileContexts).Throws(new Exception(exceptionError));
+        _dbContextMock.SetupGet(db => db.FileContexts)
+            .Throws(new Exception(exceptionError));
+
         var handler = new GetFileContextByIdHandler(_dbContextMock.Object);
 
         // Act
-        var result = await handler.Handle(request, cancellationToken);
+        var result = await handler.Handle(request, default);
 
         // Assert
-        _dbContextMock.Verify(db => db.FileContexts, Times.Once());
+        _dbContextMock.VerifyGet(
+            db => db.FileContexts,
+            Times.Once());
 
         result.Should().NotBeNull()
             .And.BeInErrorState()
