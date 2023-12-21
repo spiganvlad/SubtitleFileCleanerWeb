@@ -80,7 +80,7 @@ public class TestCreateFileContentHandler
         // Arrange
         var contentStream = new MemoryStream(new byte[] { 1 }, false);
 
-        var exceptionMessage = "Blob exception occurred";
+        var exceptionMessage = "Test blob exception occurred.";
         var exception = InnerExceptionsCreator.Create<BlobStorageOperationException>(exceptionMessage);
 
         _blobContextMock.Setup(
@@ -117,7 +117,7 @@ public class TestCreateFileContentHandler
         // Arrange
         var contentStream = new MemoryStream(new byte[] { 1 }, false);
 
-        var exceptionMessage = "Unexpected exception occurred";
+        var exceptionMessage = "Test unexpected error occurred.";
         _blobContextMock.Setup(
             bc => bc.CreateContentAsync(
                 string.Empty,

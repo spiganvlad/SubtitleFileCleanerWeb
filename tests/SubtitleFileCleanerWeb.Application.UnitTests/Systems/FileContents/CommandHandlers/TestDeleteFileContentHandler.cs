@@ -50,7 +50,7 @@ public class TestDeleteFileContentHandler
     public async Task Handle_WithBlobStorageOperationException_ReturnBlobContextOperationExceptionError()
     {
         // Arrange
-        var exceptionMessage = "Test exception occurred";
+        var exceptionMessage = "Test blob exception occurred.";
         var exception = InnerExceptionsCreator.Create<BlobStorageOperationException>(exceptionMessage);
 
         _storageContext.Setup(

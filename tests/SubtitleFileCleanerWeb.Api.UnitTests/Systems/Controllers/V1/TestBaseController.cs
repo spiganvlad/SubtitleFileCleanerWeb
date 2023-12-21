@@ -107,7 +107,7 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Controllers.V1
         public void HandleErrorResponse_WithUnprocessableContentError_ReturnUnprocessableEntityResult()
         {
             // Arrange
-            var errorMessage = "Test unprocessable content error occurred";
+            var errorMessage = "Test unprocessable content error occurred.";
             var errors = new List<Error> 
             {
                 new() { Code = ErrorCode.UnprocessableContent, Message = errorMessage }

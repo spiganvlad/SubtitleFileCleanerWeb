@@ -99,7 +99,7 @@ public class TestGetFileContextWithContentByIdHandler
 
         result.Should().NotBeNull()
             .And.BeInErrorState()
-            .And.HaveSingleError(ErrorCode.NotFound, $"No file context found with id: {Guid.Empty}")
+            .And.HaveSingleError(ErrorCode.NotFound, $"No file context found with id: {Guid.Empty}.")
             .And.HaveDefaultPayload();
     }
 
@@ -117,7 +117,7 @@ public class TestGetFileContextWithContentByIdHandler
         var fileContentResult = new OperationResult<FileContent>();
 
         var errorCode = (ErrorCode)(-1);
-        var errorMessage = "Test unexpected error occurred";
+        var errorMessage = "Test unexpected error occurred.";
         fileContentResult.AddError(errorCode, errorMessage);
 
         _mediatorMock.Setup(
@@ -154,7 +154,7 @@ public class TestGetFileContextWithContentByIdHandler
     public async Task Handle_WithUnexpectedException_ReturnUnknownError()
     {
         // Arrange
-        var exceptionMessage = "Test unexpected error occurred";
+        var exceptionMessage = "Test unexpected error occurred.";
         _dbContextMock.SetupGet(db => db.FileContexts)
             .Throws(new Exception(exceptionMessage));
 

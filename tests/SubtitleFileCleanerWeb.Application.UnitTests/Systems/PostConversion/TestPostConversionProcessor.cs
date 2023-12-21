@@ -170,7 +170,7 @@ public class TestPostConversionProcessor
             .And.BeInErrorState()
             .And.HaveSingleError(
                 ErrorCode.PostConversionException,
-                $"No converter was found for post conversion option: {conversionOption}")
+                $"No converter was found for post conversion option: {conversionOption}.")
             .And.HaveDefaultPayload();
     }
 

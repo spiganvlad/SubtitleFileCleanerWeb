@@ -79,7 +79,7 @@ public class TestInMemoryBlobStorageContext
 
         // Assert
         await act.Should().ThrowAsync<BlobStorageOperationException>()
-            .WithMessage($"Content already exists on path: {path}");
+            .WithMessage($"Content already exists on path: {path}.");
     }
 
     [Fact]
@@ -113,6 +113,6 @@ public class TestInMemoryBlobStorageContext
 
         // Assert
         await act.Should().ThrowAsync<BlobStorageOperationException>()
-            .WithMessage($"No blob content was found on path: {path}");
+            .WithMessage($"No blob content was found on path: {path}.");
     }
 }

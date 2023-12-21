@@ -93,7 +93,7 @@ public class TestSubtitleConversionProcessor
 
         result.Should().NotBeNull()
             .And.BeInErrorState()
-            .And.HaveSingleError(ErrorCode.SubtitleConversionException, $"No converter was found for conversion type: {conversionType}")
+            .And.HaveSingleError(ErrorCode.SubtitleConversionException, $"No converter was found for conversion type: {conversionType}.")
             .And.HaveDefaultPayload();
     }
 
@@ -145,7 +145,7 @@ public class TestSubtitleConversionProcessor
         var contentStream = Stream.Null;
         var converterType = (ConversionType)(-1);
 
-        var exceptionMessage = "Unexpected error occurred";
+        var exceptionMessage = "Test unexpected error occurred.";
         _minusOneConverterMock.Setup(
             c => c.ConvertAsync(
                 contentStream,

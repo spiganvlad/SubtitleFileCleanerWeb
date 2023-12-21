@@ -25,7 +25,7 @@ public class ValidateGuidAttribute : ActionFilterAttribute
 
             if (!Guid.TryParse(value?.ToString(), out _))
             {
-                errors.Add($"Invalid GUID format of the parameter: {propName}");
+                errors.Add($"Invalid GUID format of the parameter: {propName}.");
                 isError = true;
             }
         }

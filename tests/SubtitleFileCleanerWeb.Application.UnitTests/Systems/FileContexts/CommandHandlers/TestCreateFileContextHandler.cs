@@ -133,7 +133,7 @@ public class TestCreateFileContextHandler
         var mediatorResult = new OperationResult<FileContent>();
 
         var errorCode = (ErrorCode)(-1);
-        var errorMessage = "Test unexpected error occurred";
+        var errorMessage = "Test unexpected error occurred.";
         mediatorResult.AddError(errorCode, errorMessage);
 
         _mediatorMock.Setup(
@@ -175,7 +175,7 @@ public class TestCreateFileContextHandler
     public async Task Handle_WithUnexpectedError_ReturnUnknownError()
     {
         // Arrange
-        var exceptionMessage = "Unexpected error occurred";
+        var exceptionMessage = "Test unexpected error occurred.";
         _mediatorMock.Setup(
             m => m.Send(
                 It.IsAny<CreateFileContent>(),

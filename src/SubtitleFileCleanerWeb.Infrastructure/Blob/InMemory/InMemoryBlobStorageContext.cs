@@ -20,7 +20,7 @@ public class InMemoryBlobStorageContext : IBlobStorageContext
     public async Task CreateContentAsync(string path, Stream contentStream, CancellationToken cancellationToken)
     {
         if (StorageContext.ContainsKey(path))
-            throw new BlobStorageOperationException($"Content already exists on path: {path}");
+            throw new BlobStorageOperationException($"Content already exists on path: {path}.");
 
         var content = new byte[contentStream.Length];
         await contentStream.ReadAsync(content, cancellationToken);
@@ -33,7 +33,7 @@ public class InMemoryBlobStorageContext : IBlobStorageContext
         await Task.Run(() =>
         {
             if (!StorageContext.ContainsKey(path))
-                throw new BlobStorageOperationException($"No blob content was found on path: {path}");
+                throw new BlobStorageOperationException($"No blob content was found on path: {path}.");
 
             StorageContext.Remove(path);
         }, cancellationToken);

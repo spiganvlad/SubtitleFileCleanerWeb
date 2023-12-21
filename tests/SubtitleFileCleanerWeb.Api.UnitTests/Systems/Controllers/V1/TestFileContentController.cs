@@ -82,7 +82,7 @@ public class TestFileContentController
 
         var fileContextResult = new OperationResult<FileContext>();
 
-        var errorMessage = "Test content not found error.";
+        var errorMessage = "Test unknown error occurred.";
         fileContextResult.AddError((ErrorCode)(-1), errorMessage);
 
         _mediatorMock.Setup(

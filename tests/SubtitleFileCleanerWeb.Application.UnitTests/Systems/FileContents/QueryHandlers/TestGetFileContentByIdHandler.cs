@@ -78,7 +78,7 @@ public class TestGetFileContentByIdHandler
 
         result.Should().NotBeNull()
             .And.BeInErrorState()
-            .And.HaveSingleError(ErrorCode.NotFound, $"File content not found on path: {string.Empty}")
+            .And.HaveSingleError(ErrorCode.NotFound, $"File content not found on path: {string.Empty}.")
             .And.HaveDefaultPayload();
     }
 
@@ -116,7 +116,7 @@ public class TestGetFileContentByIdHandler
     public async Task Handle_WithUnexpectedError_ReturnUnknownError()
     {
         // Arrange
-        var exceptionMessage = "Unexpected error occurred";
+        var exceptionMessage = "Test unexpected error occurred.";
         _blobContextMock.Setup(
             bc => bc.GetContentStreamAsync(
                 string.Empty,

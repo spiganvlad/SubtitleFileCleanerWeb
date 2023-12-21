@@ -45,20 +45,20 @@ public class TestOperationResult
         // Arrange
         var firstError = new Error 
         { 
-            Code = ErrorCode.UnknownError,
-            Message = "Test unknown error occurred."
+            Code = (ErrorCode)(-1),
+            Message = "Test first error occurred."
         };
 
         var secondError = new Error
         {
-            Code = ErrorCode.NotFound,
-            Message = "Test not found error occurred."
+            Code = (ErrorCode)(-2),
+            Message = "Test second error occurred."
         };
 
         var thirdError = new Error
         {
-            Code = ErrorCode.UnprocessableContent,
-            Message = "Test unprocessable unknown error occurred."
+            Code = (ErrorCode)(-3),
+            Message = "Test third error occurred."
         };
 
         var errors = new Error[] { firstError, secondError, thirdError };
@@ -83,28 +83,28 @@ public class TestOperationResult
     public void CopyErrors_WithInitialError_WorksValid()
     {
         // Arrange
-        var initialError = new Error
+        var initialFirstError = new Error
         {
-            Code = ErrorCode.UnknownError,
-            Message = "Test unknown initial error occurred."
-        };
-
-        var firstError = new Error
-        {
-            Code = ErrorCode.UnknownError,
-            Message = "Test first unknown error occurred."
+            Code = (ErrorCode)(-1),
+            Message = "Test initial first error occurred."
         };
 
         var secondError = new Error
         {
-            Code = ErrorCode.NotFound,
-            Message = "Test not found error occurred."
+            Code = (ErrorCode)(-2),
+            Message = "Test second unknown error occurred."
         };
 
-        var errors = new List<Error> { firstError, secondError };
+        var thirdError = new Error
+        {
+            Code = (ErrorCode)(-3),
+            Message = "Test third error occurred."
+        };
+
+        var errors = new List<Error> { secondError, thirdError };
 
         var result = new OperationResult<bool>();
-        result.Errors.Add(initialError);
+        result.Errors.Add(initialFirstError);
 
         // Act
         result.CopyErrors(errors);
@@ -115,8 +115,8 @@ public class TestOperationResult
 
         result.Errors.Should().HaveCount(3)
             .And.Satisfy(
-            e => e.Code == initialError.Code && e.Message == initialError.Message,
-            e => e.Code == firstError.Code && e.Message == firstError.Message,
-            e => e.Code == secondError.Code && e.Message == secondError.Message);
+            e => e.Code == initialFirstError.Code && e.Message == initialFirstError.Message,
+            e => e.Code == secondError.Code && e.Message == secondError.Message,
+            e => e.Code == thirdError.Code && e.Message == thirdError.Message);
     }
 }

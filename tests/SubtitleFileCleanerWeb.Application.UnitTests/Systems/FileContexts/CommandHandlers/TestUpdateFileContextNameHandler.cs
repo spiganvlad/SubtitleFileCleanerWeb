@@ -116,7 +116,7 @@ public class TestUpdateFileContextNameHandler
 
         result.Should().NotBeNull()
             .And.BeInErrorState()
-            .And.HaveSingleError(ErrorCode.NotFound, $"No file context found with id: {fileContextId}")
+            .And.HaveSingleError(ErrorCode.NotFound, $"No file context found with id: {fileContextId}.")
             .And.HaveDefaultPayload();
     }
 
@@ -124,7 +124,7 @@ public class TestUpdateFileContextNameHandler
     public async Task Handle_WithUnexpectedError_ReturnUnknownError()
     {
         // Arrange
-        var exceptionMessage = "Unexpected error occurred";
+        var exceptionMessage = "Test unexpected error occurred.";
         _dbContextMock.SetupGet(db => db.FileContexts)
             .Throws(new Exception(exceptionMessage));
 

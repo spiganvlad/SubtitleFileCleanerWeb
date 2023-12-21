@@ -70,7 +70,7 @@ public class TestGetFileContextByIdHandler
 
         result.Should().NotBeNull()
             .And.BeInErrorState()
-            .And.HaveSingleError(ErrorCode.NotFound, $"No file context found with id: {Guid.Empty}")
+            .And.HaveSingleError(ErrorCode.NotFound, $"No file context found with id: {Guid.Empty}.")
             .And.HaveDefaultPayload();
     }
 
@@ -80,7 +80,7 @@ public class TestGetFileContextByIdHandler
         // Arrange
         var request = new GetFileContextById(Guid.Empty);
 
-        var exceptionError = "Unexcepted error occurred";
+        var exceptionError = "Test unexcepted error occurred.";
         _dbContextMock.SetupGet(db => db.FileContexts)
             .Throws(new Exception(exceptionError));
 

@@ -66,7 +66,7 @@ public class TestConvertSubtitleFileHandler
         var conversionResult = new OperationResult<Stream>();
 
         var errorCode = (ErrorCode)(-1);
-        var errorMessage = "Test unexpected error occurred";
+        var errorMessage = "Test unexpected error occurred.";
         conversionResult.AddError(errorCode, errorMessage);
 
         _conversionProcessor.Setup(

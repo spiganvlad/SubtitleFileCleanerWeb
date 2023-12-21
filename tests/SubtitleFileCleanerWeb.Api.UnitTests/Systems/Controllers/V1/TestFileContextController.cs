@@ -429,7 +429,7 @@ public class TestFileContextController
 
         var createContextResult = new OperationResult<FileContext>();
 
-        var errorMessage = "Test unknown error occurred";
+        var errorMessage = "Test unknown error occurred.";
         createContextResult.AddError((ErrorCode)(-1), errorMessage);
 
         _mediatorMock.Setup(
