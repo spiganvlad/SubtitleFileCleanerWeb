@@ -7,9 +7,21 @@ public class FileContentValidator : AbstractValidator<FileContent>
 {
     public FileContentValidator()
     {
-        RuleFor(fc => fc.Content).Cascade(CascadeMode.Stop)
-            .NotNull().WithMessage("File content stream cannot be null.")
-            .Must(fc => fc.Length > 0).WithMessage("File content stream cannot be empty.")
-            .Must(fc => !fc.CanWrite).WithMessage("File content stream must be readonly.");
+        RuleFor(
+            fileContent => fileContent.Content)
+            .NotNull()
+            .WithMessage("File content stream cannot be null.")
+            .ChildRules(inlineValidator =>
+            {
+                inlineValidator.RuleFor(
+                    content => content.Length)
+                .GreaterThan(0)
+                .WithMessage("File content stream cannot be empty.");
+
+                inlineValidator.RuleFor(
+                    content => content.CanWrite)
+                .Must(canWrite => !canWrite)
+                .WithMessage("File content stream must be readonly.");
+            });
     }
 }

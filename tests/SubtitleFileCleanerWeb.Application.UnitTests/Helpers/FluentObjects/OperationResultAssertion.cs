@@ -70,5 +70,12 @@ public class OperationResultAssertion<T> : ObjectAssertions<OperationResult<T>, 
 
         return _andConstraintThis;
     }
+
+    public AndConstraint<OperationResultAssertion<T>> HaveMultipleErrors(params Error[] errors)
+    {
+        Subject.Errors.Should().BeEquivalentTo(errors, options => options.WithStrictOrdering());
+
+        return _andConstraintThis;
+    }
     #endregion
 }

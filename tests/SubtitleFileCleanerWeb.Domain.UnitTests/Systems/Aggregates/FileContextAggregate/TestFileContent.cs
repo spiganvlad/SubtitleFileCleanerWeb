@@ -44,7 +44,7 @@ public class TestFileContent
     public void Create_WithEmptyBytes_ThrowException()
     {
         // Arrange
-        var contentStream = new MemoryStream(Array.Empty<byte>());
+        var contentStream = new MemoryStream(Array.Empty<byte>(), false);
 
         // Act
         var act = () => FileContent.Create(contentStream);

@@ -8,18 +8,23 @@ public class CreateFromConversionValidator : AbstractValidator<CreateFromConvers
 {
     public CreateFromConversionValidator(IOptions<FormFileOptions> options)
     {
-        RuleFor(r => r.File).NotNull().WithMessage("The file must be provided for the request.");
-
-        RuleFor(r => r.File).ChildRules((formFile) =>
-        {
-            formFile.RuleFor(f => f.Length)
+        RuleFor(
+            request => request.File)
+            .NotNull()
+            .WithMessage("The file must be provided for the request.")
+            .ChildRules(inlineValidator =>
+            {
+                inlineValidator.RuleFor(
+                    formFile => formFile.Length)
                 .GreaterThan(0)
                 .WithMessage("File size cannot be zero.")
                 .LessThan(options.Value.MaxFileLength)
                 .WithMessage($"File size cannot be more then {options.Value.MaxFileLength}.");
 
-            formFile.RuleFor(f => f.FileName).NotEmpty().WithMessage("File name must not be empty.");
-            
-        }).When(r => r.File is not null);
+                inlineValidator.RuleFor(
+                    formFile => formFile.FileName)
+                .NotEmpty()
+                .WithMessage("File name must not be empty.");
+            });
     }
 }

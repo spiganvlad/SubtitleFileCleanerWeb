@@ -93,10 +93,13 @@ public class TestCreateFileContextHandler
     }
 
     [Fact]
-    public async Task Handle_WithNullName_ReturnValidationError()
+    public async Task Handle_WithInvalidParameters_ReturnValidationError()
     {
         // Arrange
-        var request = new CreateFileContext(null!, new MemoryStream(new byte[] { 1 }));
+        var contextName = string.Empty;
+        var contentStream = new MemoryStream(Array.Empty<byte>());
+
+        var request = new CreateFileContext(contextName, contentStream);
 
         var handler = new CreateFileContextHandler(_mediatorMock.Object, _dbContextMock.Object);
 
@@ -120,7 +123,17 @@ public class TestCreateFileContextHandler
 
         result.Should().NotBeNull()
             .And.BeInErrorState()
-            .And.HaveSingleError(ErrorCode.ValidationError, "File context name cannot be null.")
+            .And.HaveMultipleErrors(
+                new Error
+                {
+                    Code = ErrorCode.ValidationError,
+                    Message = "File context name cannot be empty."
+                },
+                new Error
+                {
+                    Code = ErrorCode.ValidationError,
+                    Message = "File context content size must be greater then 0."
+                })
             .And.HaveDefaultPayload();
 
         _fileContexts.Should().BeEmpty();

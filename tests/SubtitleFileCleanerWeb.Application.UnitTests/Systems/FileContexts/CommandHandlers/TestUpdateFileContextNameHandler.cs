@@ -25,7 +25,7 @@ public class TestUpdateFileContextNameHandler
     }
 
     [Fact]
-    public async Task Handle_WithFooName_ReturnValid()
+    public async Task Handle_WithValidParameters_ReturnValid()
     {
         // Arrange
         var contextToUpdate = _fileContexts.Last();
@@ -59,7 +59,7 @@ public class TestUpdateFileContextNameHandler
     }
 
     [Fact]
-    public async Task Handle_WithEmptyName_ReturnValidationError()
+    public async Task Handle_WithInvalidParameters_ReturnValidationError()
     {
         // Arrange
         var request = new UpdateFileContextName(_fileContexts.Last().FileContextId, string.Empty);

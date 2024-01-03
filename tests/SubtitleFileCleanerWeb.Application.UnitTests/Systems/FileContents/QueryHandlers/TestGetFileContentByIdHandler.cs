@@ -3,6 +3,7 @@ using Moq;
 using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.FileContents.Queries;
 using SubtitleFileCleanerWeb.Application.FileContents.QueryHandlers;
+using SubtitleFileCleanerWeb.Application.Models;
 using SubtitleFileCleanerWeb.Infrastructure.Blob;
 
 namespace SubtitleFileCleanerWeb.Application.UnitTests.Systems.FileContents.QueryHandlers;
@@ -17,7 +18,7 @@ public class TestGetFileContentByIdHandler
     }
 
     [Fact]
-    public async Task Handle_WithExistingId_ReturnValid()
+    public async Task Handle_WithValidParameters_ReturnValid()
     {
         // Arrange
         var contentStream = new MemoryStream(new byte[] { 1 }, false);
@@ -53,7 +54,7 @@ public class TestGetFileContentByIdHandler
     }
 
     [Fact]
-    public async Task Handle_WithNonExistentId_ReturnNotFoundError()
+    public async Task Handle_WithBlobContextReturnsNullContent_ReturnNotFoundError()
     {
         // Arrange
         _blobContextMock.Setup(
@@ -83,14 +84,16 @@ public class TestGetFileContentByIdHandler
     }
 
     [Fact]
-    public async Task Handle_WithWritableStreamFromBlob_ReturnValidationError()
+    public async Task Handle_WithBlobContextReturnsInvalidContent_ReturnValidationError()
     {
         // Arrange
+        var contentStream = new MemoryStream(Array.Empty<byte>(), true);
+
         _blobContextMock.Setup(
             bc => bc.GetContentStreamAsync(
                 string.Empty,
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(() => new MemoryStream(new byte[] { 1 }, true));
+            .ReturnsAsync(contentStream);
 
         var request = new GetFileContentById(string.Empty);
 
@@ -108,7 +111,17 @@ public class TestGetFileContentByIdHandler
 
         result.Should().NotBeNull()
             .And.BeInErrorState()
-            .And.HaveSingleError(ErrorCode.ValidationError, "File content stream must be readonly.")
+            .And.HaveMultipleErrors(
+                new Error
+                {
+                    Code = ErrorCode.ValidationError,
+                    Message = "File content stream cannot be empty."
+                },
+                new Error
+                {
+                    Code = ErrorCode.ValidationError,
+                    Message = "File content stream must be readonly."
+                })
             .And.HaveDefaultPayload();
     }
 

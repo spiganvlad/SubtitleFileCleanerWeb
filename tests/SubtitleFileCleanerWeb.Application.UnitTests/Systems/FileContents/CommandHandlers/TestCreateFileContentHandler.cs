@@ -3,6 +3,7 @@ using Moq;
 using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.FileContents.CommandHandlers;
 using SubtitleFileCleanerWeb.Application.FileContents.Commands;
+using SubtitleFileCleanerWeb.Application.Models;
 using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.Reflection;
 using SubtitleFileCleanerWeb.Infrastructure.Blob;
 using SubtitleFileCleanerWeb.Infrastructure.Exceptions;
@@ -53,7 +54,9 @@ public class TestCreateFileContentHandler
     public async Task Handle_WithInvalidParameters_ReturnValidationError()
     {
         // Arrange
-        var request = new CreateFileContent(string.Empty, null!);
+        var contentStream = new MemoryStream(Array.Empty<byte>(), true);
+
+        var request = new CreateFileContent(string.Empty, contentStream);
 
         var handler = new CreateFileContentHandler(_blobContextMock.Object);
 
@@ -70,7 +73,17 @@ public class TestCreateFileContentHandler
 
         result.Should().NotBeNull()
             .And.BeInErrorState()
-            .And.HaveSingleError(ErrorCode.ValidationError, "File content stream cannot be null.")
+            .And.HaveMultipleErrors(
+                new Error
+                {
+                    Code = ErrorCode.ValidationError,
+                    Message = "File content stream cannot be empty."
+                },
+                new Error
+                {
+                    Code = ErrorCode.ValidationError,
+                    Message = "File content stream must be readonly."
+                })
             .And.HaveDefaultPayload();
     }
 
