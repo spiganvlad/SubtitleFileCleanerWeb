@@ -8,12 +8,13 @@ public class InMemoryBlobStorageContext : IBlobStorageContext
 
     public async Task<Stream?> GetContentStreamAsync(string path, CancellationToken cancellationToken)
     {
-        return await Task.Run(() =>
+        return await Task.Run(() => 
         {
-            if (StorageContext.ContainsKey(path))
-                return new MemoryStream(StorageContext[path], false);
+            StorageContext.TryGetValue(path, out var contentBytes);
+            if (contentBytes is null)
+                return null;
 
-            return null;
+            return new MemoryStream(contentBytes, false);
         }, cancellationToken);
     }
 
