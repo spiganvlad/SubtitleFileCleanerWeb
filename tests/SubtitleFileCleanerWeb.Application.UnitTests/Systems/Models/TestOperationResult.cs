@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using SubtitleFileCleanerWeb.Application.Enums;
+﻿using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.Models;
 
 namespace SubtitleFileCleanerWeb.Application.UnitTests.Systems.Models;

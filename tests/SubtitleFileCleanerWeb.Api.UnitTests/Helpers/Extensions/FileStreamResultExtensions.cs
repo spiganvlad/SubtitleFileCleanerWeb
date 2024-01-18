@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using SubtitleFileCleanerWeb.Api.UnitTests.Helpers.FluentObjects;
+﻿using SubtitleFileCleanerWeb.Api.UnitTests.Helpers.FluentObjects;
 
 namespace SubtitleFileCleanerWeb.Api.UnitTests.Helpers.Extensions;
 

@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using SubtitleFileCleanerWeb.Domain.Aggregates.FileContextAggregate;
+﻿using SubtitleFileCleanerWeb.Domain.Aggregates.FileContextAggregate;
 using SubtitleFileCleanerWeb.Domain.Exceptions;
 
 namespace SubtitleFileCleanerWeb.Domain.UnitTests.Systems.Aggregates.FileContextAggregate;

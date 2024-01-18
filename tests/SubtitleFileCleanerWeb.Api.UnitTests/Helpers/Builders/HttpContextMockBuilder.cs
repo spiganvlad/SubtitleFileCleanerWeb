@@ -1,9 +1,4 @@
-﻿using AutoMapper;
-using MediatR;
-using Microsoft.AspNetCore.Http;
-using Moq;
-
-namespace SubtitleFileCleanerWeb.Api.UnitTests.Helpers.Builders;
+﻿namespace SubtitleFileCleanerWeb.Api.UnitTests.Helpers.Builders;
 
 public class HttpContextMockBuilder
 {

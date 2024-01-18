@@ -1,8 +1,4 @@
-﻿using FluentAssertions;
-using FluentAssertions.Extensions;
-using Microsoft.AspNetCore.Mvc;
-using SubtitleFileCleanerWeb.Api.Contracts.Common;
-using SubtitleFileCleanerWeb.Api.UnitTests.Helpers.Extensions;
+﻿using SubtitleFileCleanerWeb.Api.Contracts.Common;
 using SubtitleFileCleanerWeb.Api.UnitTests.Helpers.Wrappers;
 using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.Models;

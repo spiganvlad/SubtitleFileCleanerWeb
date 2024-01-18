@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using FluentAssertions.Primitives;
+﻿using FluentAssertions.Primitives;
 using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.Models;
 

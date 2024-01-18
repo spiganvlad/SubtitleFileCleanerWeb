@@ -1,11 +1,6 @@
-﻿using FluentAssertions;
-using FluentAssertions.Extensions;
-using Microsoft.AspNetCore.Mvc;
-using Moq;
-using SubtitleFileCleanerWeb.Api.Contracts.Common;
+﻿using SubtitleFileCleanerWeb.Api.Contracts.Common;
 using SubtitleFileCleanerWeb.Api.Filters;
 using SubtitleFileCleanerWeb.Api.UnitTests.Helpers.Creators;
-using SubtitleFileCleanerWeb.Api.UnitTests.Helpers.Extensions;
 
 namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Filters;
 

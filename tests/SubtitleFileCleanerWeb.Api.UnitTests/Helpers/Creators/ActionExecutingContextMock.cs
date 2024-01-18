@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
-using Moq;
 
 namespace SubtitleFileCleanerWeb.Api.UnitTests.Helpers.Creators;
 

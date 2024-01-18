@@ -1,6 +1,4 @@
-﻿using FluentAssertions;
-using FluentAssertions.Primitives;
-using Microsoft.AspNetCore.Mvc;
+﻿using FluentAssertions.Primitives;
 
 namespace SubtitleFileCleanerWeb.Api.UnitTests.Helpers.FluentObjects;
 

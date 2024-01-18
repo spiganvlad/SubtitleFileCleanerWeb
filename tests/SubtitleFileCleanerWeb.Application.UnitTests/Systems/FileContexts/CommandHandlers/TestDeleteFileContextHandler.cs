@@ -1,8 +1,4 @@
-﻿using FluentAssertions;
-using MediatR;
-using Moq;
-using Moq.EntityFrameworkCore;
-using SubtitleFileCleanerWeb.Application.Enums;
+﻿using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.FileContents.Commands;
 using SubtitleFileCleanerWeb.Application.FileContexts.CommandHandlers;
 using SubtitleFileCleanerWeb.Application.FileContexts.Commands;

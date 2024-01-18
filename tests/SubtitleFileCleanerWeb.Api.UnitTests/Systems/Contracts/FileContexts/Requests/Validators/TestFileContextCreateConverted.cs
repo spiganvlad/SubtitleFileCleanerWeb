@@ -1,11 +1,6 @@
-﻿using FluentAssertions;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Options;
-using Moq;
-using SubtitleFileCleanerWeb.Api.Contracts.FileContexts.Requests;
+﻿using SubtitleFileCleanerWeb.Api.Contracts.FileContexts.Requests;
 using SubtitleFileCleanerWeb.Api.Contracts.FileContexts.Requests.Validators;
 using SubtitleFileCleanerWeb.Api.Options;
-using SubtitleFileCleanerWeb.Api.UnitTests.Helpers.Extensions;
 
 namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Contracts.FileContexts.Requests.Validators
 {

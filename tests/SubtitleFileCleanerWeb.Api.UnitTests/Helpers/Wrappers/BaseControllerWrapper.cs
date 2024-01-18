@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using SubtitleFileCleanerWeb.Api.Controllers.V1;
+﻿using SubtitleFileCleanerWeb.Api.Controllers.V1;
 using SubtitleFileCleanerWeb.Application.Models;
 
 namespace SubtitleFileCleanerWeb.Api.UnitTests.Helpers.Wrappers

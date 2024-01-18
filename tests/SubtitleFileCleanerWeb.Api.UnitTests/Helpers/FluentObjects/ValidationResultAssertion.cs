@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using FluentAssertions.Primitives;
+﻿using FluentAssertions.Primitives;
 using FluentValidation.Results;
 
 namespace SubtitleFileCleanerWeb.Api.UnitTests.Helpers.FluentObjects;

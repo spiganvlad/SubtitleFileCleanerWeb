@@ -1,16 +1,8 @@
-﻿using AutoMapper;
-using FluentAssertions;
-using FluentAssertions.Extensions;
-using MediatR;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Moq;
-using SubtitleFileCleanerWeb.Api.Contracts.Common;
+﻿using SubtitleFileCleanerWeb.Api.Contracts.Common;
 using SubtitleFileCleanerWeb.Api.Contracts.FileContexts.Requests;
 using SubtitleFileCleanerWeb.Api.Contracts.FileContexts.Responses;
 using SubtitleFileCleanerWeb.Api.Controllers.V1;
 using SubtitleFileCleanerWeb.Api.UnitTests.Helpers.Builders;
-using SubtitleFileCleanerWeb.Api.UnitTests.Helpers.Extensions;
 using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.FileContexts.Commands;
 using SubtitleFileCleanerWeb.Application.FileContexts.Queries;

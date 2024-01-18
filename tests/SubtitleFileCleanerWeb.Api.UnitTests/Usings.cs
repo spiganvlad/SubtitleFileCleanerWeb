@@ -1,1 +1,10 @@
+global using AutoMapper;
+global using FluentAssertions;
+global using FluentAssertions.Extensions;
+global using MediatR;
+global using Microsoft.AspNetCore.Http;
+global using Microsoft.AspNetCore.Mvc;
+global using Microsoft.Extensions.Options;
+global using Moq;
+global using SubtitleFileCleanerWeb.Api.UnitTests.Helpers.Extensions;
 global using Xunit;

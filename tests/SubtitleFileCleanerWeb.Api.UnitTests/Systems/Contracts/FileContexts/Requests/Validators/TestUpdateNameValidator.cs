@@ -1,7 +1,5 @@
-﻿using FluentAssertions;
-using SubtitleFileCleanerWeb.Api.Contracts.FileContexts.Requests;
+﻿using SubtitleFileCleanerWeb.Api.Contracts.FileContexts.Requests;
 using SubtitleFileCleanerWeb.Api.Contracts.FileContexts.Requests.Validators;
-using SubtitleFileCleanerWeb.Api.UnitTests.Helpers.Extensions;
 
 namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Contracts.FileContexts.Requests.Validators;
 

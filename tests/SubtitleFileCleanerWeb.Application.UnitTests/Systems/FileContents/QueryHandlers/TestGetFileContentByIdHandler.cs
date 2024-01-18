@@ -1,6 +1,4 @@
-﻿using FluentAssertions;
-using Moq;
-using SubtitleFileCleanerWeb.Application.Enums;
+﻿using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.FileContents.Queries;
 using SubtitleFileCleanerWeb.Application.FileContents.QueryHandlers;
 using SubtitleFileCleanerWeb.Application.Models;
