@@ -37,7 +37,7 @@ public class TestApiExceptionFilterAttribute
 
             .Which.Should().HaveStatusCode(500)
             .And.HaveStatusPhrase("Internal Server Error")
-            .And.HaveTimeStampCloseTo(DateTime.UtcNow, 1.Minutes())
+            .And.HaveTimeStampCloseTo(DateTime.UtcNow, 1.Seconds())
             .And.HaveSingleError(exceptionMessage);
     }
 }

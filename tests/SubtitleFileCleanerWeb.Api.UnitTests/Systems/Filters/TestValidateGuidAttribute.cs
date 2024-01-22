@@ -117,7 +117,7 @@ public class TestValidateGuidAttribute
 
             .Which.Should().HaveStatusCode(400)
             .And.HaveStatusPhrase("Bad Request")
-            .And.HaveTimeStampCloseTo(DateTime.UtcNow, 1.Minutes())
+            .And.HaveTimeStampCloseTo(DateTime.UtcNow, 1.Seconds())
             .And.HaveErrors(
             $"Invalid GUID format of the parameter: {firstPropName}.",
             $"Invalid GUID format of the parameter: {secondPropName}.");

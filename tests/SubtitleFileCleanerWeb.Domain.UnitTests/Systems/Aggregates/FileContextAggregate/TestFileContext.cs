@@ -20,8 +20,8 @@ public class TestFileContext
         fileContext.FileContextId.Should().NotBeEmpty();
         fileContext.Name.Should().Be(name);
         fileContext.ContentSize.Should().Be(contentSize);
-        fileContext.DateCreated.Should().BeCloseTo(DateTime.UtcNow, 1.Minutes());
-        fileContext.DateModified.Should().BeCloseTo(DateTime.UtcNow, 1.Minutes());
+        fileContext.DateCreated.Should().BeCloseTo(DateTime.UtcNow, 1.Seconds());
+        fileContext.DateModified.Should().BeCloseTo(DateTime.UtcNow, 1.Seconds());
     }
 
     [Fact]
@@ -100,7 +100,7 @@ public class TestFileContext
         fileContext.ContentSize.Should().Be(contentSize);
         fileContext.DateCreated.Should().Be(dateCreatedBeforeUpdate);
         fileContext.DateModified.Should().NotBe(dateModifiedBeforeUpdate)
-            .And.BeCloseTo(DateTime.UtcNow, 1.Minutes());
+            .And.BeCloseTo(DateTime.UtcNow, 1.Seconds());
     }
 
     [Fact]

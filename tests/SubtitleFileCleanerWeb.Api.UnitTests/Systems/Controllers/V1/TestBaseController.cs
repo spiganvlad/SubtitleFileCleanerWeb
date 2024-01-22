@@ -37,7 +37,7 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Controllers.V1
 
                 .Which.Should().HaveStatusCode(400)
                 .And.HaveStatusPhrase("Bad Request")
-                .And.HaveTimeStampCloseTo(DateTime.UtcNow, 1.Minutes())
+                .And.HaveTimeStampCloseTo(DateTime.UtcNow, 1.Seconds())
                 .And.HaveSingleError(errorMessage);
         }
 
@@ -67,7 +67,7 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Controllers.V1
 
                 .Which.Should().HaveStatusCode(400)
                 .And.HaveStatusPhrase("Bad Request")
-                .And.HaveTimeStampCloseTo(DateTime.UtcNow, 1.Minutes())
+                .And.HaveTimeStampCloseTo(DateTime.UtcNow, 1.Seconds())
                 .And.HaveErrors(firstErrorMessage, secondErrorMessage);
 
         }
@@ -95,7 +95,7 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Controllers.V1
 
                 .Which.Should().HaveStatusCode(404)
                 .And.HaveStatusPhrase("Not Found")
-                .And.HaveTimeStampCloseTo(DateTime.UtcNow, 1.Minutes())
+                .And.HaveTimeStampCloseTo(DateTime.UtcNow, 1.Seconds())
                 .And.HaveSingleError(errorMessage);
         }
 
@@ -122,7 +122,7 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Controllers.V1
 
                 .Which.Should().HaveStatusCode(422)
                 .And.HaveStatusPhrase("Unprocessable Content")
-                .And.HaveTimeStampCloseTo(DateTime.UtcNow, 1.Minutes())
+                .And.HaveTimeStampCloseTo(DateTime.UtcNow, 1.Seconds())
                 .And.HaveSingleError(errorMessage);
         }
     }

@@ -80,8 +80,8 @@ public class TestCreateFileContextHandler
         payload.FileContent.Should().NotBeNull().And.Be(mediatorResult.Payload);
         payload.Name.Should().NotBeNull().And.Be(request.FileName + ".txt");
         payload.ContentSize.Should().Be(content.Length);
-        payload.DateCreated.Should().BeCloseTo(DateTime.UtcNow, 1.Minutes());
-        payload.DateModified.Should().BeCloseTo(DateTime.UtcNow, 1.Minutes());
+        payload.DateCreated.Should().BeCloseTo(DateTime.UtcNow, 1.Seconds());
+        payload.DateModified.Should().BeCloseTo(DateTime.UtcNow, 1.Seconds());
 
         _fileContexts.Should().ContainSingle()
             .Which.Should().NotBeNull()
