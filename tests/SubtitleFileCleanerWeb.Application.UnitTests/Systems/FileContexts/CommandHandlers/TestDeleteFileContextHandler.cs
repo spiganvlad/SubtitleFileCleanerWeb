@@ -32,8 +32,8 @@ public class TestDeleteFileContextHandler
     public async Task Handle_WithValidGuidId_ReturnValid()
     {
         // Arrange
-        var contextToRemove = _fileContexts.Last();
-        var path = "Unauthorized\\" + contextToRemove.FileContextId.ToString();
+        var contextToDelete = _fileContexts.Last();
+        var path = Path.Combine("Unauthorized", contextToDelete.FileContextId.ToString());
 
         _mediatorMock.Setup(
             m => m.Send(
@@ -41,7 +41,7 @@ public class TestDeleteFileContextHandler
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(new OperationResult<bool> { Payload = true });
 
-        var request = new DeleteFileContext(contextToRemove.FileContextId);
+        var request = new DeleteFileContext(contextToDelete.FileContextId);
 
         var handler = new DeleteFileContextHandler(_mediatorMock.Object, _dbContextMock.Object);
 
@@ -72,10 +72,10 @@ public class TestDeleteFileContextHandler
             .And.HaveNoErrors()
             .And.HaveNotDefaultPayload()
             
-            .Which.Should().Be(contextToRemove);
+            .Which.Should().Be(contextToDelete);
 
         _fileContexts.Should().HaveCount(2)
-            .And.NotContain(contextToRemove);
+            .And.NotContain(contextToDelete);
     }
 
     [Fact]
@@ -121,7 +121,7 @@ public class TestDeleteFileContextHandler
     {
         // Arrange
         var contextToDelete = _fileContexts.Last();
-        var path = "Unauthorized\\" + contextToDelete.FileContextId.ToString();
+        var path = Path.Combine("Unauthorized", contextToDelete.FileContextId.ToString());
 
         var fileContentResult = new OperationResult<bool>();
 
