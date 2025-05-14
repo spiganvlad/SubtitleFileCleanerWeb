@@ -1,4 +1,5 @@
-﻿using FluentAssertions.Primitives;
+﻿using FluentAssertions.Execution;
+using FluentAssertions.Primitives;
 using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.Models;
 
@@ -8,7 +9,7 @@ public class OperationResultAssertion<T> : ObjectAssertions<OperationResult<T>, 
 {
     private readonly AndConstraint<OperationResultAssertion<T>> _andConstraintThis;
 
-    public OperationResultAssertion(OperationResult<T> result) : base(result)
+    public OperationResultAssertion(OperationResult<T> result, AssertionChain assertionChain) : base(result, assertionChain)
     {
         _andConstraintThis = new AndConstraint<OperationResultAssertion<T>>(this);
     }
