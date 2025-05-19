@@ -24,7 +24,7 @@ public class TestFileContextController
         _mediatorMock = new();
         _mapperMock = new();
 
-        var httpContext = new HttpContextMockBuilder()
+        var httpContext = new HttpContextMockObjectBuilder()
             .SetupIMediator(_mediatorMock)
             .SetupIMapper(_mapperMock)
             .Build();

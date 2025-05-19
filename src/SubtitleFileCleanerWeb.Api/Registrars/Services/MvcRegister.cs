@@ -8,6 +8,7 @@ public class MvcRegister : IServicesRegister
     {
         builder.Services.AddControllers(config =>
         {
+            config.ModelValidatorProviders.Clear();
             config.Filters.Add<ApiExceptionFilterAttribute>();
         });
     }

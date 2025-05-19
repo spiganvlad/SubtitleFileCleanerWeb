@@ -17,7 +17,7 @@ public class TestFileContentController
     {
         _mediatorMock = new();
 
-        var httpContext = new HttpContextMockBuilder()
+        var httpContext = new HttpContextMockObjectBuilder()
             .SetupIMediator(_mediatorMock)
             .Build();
 

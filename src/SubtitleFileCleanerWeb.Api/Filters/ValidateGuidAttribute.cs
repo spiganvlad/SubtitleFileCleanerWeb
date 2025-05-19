@@ -4,6 +4,9 @@ using SubtitleFileCleanerWeb.Api.Contracts.Common;
 
 namespace SubtitleFileCleanerWeb.Api.Filters;
 
+/// <summary>
+/// Validates specified GUIDs.
+/// </summary>
 public class ValidateGuidAttribute : ActionFilterAttribute
 {
     private readonly string[] _propNames;
