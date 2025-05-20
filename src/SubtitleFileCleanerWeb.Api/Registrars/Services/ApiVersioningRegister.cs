@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Versioning;
+﻿using Asp.Versioning;
 
 namespace SubtitleFileCleanerWeb.Api.Registrars.Services;
 
@@ -14,9 +13,8 @@ public class ApiVersioningRegister : IServicesRegister
 
             config.DefaultApiVersion = new ApiVersion(1, 0);
             config.AssumeDefaultVersionWhenUnspecified = true;
-        });
-
-        builder.Services.AddVersionedApiExplorer(config =>
+        })
+        .AddApiExplorer(config =>
         {
             config.GroupNameFormat = "'v'VVV";
             config.SubstituteApiVersionInUrl = true;
