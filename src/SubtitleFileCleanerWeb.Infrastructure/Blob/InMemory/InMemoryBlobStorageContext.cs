@@ -4,7 +4,7 @@ namespace SubtitleFileCleanerWeb.Infrastructure.Blob.InMemory;
 
 public class InMemoryBlobStorageContext : IBlobStorageContext
 {
-    public Dictionary<string, byte[]> StorageContext { get; } = new();
+    public Dictionary<string, byte[]> StorageContext { get; } = [];
 
     public async Task<Stream?> GetContentStreamAsync(string path, CancellationToken cancellationToken)
     {

@@ -16,7 +16,7 @@ public class TestCreateFileContextHandler
 
     public TestCreateFileContextHandler()
     {
-        _fileContexts = new();
+        _fileContexts = [];
 
         _dbContextMock = new();
         _dbContextMock.Setup(db => db.FileContexts.Add(It.IsAny<FileContext>()))
@@ -30,7 +30,7 @@ public class TestCreateFileContextHandler
     {
         // Arrange
         var contextName = "FooName";
-        var content = new byte[] { 1 };
+        byte[] content = [1];
         var contentStream = new MemoryStream(content);
 
         var mediatorResult = new OperationResult<FileContent>
@@ -93,7 +93,7 @@ public class TestCreateFileContextHandler
     {
         // Arrange
         var contextName = string.Empty;
-        var contentStream = new MemoryStream(Array.Empty<byte>());
+        var contentStream = new MemoryStream([]);
 
         var request = new CreateFileContext(contextName, contentStream);
 
@@ -191,7 +191,7 @@ public class TestCreateFileContextHandler
                 It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception(exceptionMessage));
 
-        var request = new CreateFileContext("FooName", new MemoryStream(new byte[] { 1 }));
+        var request = new CreateFileContext("FooName", new MemoryStream([1]));
 
         var handler = new CreateFileContextHandler(_mediatorMock.Object, _dbContextMock.Object);
 

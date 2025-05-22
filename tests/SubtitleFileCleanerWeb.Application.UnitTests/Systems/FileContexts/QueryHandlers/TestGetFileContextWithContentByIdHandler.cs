@@ -28,7 +28,7 @@ public class TestGetFileContextWithContentByIdHandler
         var searchedContext = fileContexts.Last();
         var path = Path.Combine("Unauthorized", searchedContext.FileContextId.ToString());
 
-        var searchedContent = FileContent.Create(new MemoryStream(new byte[] { 1 }, false));
+        var searchedContent = FileContent.Create(new MemoryStream([1], false));
 
         _dbContextMock.SetupGet(db => db.FileContexts)
             .ReturnsDbSet(fileContexts);
@@ -73,7 +73,7 @@ public class TestGetFileContextWithContentByIdHandler
     {
         // Arrange
         _dbContextMock.SetupGet(db => db.FileContexts)
-            .ReturnsDbSet(Enumerable.Empty<FileContext>());
+            .ReturnsDbSet([]);
 
         var request = new GetFileContextWithContentById(Guid.Empty);
 

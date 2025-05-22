@@ -6,16 +6,16 @@ public class DomainModelInvalidException : Exception
 
     internal DomainModelInvalidException()
     {
-        ValidationErrors = new List<string>();
+        ValidationErrors = [];
     }
 
     internal DomainModelInvalidException(string message): base(message)
     {
-        ValidationErrors = new List<string>();
+        ValidationErrors = [];
     }
 
     internal DomainModelInvalidException(string message, Exception innerException): base(message, innerException)
     {
-        ValidationErrors = new List<string>();
+        ValidationErrors = [];
     }
 }

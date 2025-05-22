@@ -2,7 +2,6 @@
 using SubtitleFileCleanerWeb.Application.FileContexts.Queries;
 using SubtitleFileCleanerWeb.Application.FileContexts.QueryHandlers;
 using SubtitleFileCleanerWeb.Application.UnitTests.Fixtures;
-using SubtitleFileCleanerWeb.Domain.Aggregates.FileContextAggregate;
 using SubtitleFileCleanerWeb.Infrastructure.Persistence;
 
 namespace SubtitleFileCleanerWeb.Application.UnitTests.Systems.FileContexts.QueryHandlers;
@@ -53,7 +52,7 @@ public class TestGetFileContextByIdHandler
         var request = new GetFileContextById(Guid.Empty);
 
         _dbContextMock.SetupGet(db => db.FileContexts)
-            .ReturnsDbSet(Enumerable.Empty<FileContext>());
+            .ReturnsDbSet([]);
 
         var handler = new GetFileContextByIdHandler(_dbContextMock.Object);
 

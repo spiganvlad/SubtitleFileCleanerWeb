@@ -8,7 +8,7 @@ public static class InnerExceptionsCreator
     {
         var type = typeof(T);
         var flags = BindingFlags.NonPublic | BindingFlags.Instance;
-        var parameters = new object[] { message };
+        object[] parameters = [message];
 
         return (T)Activator.CreateInstance(type, flags, null, parameters, null)!;
     }

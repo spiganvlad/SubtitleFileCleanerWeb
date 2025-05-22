@@ -19,14 +19,14 @@ public class TestPostConvertFileHandler
     public async Task Handle_WithValidParameters_ReturnValid()
     {
         // Arrange
-        var contentStream = new MemoryStream(new byte[] { 1, 2 });
-        var expectedContentStream = new MemoryStream(new byte[] { 1 }, false);
+        var contentStream = new MemoryStream([1, 2]);
+        var expectedContentStream = new MemoryStream([1], false);
 
-        var conversionOptions = new PostConversionOption[]
-        {
+        PostConversionOption[] conversionOptions =
+        [
             (PostConversionOption)(-1),
             (PostConversionOption)(-2)
-        };
+        ];
 
         var processorResult = new OperationResult<Stream>
         {
