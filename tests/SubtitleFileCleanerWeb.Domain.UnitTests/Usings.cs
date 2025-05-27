@@ -1,3 +1,3 @@
-global using FluentAssertions;
-global using FluentAssertions.Extensions;
+global using AwesomeAssertions;
+global using AwesomeAssertions.Extensions;
 global using Xunit;

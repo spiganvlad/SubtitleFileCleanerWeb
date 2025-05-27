@@ -1,4 +1,4 @@
-﻿using FluentAssertions.Execution;
+﻿using AwesomeAssertions.Execution;
 using FluentValidation.Results;
 using SubtitleFileCleanerWeb.Api.UnitTests.Helpers.FluentObjects;
 
