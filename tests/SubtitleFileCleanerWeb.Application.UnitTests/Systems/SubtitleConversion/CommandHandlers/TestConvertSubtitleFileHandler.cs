@@ -19,8 +19,8 @@ public class TestConvertSubtitleFileHandler
     public async Task Handle_WithValidParameters_ReturnValid()
     {
         // Arrange
-        var contentStream = new MemoryStream(new byte[] { 1, 2 });
-        var expectedContentStream = new MemoryStream(new byte[] { 1 }, false);
+        var contentStream = new MemoryStream([1, 2]);
+        var expectedContentStream = new MemoryStream([1], false);
         var conversionType = (ConversionType)(-1);
 
         _conversionProcessor.Setup(

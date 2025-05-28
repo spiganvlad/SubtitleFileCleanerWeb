@@ -24,7 +24,7 @@ public class TestFileContextController
         _mediatorMock = new();
         _mapperMock = new();
 
-        var httpContext = new HttpContextMockBuilder()
+        var httpContext = new HttpContextMockObjectBuilder()
             .SetupIMediator(_mediatorMock)
             .SetupIMapper(_mapperMock)
             .Build();
@@ -137,15 +137,15 @@ public class TestFileContextController
     {
         // Arrange
         var conversionType = ConversionType.Ass;
-        var postConversionOptions = new PostConversionOption[]
-        {
+        PostConversionOption[] postConversionOptions =
+        [
             PostConversionOption.DeleteAssTags,
             PostConversionOption.ToOneLine
-        };
+        ];
 
         var formFileMock = new Mock<IFormFile>();
 
-        var formFileStream = new MemoryStream(new byte[] { 1, 2, 3 });
+        var formFileStream = new MemoryStream([1, 2, 3]);
         formFileMock.Setup(ff => ff.OpenReadStream())
             .Returns(formFileStream);
 
@@ -153,7 +153,7 @@ public class TestFileContextController
         formFileMock.SetupGet(ff => ff.FileName)
             .Returns(formFileName);
 
-        var conversionResultStream = new MemoryStream(new byte[] { 1, 2 });
+        var conversionResultStream = new MemoryStream([1, 2]);
         var conversionResult = new OperationResult<Stream>
         {
             Payload = conversionResultStream
@@ -167,7 +167,7 @@ public class TestFileContextController
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(conversionResult);
 
-        var postConversionResultStream = new MemoryStream(new byte[] { 1 });
+        var postConversionResultStream = new MemoryStream([1]);
         var postConversionResult = new OperationResult<Stream>
         {
             Payload = postConversionResultStream
@@ -320,10 +320,7 @@ public class TestFileContextController
     {
         // Arrange
         var conversionType = ConversionType.Ass;
-        var postConversionOptions = new PostConversionOption[]
-        { 
-            PostConversionOption.DeleteAssTags
-        };
+        PostConversionOption[] postConversionOptions = [PostConversionOption.DeleteAssTags];
 
         var formFileMock = new Mock<IFormFile>();
 

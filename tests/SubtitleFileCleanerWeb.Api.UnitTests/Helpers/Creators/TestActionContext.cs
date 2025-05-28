@@ -6,9 +6,17 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Helpers.Creators;
 
 public static class TestActionContext
 {
-    public static ActionContext Create()
+    public static ActionContext Create(
+        HttpContext? context = null,
+        RouteData? routeData = null,
+        ActionDescriptor? actionDescriptor = null,
+        ModelStateDictionary? modelStateDictionary = null)
     {
-        return new ActionContext(new DefaultHttpContext(), new RouteData(),
-            new ActionDescriptor(), new ModelStateDictionary());
+        context ??= new DefaultHttpContext();
+        routeData ??= new RouteData();
+        actionDescriptor ??= new ActionDescriptor();
+        modelStateDictionary ??= new ModelStateDictionary();
+
+        return new ActionContext(context, routeData, actionDescriptor, modelStateDictionary);
     }
 }

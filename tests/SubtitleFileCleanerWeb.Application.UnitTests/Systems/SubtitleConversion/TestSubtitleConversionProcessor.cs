@@ -16,20 +16,17 @@ public class TestSubtitleConversionProcessor
         _minusOneConverterMock.SetupGet(c => c.ConversionType)
             .Returns((ConversionType)(-1));
 
-        _converters = new List<ISubtitleConverter>
-        {
-            _minusOneConverterMock.Object
-        };
+        _converters = [_minusOneConverterMock.Object];
     }
 
     [Fact]
     public async Task ProcessAsync_WithValidParameters_ReturnValid()
     {
         // Arrange
-        var contentStream = new MemoryStream(new byte[] { 1, 2 }, false);
+        var contentStream = new MemoryStream([1, 2], false);
         var conversionType = (ConversionType)(-1);
 
-        var expectedContentStream = new MemoryStream(new byte[] { 1 }, false);
+        var expectedContentStream = new MemoryStream([1], false);
         var converterResult = new OperationResult<Stream>
         {
             Payload = expectedContentStream

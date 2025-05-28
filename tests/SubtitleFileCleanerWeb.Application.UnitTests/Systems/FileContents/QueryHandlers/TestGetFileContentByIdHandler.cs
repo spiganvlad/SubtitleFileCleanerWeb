@@ -19,7 +19,7 @@ public class TestGetFileContentByIdHandler
     public async Task Handle_WithValidParameters_ReturnValid()
     {
         // Arrange
-        var contentStream = new MemoryStream(new byte[] { 1 }, false);
+        var contentStream = new MemoryStream([1], false);
 
         _blobContextMock.Setup(
             bc => bc.GetContentStreamAsync(
@@ -85,7 +85,7 @@ public class TestGetFileContentByIdHandler
     public async Task Handle_WithBlobContextReturnsInvalidContent_ReturnValidationError()
     {
         // Arrange
-        var contentStream = new MemoryStream(Array.Empty<byte>(), true);
+        var contentStream = new MemoryStream([], true);
 
         _blobContextMock.Setup(
             bc => bc.GetContentStreamAsync(

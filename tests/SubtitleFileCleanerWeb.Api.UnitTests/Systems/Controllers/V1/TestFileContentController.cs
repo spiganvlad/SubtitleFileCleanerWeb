@@ -17,7 +17,7 @@ public class TestFileContentController
     {
         _mediatorMock = new();
 
-        var httpContext = new HttpContextMockBuilder()
+        var httpContext = new HttpContextMockObjectBuilder()
             .SetupIMediator(_mediatorMock)
             .Build();
 
@@ -34,7 +34,7 @@ public class TestFileContentController
         var fileContextName = "FooName";
         var fileContext = FileContext.Create(fileContextName, 1);
 
-        var contentStream = new MemoryStream(new byte[] { 1 }, false);
+        var contentStream = new MemoryStream([1], false);
         var fileContent = FileContent.Create(contentStream);
         
         fileContext.SetContent(fileContent);

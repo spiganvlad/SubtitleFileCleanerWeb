@@ -4,14 +4,23 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Helpers.Creators;
 
 public class ActionExecutingContextMock
 {
-    public static Mock<ActionExecutingContext> Create()
+    public static Mock<ActionExecutingContext> Create(
+        ActionContext? actionContext = null,
+        List<IFilterMetadata>? filters = null,
+        Dictionary<string, object?>? actionArguments = null,
+        object controller = null!
+        )
     {
-        return new Mock<ActionExecutingContext>(new object[]
-        {
-            TestActionContext.Create(),
-            new List<IFilterMetadata>(),
-            new Dictionary<string, object?>(),
-            null!
-        });
+        actionContext ??= TestActionContext.Create();
+        filters ??= [];
+        actionArguments ??= [];
+
+        return new Mock<ActionExecutingContext>(
+        [
+            actionContext,
+            filters,
+            actionArguments,
+            controller
+        ]);
     }
 }

@@ -1,6 +1,6 @@
 global using AutoMapper;
-global using FluentAssertions;
-global using FluentAssertions.Extensions;
+global using AwesomeAssertions;
+global using AwesomeAssertions.Extensions;
 global using MediatR;
 global using Microsoft.AspNetCore.Http;
 global using Microsoft.AspNetCore.Mvc;

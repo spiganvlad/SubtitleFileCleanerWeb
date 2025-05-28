@@ -6,7 +6,7 @@ namespace SubtitleFileCleanerWeb.Application.Models
     {
         public T? Payload { get; set; }
         public bool IsError { get; private set; }
-        public List<Error> Errors { get; } = new List<Error>();
+        public List<Error> Errors { get; } = [];
 
         /// <summary>
         /// Adds an error to the list of errors and changes the state of the result to error

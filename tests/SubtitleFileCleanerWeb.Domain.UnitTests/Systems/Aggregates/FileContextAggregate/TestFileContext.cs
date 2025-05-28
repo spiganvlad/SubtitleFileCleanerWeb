@@ -145,7 +145,7 @@ public class TestFileContext
     public void SetContent_WithNotSetContent_SetValid()
     {
         // Arrange
-        var content = new MemoryStream(new byte[] { 1 }, false);
+        var content = new MemoryStream([1], false);
         var fileContent = FileContent.Create(content);
 
         var fileContext = FileContext.Create("FooName", content.Length);
@@ -163,7 +163,7 @@ public class TestFileContext
     public void SetContent_WithAlreadySetContent_ThrowException()
     {
         // Arrange
-        var content = new MemoryStream(new byte[] { 1 }, false);
+        var content = new MemoryStream([1], false);
         var fileContent = FileContent.Create(content);
 
         var fileContext = FileContext.Create("FooName", content.Length);

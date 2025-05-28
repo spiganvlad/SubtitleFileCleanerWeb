@@ -26,10 +26,10 @@ public class TestPostConversionProcessor
     public async Task ProcessAsync_WithValidParameters_ReturnValid()
     {
         // Arrange
-        var contentStream = new MemoryStream(new byte[] { 1, 2 }, false);
+        var contentStream = new MemoryStream([1, 2], false);
         var conversionOption = (PostConversionOption)(-1);
 
-        var convertedContent = new MemoryStream(new byte[] { 1 }, false);
+        var convertedContent = new MemoryStream([1], false);
         var converterResult = new OperationResult<Stream>
         {
             Payload = convertedContent
@@ -71,13 +71,13 @@ public class TestPostConversionProcessor
     {
         // Arrange
         var contentStream = Stream.Null;
-        var conversionOptions = new PostConversionOption[]
-        {
+        PostConversionOption[] conversionOptions =
+        [
             (PostConversionOption)(-1),
             (PostConversionOption)(-2)
-        };
+        ];
 
-        var assConvertedContent = new MemoryStream(new byte[] { 1, 2 }, false);
+        var assConvertedContent = new MemoryStream([1, 2], false);
         var assConverterResult = new OperationResult<Stream>
         {
             Payload = assConvertedContent
@@ -89,7 +89,7 @@ public class TestPostConversionProcessor
                 It.IsAny<CancellationToken>()))
             .ReturnsAsync(assConverterResult);
 
-        var basicConvertedContent = new MemoryStream(new byte[] { 1 }, false);
+        var basicConvertedContent = new MemoryStream([1], false);
         var basicConverterResult = new OperationResult<Stream>
         {
             Payload = basicConvertedContent

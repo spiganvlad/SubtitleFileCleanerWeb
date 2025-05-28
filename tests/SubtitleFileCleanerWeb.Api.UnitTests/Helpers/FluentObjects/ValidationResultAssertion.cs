@@ -1,4 +1,5 @@
-﻿using FluentAssertions.Primitives;
+﻿using AwesomeAssertions.Execution;
+using AwesomeAssertions.Primitives;
 using FluentValidation.Results;
 
 namespace SubtitleFileCleanerWeb.Api.UnitTests.Helpers.FluentObjects;
@@ -7,7 +8,7 @@ public class ValidationResultAssertion : ObjectAssertions<ValidationResult, Vali
 {
     private readonly AndConstraint<ValidationResultAssertion> _andConstraintThis;
 
-    public ValidationResultAssertion(ValidationResult result) : base(result)
+    public ValidationResultAssertion(ValidationResult result, AssertionChain assertionChain) : base(result, assertionChain)
     {
         _andConstraintThis = new AndConstraint<ValidationResultAssertion>(this);
     }

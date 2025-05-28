@@ -21,7 +21,7 @@ public class TestCreateFileContentHandler
     public async Task Handle_WithValidParameters_ReturnValid()
     {
         // Arrange
-        var streamContent = new MemoryStream(new byte[] { 1 }, false);
+        var streamContent = new MemoryStream([1], false);
 
         var request = new CreateFileContent(string.Empty, streamContent);
 
@@ -52,7 +52,7 @@ public class TestCreateFileContentHandler
     public async Task Handle_WithInvalidParameters_ReturnValidationError()
     {
         // Arrange
-        var contentStream = new MemoryStream(Array.Empty<byte>(), true);
+        var contentStream = new MemoryStream([], true);
 
         var request = new CreateFileContent(string.Empty, contentStream);
 
@@ -89,7 +89,7 @@ public class TestCreateFileContentHandler
     public async Task Handle_WithBlobStorageOperationException_ReturnBlobContextOperationExceptionError()
     {
         // Arrange
-        var contentStream = new MemoryStream(new byte[] { 1 }, false);
+        var contentStream = new MemoryStream([1], false);
 
         var exceptionMessage = "Test blob exception occurred.";
         var exception = InnerExceptionsCreator.Create<BlobStorageOperationException>(exceptionMessage);
@@ -126,7 +126,7 @@ public class TestCreateFileContentHandler
     public async Task Handle_WithUnexpectedError_ReturnUnknownError()
     {
         // Arrange
-        var contentStream = new MemoryStream(new byte[] { 1 }, false);
+        var contentStream = new MemoryStream([1], false);
 
         var exceptionMessage = "Test unexpected error occurred.";
         _blobContextMock.Setup(

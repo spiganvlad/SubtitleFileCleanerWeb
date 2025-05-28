@@ -60,7 +60,7 @@ public class TestOperationResult
             Message = "Test third error occurred."
         };
 
-        var errors = new Error[] { firstError, secondError, thirdError };
+        Error[] errors = [firstError, secondError, thirdError];
 
         var result = new OperationResult<bool>();
 
@@ -100,7 +100,7 @@ public class TestOperationResult
             Message = "Test third error occurred."
         };
 
-        var errors = new List<Error> { secondError, thirdError };
+        List<Error> errors = [secondError, thirdError];
 
         var result = new OperationResult<bool>();
         result.Errors.Add(initialFirstError);

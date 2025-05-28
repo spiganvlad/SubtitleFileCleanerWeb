@@ -1,4 +1,5 @@
-﻿using FluentAssertions.Primitives;
+﻿using AwesomeAssertions.Execution;
+using AwesomeAssertions.Primitives;
 
 namespace SubtitleFileCleanerWeb.Api.UnitTests.Helpers.FluentObjects;
 
@@ -6,7 +7,7 @@ public class FileStreamResultAssertion : ObjectAssertions<FileStreamResult, File
 {
     private readonly AndConstraint<FileStreamResultAssertion> _andConstraintThis;
 
-    public FileStreamResultAssertion(FileStreamResult fileStreamResult) : base(fileStreamResult)
+    public FileStreamResultAssertion(FileStreamResult fileStreamResult, AssertionChain assertionChain) : base(fileStreamResult, assertionChain)
     {
         _andConstraintThis = new AndConstraint<FileStreamResultAssertion>(this);
     }

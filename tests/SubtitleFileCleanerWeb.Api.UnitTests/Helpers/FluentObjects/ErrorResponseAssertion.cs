@@ -1,4 +1,5 @@
-﻿using FluentAssertions.Primitives;
+﻿using AwesomeAssertions.Execution;
+using AwesomeAssertions.Primitives;
 using SubtitleFileCleanerWeb.Api.Contracts.Common;
 
 namespace SubtitleFileCleanerWeb.Api.UnitTests.Helpers.FluentObjects;
@@ -7,7 +8,7 @@ public class ErrorResponseAssertion : ObjectAssertions<ErrorResponse, ErrorRespo
 {
     private readonly AndConstraint<ErrorResponseAssertion> _andConstraintThis;
 
-    public ErrorResponseAssertion(ErrorResponse response) : base(response)
+    public ErrorResponseAssertion(ErrorResponse response, AssertionChain assertionChain) : base(response, assertionChain)
     {
         _andConstraintThis = new AndConstraint<ErrorResponseAssertion>(this);
     }

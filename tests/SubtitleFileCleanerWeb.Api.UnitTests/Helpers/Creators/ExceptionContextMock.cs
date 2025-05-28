@@ -6,10 +6,10 @@ public static class ExceptionContextMock
 {
     public static Mock<ExceptionContext> Create()
     {
-        return new Mock<ExceptionContext>(new object[]
-        {
+        return new Mock<ExceptionContext>(
+        [
             TestActionContext.Create(),
             new List<IFilterMetadata>()
-        });
+        ]);
     }
 }

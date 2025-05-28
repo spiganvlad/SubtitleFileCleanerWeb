@@ -9,7 +9,7 @@ public class TestFileContent
     public void Create_WithValidStream_ReturnValid()
     {
         // Arrange
-        var contentStream = new MemoryStream(new byte[] { 1 }, false);
+        var contentStream = new MemoryStream([1], false);
 
         // Act
         var fileContent = FileContent.Create(contentStream);
@@ -43,7 +43,7 @@ public class TestFileContent
     public void Create_WithEmptyBytes_ThrowException()
     {
         // Arrange
-        var contentStream = new MemoryStream(Array.Empty<byte>(), false);
+        var contentStream = new MemoryStream([], false);
 
         // Act
         var act = () => FileContent.Create(contentStream);
@@ -60,7 +60,7 @@ public class TestFileContent
     public void Create_WithWritableStream_ThrowException()
     {
         // Arrange
-        var contentStream = new MemoryStream(new byte[] { 1 }, true);
+        var contentStream = new MemoryStream([1], true);
 
         // Act
         var act = () => FileContent.Create(contentStream);

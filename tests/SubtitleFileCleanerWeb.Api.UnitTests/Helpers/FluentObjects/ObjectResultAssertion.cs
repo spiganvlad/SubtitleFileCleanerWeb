@@ -1,4 +1,5 @@
-﻿using FluentAssertions.Primitives;
+﻿using AwesomeAssertions.Execution;
+using AwesomeAssertions.Primitives;
 
 namespace SubtitleFileCleanerWeb.Api.UnitTests.Helpers.FluentObjects;
 
@@ -6,14 +7,14 @@ public class ObjectResultAssertion : ObjectAssertions<ObjectResult, ObjectResult
 {
     private readonly AndConstraint<ObjectResultAssertion> _andConstraintThis;
 
-    public ObjectResultAssertion(ObjectResult result): base(result)
+    public ObjectResultAssertion(ObjectResult result, AssertionChain assertionChain) : base(result, assertionChain)
     {
         _andConstraintThis = new AndConstraint<ObjectResultAssertion>(this);
     }
 
     public AndConstraint<ObjectResultAssertion> HaveStatusCode(int statusCode)
     {
-        Subject.StatusCode = statusCode;
+        Subject.StatusCode.Should().Be(statusCode);
 
         return _andConstraintThis;
     }

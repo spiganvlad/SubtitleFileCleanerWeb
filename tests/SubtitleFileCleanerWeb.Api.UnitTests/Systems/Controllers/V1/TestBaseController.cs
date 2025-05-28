@@ -19,10 +19,7 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Controllers.V1
         {
             // Arrange
             var errorMessage = "Test unknown error occurred.";
-            var errors = new List<Error>
-            {
-                new() { Code = ErrorCode.UnknownError, Message = errorMessage }
-            };
+            List<Error> errors = [new() { Code = ErrorCode.UnknownError, Message = errorMessage }];
 
             // Act
             var result = _baseControllerWrapper.HandleErrorResponse(errors);
@@ -48,11 +45,11 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Controllers.V1
             var firstErrorMessage = "First test unknow error occurred.";
             var secondErrorMessage = "Second test unknown error occurred.";
 
-            var errors = new List<Error>
-            {
+            List<Error> errors =
+            [
                 new() { Code = ErrorCode.UnknownError, Message = firstErrorMessage },
                 new() { Code = ErrorCode.UnknownError, Message = secondErrorMessage }
-            };
+            ];
 
             // Act
             var result = _baseControllerWrapper.HandleErrorResponse(errors);
@@ -77,10 +74,7 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Controllers.V1
         {
             // Arrange
             var errorMessage = "Test not found error occurred.";
-            var errors = new List<Error>
-            {
-                new() { Code = ErrorCode.NotFound, Message = errorMessage }
-            };
+            List<Error> errors = [new() { Code = ErrorCode.NotFound, Message = errorMessage }];
 
             // Act
             var result = _baseControllerWrapper.HandleErrorResponse(errors);
@@ -104,10 +98,7 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Controllers.V1
         {
             // Arrange
             var errorMessage = "Test unprocessable content error occurred.";
-            var errors = new List<Error> 
-            {
-                new() { Code = ErrorCode.UnprocessableContent, Message = errorMessage }
-            };
+            List<Error> errors = [new() { Code = ErrorCode.UnprocessableContent, Message = errorMessage }];
 
             // Act
             var result = _baseControllerWrapper.HandleErrorResponse(errors);

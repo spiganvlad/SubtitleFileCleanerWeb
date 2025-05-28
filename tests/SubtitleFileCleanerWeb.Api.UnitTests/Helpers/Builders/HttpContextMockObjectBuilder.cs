@@ -1,6 +1,6 @@
 ﻿namespace SubtitleFileCleanerWeb.Api.UnitTests.Helpers.Builders;
 
-public class HttpContextMockBuilder
+public class HttpContextMockObjectBuilder
 {
     private readonly Mock<HttpContext> _contextMock = new();
 
@@ -9,7 +9,7 @@ public class HttpContextMockBuilder
         return _contextMock.Object;
     }
 
-    public HttpContextMockBuilder SetupIMediator(Mock<IMediator> mediatorMock)
+    public HttpContextMockObjectBuilder SetupIMediator(Mock<IMediator> mediatorMock)
     {
         _contextMock.Setup(c => c.RequestServices.GetService(typeof(IMediator)))
             .Returns(mediatorMock.Object);
@@ -17,7 +17,7 @@ public class HttpContextMockBuilder
         return this;
     }
 
-    public HttpContextMockBuilder SetupIMapper(Mock<IMapper> mapperMock)
+    public HttpContextMockObjectBuilder SetupIMapper(Mock<IMapper> mapperMock)
     {
         _contextMock.Setup(c => c.RequestServices.GetService(typeof(IMapper)))
             .Returns(mapperMock.Object);
