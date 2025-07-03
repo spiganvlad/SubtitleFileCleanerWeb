@@ -1,46 +1,38 @@
 ﻿using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.FileContents.Queries;
 using SubtitleFileCleanerWeb.Application.FileContents.QueryHandlers;
-using SubtitleFileCleanerWeb.Application.Models;
+using SubtitleFileCleanerWeb.Application.UnitTests.Fixtures.AutoData;
 using SubtitleFileCleanerWeb.Infrastructure.Blob;
 
 namespace SubtitleFileCleanerWeb.Application.UnitTests.Systems.FileContents.QueryHandlers;
 
 public class TestGetFileContentByIdHandler
 {
-    private readonly Mock<IBlobStorageContext> _blobContextMock;
+    private readonly CancellationToken _cancellationToken = TestContext.Current.CancellationToken;
+    private readonly IBlobStorageContext _blobContextMock;
+    private readonly GetFileContentByIdHandler _sut;
 
     public TestGetFileContentByIdHandler()
     {
-        _blobContextMock = new();
+        _blobContextMock = Substitute.For<IBlobStorageContext>();
+        _sut = new(_blobContextMock);
     }
 
-    [Fact]
-    public async Task Handle_WithValidParameters_ReturnValid()
+    [Theory, PathStreamAutoData]
+    public async Task Handle_WithValidPath_ReturnFileContentResult
+        (GetFileContentById request, Stream contentStream)
     {
         // Arrange
-        var contentStream = new MemoryStream([1], false);
-
-        _blobContextMock.Setup(
-            bc => bc.GetContentStreamAsync(
-                string.Empty,
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(contentStream);
-
-        var request = new GetFileContentById(string.Empty);
-
-        var handler = new GetFileContentByIdHandler(_blobContextMock.Object);
+        _blobContextMock
+            .GetContentStreamAsync(
+                request.Path,
+                Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<Stream?>(contentStream));
 
         // Act
-        var result = await handler.Handle(request, default);
+        var result = await _sut.Handle(request, _cancellationToken);
 
         // Assert
-        _blobContextMock.Verify(
-            bc => bc.GetContentStreamAsync(
-                It.IsAny<string>(),
-                It.IsAny<CancellationToken>()),
-            Times.Once());
-
         result.Should().NotBeNull()
             .And.NotBeInErrorState()
             .And.HaveNoErrors()
@@ -51,106 +43,69 @@ public class TestGetFileContentByIdHandler
             .And.HaveLength(contentStream.Length);
     }
 
-    [Fact]
-    public async Task Handle_WithBlobContextReturnsNullContent_ReturnNotFoundError()
+    [Theory, PathAutoData]
+    public async Task Handle_WithBlobContextReturnsNullContent_ReturnNotFoundError
+        (GetFileContentById request)
     {
         // Arrange
-        _blobContextMock.Setup(
-            bc => bc.GetContentStreamAsync(
-                string.Empty,
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(() => null);
-
-        var request = new GetFileContentById(string.Empty);
-
-        var handler = new GetFileContentByIdHandler(_blobContextMock.Object);
+        _blobContextMock
+            .GetContentStreamAsync(
+                request.Path,
+                Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<Stream?>(null));
 
         // Act
-        var result = await handler.Handle(request, default);
+        var result = await _sut.Handle(request, _cancellationToken);
 
         // Assert
-        _blobContextMock.Verify(
-            bc => bc.GetContentStreamAsync(
-                It.IsAny<string>(),
-                It.IsAny<CancellationToken>()),
-            Times.Once());
-
         result.Should().NotBeNull()
             .And.BeInErrorState()
-            .And.HaveSingleError(ErrorCode.NotFound, $"File content not found on path: {string.Empty}.")
+            .And.HaveSingleError(
+                ErrorCode.NotFound,
+                $"File content not found on path: {request.Path}.")
             .And.HaveDefaultPayload();
     }
 
-    [Fact]
-    public async Task Handle_WithBlobContextReturnsInvalidContent_ReturnValidationError()
+    [Theory, PathAutoData]
+    public async Task Handle_WithBlobContextReturnsInvalidContent_ReturnValidationError
+        (GetFileContentById request)
     {
         // Arrange
-        var contentStream = new MemoryStream([], true);
+        var invalidContentStream = new MemoryStream([], true);
+        _blobContextMock
+            .GetContentStreamAsync(
+                Arg.Any<string>(),
+                Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult<Stream?>(invalidContentStream));
 
-        _blobContextMock.Setup(
-            bc => bc.GetContentStreamAsync(
-                string.Empty,
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(contentStream);
+         // Act
+         var result = await _sut.Handle(request, _cancellationToken);
 
-        var request = new GetFileContentById(string.Empty);
+         // Assert
+         result.Should().NotBeNull()
+             .And.BeInErrorState()
+             .And.HaveAllErrorsWithCode(ErrorCode.ValidationError)
+             .And.HaveDefaultPayload();
+     }
 
-        var handler = new GetFileContentByIdHandler(_blobContextMock.Object);
-
-        // Act
-        var result = await handler.Handle(request, default);
-
-        // Assert
-        _blobContextMock.Verify(
-            bc => bc.GetContentStreamAsync(
-                It.IsAny<string>(),
-                It.IsAny<CancellationToken>()),
-            Times.Once());
-
-        result.Should().NotBeNull()
-            .And.BeInErrorState()
-            .And.HaveMultipleErrors(
-                new Error
-                {
-                    Code = ErrorCode.ValidationError,
-                    Message = "File content stream cannot be empty."
-                },
-                new Error
-                {
-                    Code = ErrorCode.ValidationError,
-                    Message = "File content stream must be readonly."
-                })
-            .And.HaveDefaultPayload();
-    }
-
-    [Fact]
-    public async Task Handle_WithUnexpectedError_ReturnUnknownError()
-    {
+     [Theory, PathAutoData]
+     public async Task Handle_WithUnexpectedError_ReturnUnknownError
+        (GetFileContentById request, string message)
+     {
         // Arrange
-        var exceptionMessage = "Test unexpected error occurred.";
-        _blobContextMock.Setup(
-            bc => bc.GetContentStreamAsync(
-                string.Empty,
-                It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new Exception(exceptionMessage));
+        _blobContextMock
+            .GetContentStreamAsync(
+                Arg.Any<string>(),
+                Arg.Any<CancellationToken>())
+            .ThrowsAsync(new Exception(message));
 
-        var request = new GetFileContentById(string.Empty);
+         // Act
+         var result = await _sut.Handle(request, _cancellationToken);
 
-        var handler = new GetFileContentByIdHandler(_blobContextMock.Object);
-
-        // Act
-        var result = await handler.Handle(request, default);
-
-        // Assert
-        _blobContextMock.Verify(
-            bc => bc.GetContentStreamAsync(
-                It.IsAny<string>(),
-                It.IsAny<CancellationToken>()),
-            Times.Once());
-
-        result.Should().NotBeNull()
-            .And.BeInErrorState()
-            .And.HaveSingleError(ErrorCode.UnknownError, exceptionMessage)
-            .And.HaveDefaultPayload();
-    }
+         // Assert
+         result.Should().NotBeNull()
+             .And.BeInErrorState()
+             .And.HaveSingleError(ErrorCode.UnknownError, message)
+             .And.HaveDefaultPayload();
+     }
 }

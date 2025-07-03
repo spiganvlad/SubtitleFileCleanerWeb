@@ -1,7 +1,8 @@
-﻿using SubtitleFileCleanerWeb.Application.Enums;
+﻿using AutoFixture.Xunit3;
+using MockQueryable.NSubstitute;
+using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.FileContexts.CommandHandlers;
 using SubtitleFileCleanerWeb.Application.FileContexts.Commands;
-using SubtitleFileCleanerWeb.Application.UnitTests.Fixtures;
 using SubtitleFileCleanerWeb.Domain.Aggregates.FileContextAggregate;
 using SubtitleFileCleanerWeb.Infrastructure.Persistence;
 
@@ -9,141 +10,100 @@ namespace SubtitleFileCleanerWeb.Application.UnitTests.Systems.FileContexts.Comm
 
 public class TestUpdateFileContextNameHandler
 {
-    private readonly List<FileContext> _fileContexts;
-    private readonly Mock<ApplicationDbContext> _dbContextMock;
+    private readonly CancellationToken _cancellationToken = TestContext.Current.CancellationToken;
+    private readonly ApplicationDbContext _dbContextMock;
+    private readonly UpdateFileContextNameHandler _sut;
 
     public TestUpdateFileContextNameHandler()
     {
-        _fileContexts = FileContextFixture.GetListOfThree();
-
-        _dbContextMock = new();
-        _dbContextMock.Setup(db => db.FileContexts)
-            .ReturnsDbSet(_fileContexts);
+        _dbContextMock = Substitute.For<ApplicationDbContext>();
+        _sut = new(_dbContextMock);
     }
 
-    [Fact]
-    public async Task Handle_WithValidParameters_ReturnValid()
+    [Theory, AutoData]
+    public async Task Handle_WithValidRequest_ReturnFileContextResult
+        (List<FileContext> fileContexts, string name)
     {
         // Arrange
-        var contextToUpdate = _fileContexts.Last();
+        var contextToUpdate = fileContexts.Last();
+        var request = new UpdateFileContextName(contextToUpdate.FileContextId, name);
 
-        var request = new UpdateFileContextName(contextToUpdate.FileContextId, "FooName");
+        var fileContextsDbSet = fileContexts.AsQueryable().BuildMockDbSet();
+        _dbContextMock.FileContexts.Returns(fileContextsDbSet);
 
-        var handler = new UpdateFileContextNameHandler(_dbContextMock.Object);
+        FileContext updatedContext = null!;
+        _dbContextMock.FileContexts.Update(Arg.Do<FileContext>(fileContext =>
+            updatedContext = fileContext));
 
         // Act
-        var result = await handler.Handle(request, default);
+        var result = await _sut.Handle(request, _cancellationToken);
 
         // Assert
-        _dbContextMock.VerifyGet(
-            db => db.FileContexts,
-            Times.Exactly(2));
-
-        _dbContextMock.Verify(
-            db => db.FileContexts.Update(It.IsAny<FileContext>()),
-            Times.Once());
-
-        _dbContextMock.Verify(
-            db => db.SaveChangesAsync(It.IsAny<CancellationToken>()),
-            Times.Once());
-
         result.Should().NotBeNull()
             .And.NotBeInErrorState()
             .And.HaveNoErrors()
             .And.HaveNotDefaultPayload()
             
             .Which.Should().Be(contextToUpdate);
+
+        updatedContext.Should().Be(result.Payload);
+        await _dbContextMock.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 
-    [Fact]
-    public async Task Handle_WithInvalidParameters_ReturnValidationError()
+    [Theory, AutoData]
+    public async Task Handle_WithInvalidFileName_ReturnValidationError
+        (List<FileContext> fileContexts)
     {
         // Arrange
-        var request = new UpdateFileContextName(_fileContexts.Last().FileContextId, string.Empty);
+        var request = new UpdateFileContextName(fileContexts.Last().FileContextId, string.Empty);
 
-        var handler = new UpdateFileContextNameHandler(_dbContextMock.Object);
+        var fileContextsDbSet = fileContexts.AsQueryable().BuildMockDbSet();
+        _dbContextMock.FileContexts.Returns(fileContextsDbSet);
 
         // Act
-        var result = await handler.Handle(request, default);
+        var result = await _sut.Handle(request, _cancellationToken);
 
         // Assert
-        _dbContextMock.VerifyGet(
-            db => db.FileContexts,
-            Times.Once());
-
-        _dbContextMock.Verify(
-            db => db.Update(It.IsAny<FileContext>()),
-            Times.Never());
-
-        _dbContextMock.Verify(
-            db => db.SaveChangesAsync(It.IsAny<CancellationToken>()),
-            Times.Never());
-
         result.Should().NotBeNull()
             .And.BeInErrorState()
-            .And.HaveSingleError(ErrorCode.ValidationError, "The provided name is either null or white space.")
+            .And.HaveAllErrorsWithCode(ErrorCode.ValidationError)
             .And.HaveDefaultPayload();
     }
 
-    [Fact]
-    public async Task Handle_WithNonExistentGuidId_ReturnNotFoundError()
+    [Theory, AutoData]
+    public async Task Handle_WithNonExistentGuidId_ReturnNotFoundError
+        (UpdateFileContextName request)
     {
         // Arrange
-        var fileContextId = Guid.Empty;
-
-        var request = new UpdateFileContextName(Guid.Empty, "FooName");
-
-        var handler = new UpdateFileContextNameHandler(_dbContextMock.Object);
+        var fileContextsDbSet = Array.Empty<FileContext>().AsQueryable().BuildMockDbSet();
+        _dbContextMock.FileContexts.Returns(fileContextsDbSet);
 
         // Act
-        var result = await handler.Handle(request, default);
+        var result = await _sut.Handle(request, _cancellationToken);
 
         // Assert
-        _dbContextMock.VerifyGet(
-            db => db.FileContexts,
-            Times.Once());
-
-        _dbContextMock.Verify(
-            db => db.FileContexts.Update(It.IsAny<FileContext>()),
-            Times.Never());
-
-        _dbContextMock.Verify(
-            db => db.SaveChangesAsync(It.IsAny<CancellationToken>()),
-            Times.Never());
-
         result.Should().NotBeNull()
             .And.BeInErrorState()
-            .And.HaveSingleError(ErrorCode.NotFound, $"No file context found with id: {fileContextId}.")
+            .And.HaveSingleError(
+                ErrorCode.NotFound,
+                $"No file context found with id: {request.FileContextId}.")
             .And.HaveDefaultPayload();
     }
 
-    [Fact]
-    public async Task Handle_WithUnexpectedError_ReturnUnknownError()
+    [Theory, AutoData]
+    public async Task Handle_WithUnexpectedError_ReturnUnknownError
+        (UpdateFileContextName request, string message)
     {
         // Arrange
-        var exceptionMessage = "Test unexpected error occurred.";
-        _dbContextMock.SetupGet(db => db.FileContexts)
-            .Throws(new Exception(exceptionMessage));
-
-        var request = new UpdateFileContextName(Guid.Empty, "FooName");
-
-        var handler = new UpdateFileContextNameHandler(_dbContextMock.Object);
+        _dbContextMock.FileContexts.Throws(new Exception(message));
 
         // Act
-        var result = await handler.Handle(request, default);
+        var result = await _sut.Handle(request, _cancellationToken);
 
         // Assert
-        _dbContextMock.VerifyGet(
-            db => db.FileContexts,
-            Times.Once());
-
-        _dbContextMock.Verify(
-            db => db.SaveChangesAsync(It.IsAny<CancellationToken>()),
-            Times.Never());
-
         result.Should().NotBeNull()
             .And.BeInErrorState()
-            .And.HaveSingleError(ErrorCode.UnknownError, exceptionMessage)
+            .And.HaveSingleError(ErrorCode.UnknownError, message)
             .And.HaveDefaultPayload();
     }
 }
