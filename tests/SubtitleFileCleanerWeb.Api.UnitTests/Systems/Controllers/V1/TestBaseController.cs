@@ -7,22 +7,17 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Controllers.V1
 {
     public class TestBaseController
     {
-        private readonly BaseControllerWrapper _baseControllerWrapper;
+        private readonly BaseControllerWrapper _sut = new();
 
-        public TestBaseController()
-        {
-            _baseControllerWrapper = new();
-        }
-
-        [Fact]
-        public void HandleErrorResponse_WithUnknownError_ReturnBadRequestResult()
+        [Theory, AutoData]
+        public void HandleErrorResponse_WithUnknownError_ReturnBadRequestResult
+            (string message)
         {
             // Arrange
-            var errorMessage = "Test unknown error occurred.";
-            List<Error> errors = [new() { Code = ErrorCode.UnknownError, Message = errorMessage }];
+            List<Error> errors = [new() { Code = ErrorCode.UnknownError, Message = message }];
 
             // Act
-            var result = _baseControllerWrapper.HandleErrorResponse(errors);
+            var result = _sut.HandleErrorResponse(errors);
 
             // Assert
             result.Should().NotBeNull()
@@ -35,24 +30,22 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Controllers.V1
                 .Which.Should().HaveStatusCode(400)
                 .And.HaveStatusPhrase("Bad Request")
                 .And.HaveTimeStampCloseTo(DateTime.UtcNow, 1.Seconds())
-                .And.HaveSingleError(errorMessage);
+                .And.HaveSingleError(message);
         }
 
-        [Fact]
-        public void HandleErrorResponse_WithTwoUnknownErrors_ReturnBadRequestResult()
+        [Theory, AutoData]
+        public void HandleErrorResponse_WithTwoUnknownErrors_ReturnBadRequestResult
+            (string firstMessage, string secondMessage)
         {
             // Arrange
-            var firstErrorMessage = "First test unknow error occurred.";
-            var secondErrorMessage = "Second test unknown error occurred.";
-
             List<Error> errors =
             [
-                new() { Code = ErrorCode.UnknownError, Message = firstErrorMessage },
-                new() { Code = ErrorCode.UnknownError, Message = secondErrorMessage }
+                new() { Code = ErrorCode.UnknownError, Message = firstMessage },
+                new() { Code = ErrorCode.UnknownError, Message = secondMessage }
             ];
 
             // Act
-            var result = _baseControllerWrapper.HandleErrorResponse(errors);
+            var result = _sut.HandleErrorResponse(errors);
 
             // Assert
             result.Should().NotBeNull()
@@ -65,19 +58,19 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Controllers.V1
                 .Which.Should().HaveStatusCode(400)
                 .And.HaveStatusPhrase("Bad Request")
                 .And.HaveTimeStampCloseTo(DateTime.UtcNow, 1.Seconds())
-                .And.HaveErrors(firstErrorMessage, secondErrorMessage);
+                .And.HaveErrors(firstMessage, secondMessage);
 
         }
 
-        [Fact]
-        public void HandleErrorResponse_WithNotFoundError_ReturnNotFoundResult()
+        [Theory, AutoData]
+        public void HandleErrorResponse_WithNotFoundError_ReturnNotFoundResult
+            (string message)
         {
             // Arrange
-            var errorMessage = "Test not found error occurred.";
-            List<Error> errors = [new() { Code = ErrorCode.NotFound, Message = errorMessage }];
+            List<Error> errors = [new() { Code = ErrorCode.NotFound, Message = message }];
 
             // Act
-            var result = _baseControllerWrapper.HandleErrorResponse(errors);
+            var result = _sut.HandleErrorResponse(errors);
 
             // Assert
             result.Should().NotBeNull()
@@ -90,18 +83,18 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Controllers.V1
                 .Which.Should().HaveStatusCode(404)
                 .And.HaveStatusPhrase("Not Found")
                 .And.HaveTimeStampCloseTo(DateTime.UtcNow, 1.Seconds())
-                .And.HaveSingleError(errorMessage);
+                .And.HaveSingleError(message);
         }
 
-        [Fact]
-        public void HandleErrorResponse_WithUnprocessableContentError_ReturnUnprocessableEntityResult()
+        [Theory, AutoData]
+        public void HandleErrorResponse_WithUnprocessableContentError_ReturnUnprocessableEntityResult
+            (string message)
         {
             // Arrange
-            var errorMessage = "Test unprocessable content error occurred.";
-            List<Error> errors = [new() { Code = ErrorCode.UnprocessableContent, Message = errorMessage }];
+            List<Error> errors = [new() { Code = ErrorCode.UnprocessableContent, Message = message }];
 
             // Act
-            var result = _baseControllerWrapper.HandleErrorResponse(errors);
+            var result = _sut.HandleErrorResponse(errors);
 
             // Assert
             result.Should().NotBeNull()
@@ -114,7 +107,7 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Controllers.V1
                 .Which.Should().HaveStatusCode(422)
                 .And.HaveStatusPhrase("Unprocessable Content")
                 .And.HaveTimeStampCloseTo(DateTime.UtcNow, 1.Seconds())
-                .And.HaveSingleError(errorMessage);
+                .And.HaveSingleError(message);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using SubtitleFileCleanerWeb.Api.Contracts.Common;
+﻿using Microsoft.AspNetCore.Mvc.Filters;
+using SubtitleFileCleanerWeb.Api.Contracts.Common;
 using SubtitleFileCleanerWeb.Api.Filters;
 using SubtitleFileCleanerWeb.Api.UnitTests.Helpers.Creators;
 
@@ -6,29 +7,21 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Filters;
 
 public class TestApiExceptionFilterAttribute
 {
-    [Fact]
-    public void OnException_WithException_ReturnInternalServerErrorResponse()
+    [Theory, AutoData]
+    public void OnException_WithException_ReturnInternalServerErrorResult
+        (string exceptionMessage)
     {
         // Arrange
-        var exceptionContextMock = ExceptionContextMock.Create();
+        var exceptionContext = new ExceptionContext(ActionContextCreator.Create(), []) 
+        { Exception = new Exception(exceptionMessage) };
 
-        var exceptionMessage = "Test unexpected error occurred.";
-        exceptionContextMock.SetupGet(ec => ec.Exception.Message)
-            .Returns(exceptionMessage);
-
-        IActionResult objectResult = null!;
-        exceptionContextMock.SetupSet(ec => ec.Result = It.IsAny<IActionResult>())
-            .Callback((IActionResult callbackResult) => objectResult = callbackResult);
-
-        var exceptionFilter = new ApiExceptionFilterAttribute();
+        var sut = new ApiExceptionFilterAttribute();
 
         // Act
-        exceptionFilter.OnException(exceptionContextMock.Object);
+        sut.OnException(exceptionContext);
 
         // Assert
-        exceptionContextMock.VerifyGet(ec => ec.Exception.Message, Times.Once());
-
-        objectResult.Should().NotBeNull()
+        exceptionContext.Result.Should().NotBeNull()
             .And.BeOfType<ObjectResult>()
 
             .Which.Should().HaveStatusCode(500)

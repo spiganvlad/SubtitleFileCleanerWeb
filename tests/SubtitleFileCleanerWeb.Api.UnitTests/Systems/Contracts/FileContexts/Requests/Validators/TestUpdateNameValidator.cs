@@ -5,6 +5,8 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Contracts.FileContexts.Re
 
 public class TestUpdateNameValidator
 {
+    private readonly UpdateNameValidator _sut = new();
+
     [Fact]
     public void Validate_WithValidName_ReturnValid()
     {
@@ -13,10 +15,8 @@ public class TestUpdateNameValidator
 
         var request = new UpdateNameRequest(name);
 
-        var validator = new UpdateNameValidator();
-
         // Act
-        var result = validator.Validate(request);
+        var result = _sut.Validate(request);
 
         // Assert
         result.Should().NotBeNull()
@@ -31,10 +31,8 @@ public class TestUpdateNameValidator
 
         var request = new UpdateNameRequest(name);
 
-        var validator = new UpdateNameValidator();
-
         // Act
-        var result = validator.Validate(request);
+        var result = _sut.Validate(request);
 
         // Assert
         result.Should().NotBeNull()
@@ -50,10 +48,8 @@ public class TestUpdateNameValidator
 
         var request = new UpdateNameRequest(name);
 
-        var validator = new UpdateNameValidator();
-
         // Act
-        var result = validator.Validate(request);
+        var result = _sut.Validate(request);
 
         // Assert
         result.Should().NotBeNull()
@@ -64,14 +60,13 @@ public class TestUpdateNameValidator
     [Fact]
     public void Validate_WithWhiteSpaceName_ReturnInvalid()
     {
+        // Arrange
         var name = "     ";
 
         var request = new UpdateNameRequest(name);
 
-        var validator = new UpdateNameValidator();
-
         // Act
-        var result = validator.Validate(request);
+        var result = _sut.Validate(request);
 
         // Assert
         result.Should().NotBeNull()

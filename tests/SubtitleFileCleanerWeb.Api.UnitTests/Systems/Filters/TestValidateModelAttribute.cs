@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
-using Microsoft.AspNetCore.Mvc.Filters;
 using SubtitleFileCleanerWeb.Api.Contracts.Common;
 using SubtitleFileCleanerWeb.Api.Filters;
 using SubtitleFileCleanerWeb.Api.UnitTests.Helpers.Creators;
@@ -9,142 +8,77 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Filters;
 
 public class TestValidateModelAttribute
 {
-    private readonly Mock<HttpContext> _httpContextMock;
-    private readonly Mock<ActionExecutingContext> _actionExecutingContextMock;
+    private readonly HttpContext _httpContextMock;
+    private readonly ActionContext _actionContext;
+    private readonly ValidateModelAttribute _sut = new();
 
     public TestValidateModelAttribute()
     {
-        _httpContextMock = new Mock<HttpContext>();
-
-        _actionExecutingContextMock = ActionExecutingContextMock.Create(
-            TestActionContext.Create(_httpContextMock.Object));
+        _httpContextMock = Substitute.For<HttpContext>();
+        _actionContext = ActionContextCreator.Create(context: _httpContextMock);
     }
 
-    [Fact]
-    public void OnActionExecuting_WithValidArguments_ValidValidation()
+    [Theory, AutoData]
+    public void OnActionExecuting_WithValidArguments_ReturnNullResult
+        (string stringValue, int intValue)
     {
         // Arrange
-        var firstValue = "value";
-        var secondValue = 5;
-
         var actionArguments = new Dictionary<string, object?>
         {
-            { "firstArgumentName", firstValue },
-            { "secondArgumentName", secondValue },
+            { "firstArgumentName", stringValue },
+            { "secondArgumentName", intValue },
         };
-        _actionExecutingContextMock.SetupGet(c => c.ActionArguments)
-            .Returns(actionArguments);
 
-        var validationResultMock = new Mock<ValidationResult>();
-        validationResultMock.SetupGet(r => r.IsValid)
-            .Returns(true);
+        var actionExecutingContext = ActionExecutingContextCreator.Create(
+            actionContext: _actionContext, actionArguments: actionArguments);
 
-        var firstModelValidatorMock = new Mock<IValidator<string>>();
-        firstModelValidatorMock.Setup(v => v.Validate(firstValue))
-            .Returns(validationResultMock.Object);
+        var validationResultMock = Substitute.For<ValidationResult>();
+        validationResultMock.IsValid.Returns(true);
 
-        var secondModelValidatorMock = new Mock<IValidator<int>>();
-        secondModelValidatorMock.Setup(v => v.Validate(secondValue))
-            .Returns(validationResultMock.Object);
+        var stringModelValidatorMock = Substitute.For<IValidator<string>>();
+        stringModelValidatorMock.Validate(stringValue).Returns(validationResultMock);
 
-        _httpContextMock.Setup(c => c.RequestServices.GetService(typeof(IValidator<string>)))
-            .Returns(firstModelValidatorMock.Object);
+        var intModelValidatorMock = Substitute.For<IValidator<int>>();
+        intModelValidatorMock.Validate(intValue).Returns(validationResultMock);
 
-        _httpContextMock.Setup(c => c.RequestServices.GetService(typeof(IValidator<int>)))
-            .Returns(secondModelValidatorMock.Object);
-
-        var validateModelFilter = new ValidateModelAttribute();
+        _httpContextMock.RequestServices.GetService(typeof(IValidator<string>)).Returns(stringModelValidatorMock);
+        _httpContextMock.RequestServices.GetService(typeof(IValidator<int>)).Returns(intModelValidatorMock);
 
         // Act
-        validateModelFilter.OnActionExecuting(_actionExecutingContextMock.Object);
+        _sut.OnActionExecuting(actionExecutingContext);
 
         // Assert
-        _actionExecutingContextMock.VerifyGet(
-            c => c.ActionArguments,
-            Times.Once());
-
-        _httpContextMock.Verify(
-            c => c.RequestServices.GetService(It.IsAny<Type>()),
-            Times.Exactly(2));
-
-        validationResultMock.VerifyGet(
-            r => r.IsValid,
-            Times.Exactly(2));
-
-        firstModelValidatorMock.Verify(
-            v => v.Validate(It.IsAny<string>()),
-            Times.Once());
-
-        secondModelValidatorMock.Verify(
-            v => v.Validate(It.IsAny<int>()),
-            Times.Once());
-
-        _actionExecutingContextMock.VerifySet(
-            c => c.Result = It.IsAny<IActionResult>(),
-            Times.Never());
+        actionExecutingContext.Result.Should().BeNull();
     }
 
-    [Fact]
-    public void OnActionExecuting_WithInvalidArgument_ReturnBadRequestResponse()
+    [Theory, AutoData]
+    public void OnActionExecuting_WithInvalidArgument_ReturnBadRequestResult
+        (string firstErrorMessage, string secondErrorMessage, object objectValue)
     {
         // Arrange
-        var modelValue = "value";
-        var firstErrorMessage = "First error message.";
-        var secondErrorMessage = "Second error message.";
-
         var actionArguments = new Dictionary<string, object?>
         {
-            { "ArgumentName", modelValue },
+            { "ArgumentName", objectValue },
         };
-        _actionExecutingContextMock.SetupGet(c => c.ActionArguments)
-            .Returns(actionArguments);
 
-        var validationResultMock = new Mock<ValidationResult>();
-        validationResultMock.SetupGet(r => r.IsValid)
-            .Returns(false);
+        var actionExecutingContext = ActionExecutingContextCreator.Create(
+            actionContext: _actionContext, actionArguments: actionArguments);
 
-        var validationResult = validationResultMock.Object;
-        validationResult.Errors.Add(new ValidationFailure(null, firstErrorMessage));
-        validationResult.Errors.Add(new ValidationFailure(null, secondErrorMessage));
+        var validationResultMock = Substitute.For<ValidationResult>();
+        validationResultMock.IsValid.Returns(false);
+        validationResultMock.Errors.Add(new ValidationFailure(null, firstErrorMessage));
+        validationResultMock.Errors.Add(new ValidationFailure(null, secondErrorMessage));
 
-        var modelValidatorMock = new Mock<IValidator<string>>();
-        modelValidatorMock.Setup(v => v.Validate(modelValue))
-            .Returns(validationResultMock.Object);
+        var objectValidatorMock = Substitute.For<IValidator<object>>();
+        objectValidatorMock.Validate(objectValue).Returns(validationResultMock);
 
-        _httpContextMock.Setup(c => c.RequestServices.GetService(typeof(IValidator<string>)))
-            .Returns(modelValidatorMock.Object);
-
-        IActionResult? result = null;
-        _actionExecutingContextMock.SetupSet(c => c.Result = It.IsAny<BadRequestObjectResult>())
-            .Callback((IActionResult callbackResult) => result = callbackResult);
-
-        var validateModelFilter = new ValidateModelAttribute();
+        _httpContextMock.RequestServices.GetService(typeof(IValidator<object>)).Returns(objectValidatorMock);
 
         // Act
-        validateModelFilter.OnActionExecuting(_actionExecutingContextMock.Object);
+        _sut.OnActionExecuting(actionExecutingContext);
 
         // Assert
-        _actionExecutingContextMock.VerifyGet(
-            c => c.ActionArguments,
-            Times.Once());
-
-        _httpContextMock.Verify(
-            c => c.RequestServices.GetService(It.IsAny<Type>()),
-            Times.Once());
-
-        modelValidatorMock.Verify(
-            v => v.Validate(It.IsAny<string>()),
-            Times.Once());
-
-        validationResultMock.VerifyGet(
-            r => r.IsValid,
-            Times.Once());
-
-        _actionExecutingContextMock.VerifySet(
-            c => c.Result = It.IsAny<IActionResult>(),
-            Times.Once());
-
-        result.Should().NotBeNull()
+        actionExecutingContext.Result.Should().NotBeNull()
             .And.BeOfType<BadRequestObjectResult>()
 
             .Which.Should().HaveStatusCode(400)
@@ -154,38 +88,27 @@ public class TestValidateModelAttribute
             .Which.Should().HaveStatusCode(400)
             .And.HaveStatusPhrase("Bad Request")
             .And.HaveTimeStampCloseTo(DateTime.UtcNow, 1.Seconds())
-            .And.HaveErrors(
-            firstErrorMessage,
-            secondErrorMessage);
+            .And.HaveErrors(firstErrorMessage, secondErrorMessage);
     }
 
-    [Fact]
-    public void OnActionExecuting_WithModelValueNull_ReturnBadRequestResponse()
+    [Theory, AutoData]
+    public void OnActionExecuting_WithNullArgument_ReturnBadRequestResult
+        (string argumentName)
     {
         // Arrange
-        var argumentName = "ArgumentName";
         var actionArguments = new Dictionary<string, object?>
         {
             { argumentName, null },
         };
-        _actionExecutingContextMock.SetupGet(c => c.ActionArguments)
-            .Returns(actionArguments);
 
-        IActionResult? result = null;
-        _actionExecutingContextMock.SetupSet(c => c.Result = It.IsAny<BadRequestObjectResult>())
-            .Callback((IActionResult callbackResult) => result = callbackResult);
-
-        var validateModelFilter = new ValidateModelAttribute();
+        var actionExecutingContext = ActionExecutingContextCreator.Create(
+            actionContext: _actionContext, actionArguments: actionArguments);
 
         // Act
-        validateModelFilter.OnActionExecuting(_actionExecutingContextMock.Object);
+        _sut.OnActionExecuting(actionExecutingContext);
 
         // Assert
-        _actionExecutingContextMock.VerifySet(
-            c => c.Result = It.IsAny<IActionResult>(),
-            Times.Once());
-
-        result.Should().NotBeNull()
+        actionExecutingContext.Result.Should().NotBeNull()
             .And.BeOfType<BadRequestObjectResult>()
 
             .Which.Should().HaveStatusCode(400)
@@ -199,35 +122,21 @@ public class TestValidateModelAttribute
     }
 
     [Fact]
-    public void OnActionExecuting_WithNotRegisteredValidator_SkipValidation()
+    public void OnActionExecuting_WithNotRegisteredValidator_ReturnNullResult()
     {
         // Arrange
         var actionArguments = new Dictionary<string, object?>
         {
             { "ArgumentName", "value" },
         };
-        _actionExecutingContextMock.SetupGet(c => c.ActionArguments)
-            .Returns(actionArguments);
 
-        _httpContextMock.Setup(c => c.RequestServices.GetService(typeof(IValidator<string>)))
-            .Returns(null!);
-
-        var validateModelFilter = new ValidateModelAttribute();
+        var actionExecutingContext = ActionExecutingContextCreator.Create(
+            actionContext: _actionContext, actionArguments: actionArguments);
 
         // Act
-        validateModelFilter.OnActionExecuting(_actionExecutingContextMock.Object);
+        _sut.OnActionExecuting(actionExecutingContext);
 
         // Assert
-        _actionExecutingContextMock.VerifyGet(
-            c => c.ActionArguments,
-            Times.Once());
-
-        _httpContextMock.Verify(
-            c => c.RequestServices.GetService(It.IsAny<Type>()),
-            Times.Once());
-
-        _actionExecutingContextMock.VerifySet(
-            c => c.Result = It.IsAny<IActionResult>(),
-            Times.Never());
+        actionExecutingContext.Result.Should().BeNull();
     }
 }
