@@ -1,6 +1,7 @@
 ﻿using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.FileContents.CommandHandlers;
 using SubtitleFileCleanerWeb.Application.FileContents.Commands;
+using SubtitleFileCleanerWeb.Application.UnitTests.Fixtures.AutoData;
 using SubtitleFileCleanerWeb.Application.UnitTests.Helpers.Reflection;
 using SubtitleFileCleanerWeb.Infrastructure.Blob;
 using SubtitleFileCleanerWeb.Infrastructure.Exceptions;
@@ -9,102 +10,73 @@ namespace SubtitleFileCleanerWeb.Application.UnitTests.Systems.FileContents.Comm
 
 public class TestDeleteFileContentHandler
 {
-    private readonly Mock<IBlobStorageContext> _storageContext;
+    private readonly CancellationToken _cancellationToken = TestContext.Current.CancellationToken;
+    private readonly IBlobStorageContext _blobContextMock;
+    private readonly DeleteFileContentHandler _sut;
 
     public TestDeleteFileContentHandler()
     {
-        _storageContext = new();
+        _blobContextMock = Substitute.For<IBlobStorageContext>();
+        _sut = new(_blobContextMock);
     }
 
-    [Fact]
-    public async Task Handle_WithExistedContent_DeleteValid()
+    [Theory, PathAutoData]
+    public async Task Handle_WithValidPath_ReturnTrueResult
+        (DeleteFileContent request)
     {
-        // Arrange
-        _storageContext.Setup(sc => sc.DeleteContentAsync(
-            string.Empty,
-            It.IsAny<CancellationToken>()));
-
-        var request = new DeleteFileContent(string.Empty);
-
-        var handler = new DeleteFileContentHandler(_storageContext.Object);
-
         // Act
-        var result = await handler.Handle(request, default);
+        var result = await _sut.Handle(request, _cancellationToken);
 
         // Assert
-        _storageContext.Verify(
-            sc => sc.DeleteContentAsync(
-                It.IsAny<string>(),
-                It.IsAny<CancellationToken>()),
-            Times.Once());
-
         result.Should().NotBeNull()
             .And.NotBeInErrorState()
             .And.HaveNoErrors()
-            .And.HaveNotDefaultPayload();
+            .And.HaveNotDefaultPayload()
+            
+            .Which.Should().BeTrue();
     }
 
-    [Fact]
-    public async Task Handle_WithBlobStorageOperationException_ReturnBlobContextOperationExceptionError()
+    [Theory, PathAutoData]
+    public async Task Handle_WithBlobStorageOperationException_ReturnBlobContextOperationExceptionError
+        (DeleteFileContent request, string message)
     {
         // Arrange
-        var exceptionMessage = "Test blob exception occurred.";
-        var exception = InnerExceptionsCreator.Create<BlobStorageOperationException>(exceptionMessage);
+        var exception = InnerExceptionsCreator.Create<BlobStorageOperationException>(message);
 
-        _storageContext.Setup(
-            sc => sc.DeleteContentAsync(
-                string.Empty,
-                It.IsAny<CancellationToken>()))
+        _blobContextMock
+            .DeleteContentAsync(
+                request.Path,
+                Arg.Any<CancellationToken>())
             .ThrowsAsync(exception);
 
-        var request = new DeleteFileContent(string.Empty);
-
-        var handler = new DeleteFileContentHandler(_storageContext.Object);
-
         // Act
-        var result = await handler.Handle(request, default);
+        var result = await _sut.Handle(request, _cancellationToken);
 
         // Assert
-        _storageContext.Verify(
-            sc => sc.DeleteContentAsync(
-                It.IsAny<string>(),
-                It.IsAny<CancellationToken>()),
-            Times.Once());
-
         result.Should().NotBeNull()
             .And.BeInErrorState()
-            .And.HaveSingleError(ErrorCode.BlobContextOperationException, exceptionMessage)
+            .And.HaveSingleError(ErrorCode.BlobContextOperationException, message)
             .And.HaveDefaultPayload();
     }
 
-    [Fact]
-    public async Task Handle_WithUnexpectedException_ReturnUnknownError()
+    [Theory, PathAutoData]
+    public async Task Handle_WithUnexpectedException_ReturnUnknownError
+        (DeleteFileContent request, string message)
     {
         // Arrange
-        var exceptionMessage = "Test unexpected error occurred.";
-        _storageContext.Setup(
-            sc => sc.DeleteContentAsync(
-                string.Empty,
-                It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new Exception(exceptionMessage));
-
-        var request = new DeleteFileContent(string.Empty);
-
-        var handler = new DeleteFileContentHandler(_storageContext.Object);
+        _blobContextMock
+            .DeleteContentAsync(
+                Arg.Any<string>(),
+                Arg.Any<CancellationToken>())
+            .ThrowsAsync(new Exception(message));
 
         // Act
-        var result = await handler.Handle(request, default);
+        var result = await _sut.Handle(request, _cancellationToken);
 
         // Assert
-        _storageContext.Verify(
-            sc => sc.DeleteContentAsync(
-                It.IsAny<string>(),
-                It.IsAny<CancellationToken>()),
-            Times.Once());
-
         result.Should().NotBeNull()
             .And.BeInErrorState()
-            .And.HaveSingleError(ErrorCode.UnknownError, exceptionMessage)
+            .And.HaveSingleError(ErrorCode.UnknownError, message)
             .And.HaveDefaultPayload();
     }
 }

@@ -6,44 +6,31 @@ namespace SubtitleFileCleanerWeb.Api.UnitTests.Systems.Filters;
 
 public class TestValidateGuidAttribute
 {
-    [Fact]
-    public void OnActionExecuting_WithValidGuids_ReturnValid()
+    [Theory, AutoData]
+    public void OnActionExecuting_WithValidGuids_ReturnNullResult
+        (string firstPropName, string secondPropName, Guid validGuid)
     {
         // Arrange
-        var firstPropName = "firstGuidId";
-        var secondPropName = "secondGuidId";
-
         var actionArguments = new Dictionary<string, object?>
         {
-            { firstPropName, "299261d5-b0da-41d3-92eb-c2a213538f58" },
+            { firstPropName, validGuid },
             { "otherPropName", new object() },
             { secondPropName, Guid.Empty }
         };
 
-        var actionExecutingContextMock = ActionExecutingContextMock.Create();
+        var actionExecutingContext = ActionExecutingContextCreator.Create(actionArguments: actionArguments);
 
-        actionExecutingContextMock.SetupGet(ec => ec.ActionArguments)
-            .Returns(actionArguments);
-
-        actionExecutingContextMock.SetupSet(ec => ec.Result = It.IsAny<IActionResult>());
-
-        var validateGuidFilter = new ValidateGuidAttribute(firstPropName, secondPropName);
+        var sut = new ValidateGuidAttribute(firstPropName, secondPropName);
 
         // Act
-        validateGuidFilter.OnActionExecuting(actionExecutingContextMock.Object);
+        sut.OnActionExecuting(actionExecutingContext);
 
         // Assert
-        actionExecutingContextMock.VerifyGet(
-            ec => ec.ActionArguments,
-            Times.Exactly(2));
-
-        actionExecutingContextMock.VerifySet(
-            ec => ec.Result = It.IsAny<IActionResult>(),
-            Times.Never());
+        actionExecutingContext.Result.Should().BeNull();
     }
 
     [Fact]
-    public void OnActionExecuting_WithNonExistentPropertyName_ReturnValid()
+    public void OnActionExecuting_WithNonExistentPropertyName_ReturnNullResult()
     {
         // Arrange
         var actionArguments = new Dictionary<string, object?>
@@ -52,32 +39,22 @@ public class TestValidateGuidAttribute
             { "secondPropName", new object() }
         };
 
-        var actionExecutingContextMock = ActionExecutingContextMock.Create();
-        actionExecutingContextMock.SetupGet(ec => ec.ActionArguments)
-            .Returns(actionArguments);
+        var actionExecutingContext = ActionExecutingContextCreator.Create(actionArguments: actionArguments);
 
-        var validateGuidFilter = new ValidateGuidAttribute("thirdPropName");
+        var sut = new ValidateGuidAttribute("thirdPropName");
 
         // Act
-        validateGuidFilter.OnActionExecuting(actionExecutingContextMock.Object);
+        sut.OnActionExecuting(actionExecutingContext);
 
         // Assert
-        actionExecutingContextMock.VerifyGet(
-            ec => ec.ActionArguments,
-            Times.Once());
-
-        actionExecutingContextMock.VerifySet(
-            ec => ec.Result = It.IsAny<IActionResult>(),
-            Times.Never());
+        actionExecutingContext.Result.Should().BeNull();
     }
 
-    [Fact]
-    public void OnActionExecuting_WithInvalidGuids_ReturnBadRequestResponse()
+    [Theory, AutoData]
+    public void OnActionExecuting_WithInvalidGuids_ReturnBadRequestResult
+        (string firstPropName, string secondPropName)
     {
         // Arrange
-        var firstPropName = "firstGuidId";
-        var secondPropName = "secondGuidId";
-
         var actionArguments = new Dictionary<string, object?>
         {
             { firstPropName, "FooName" },
@@ -85,30 +62,15 @@ public class TestValidateGuidAttribute
             { secondPropName, "299261d5-b0da-41d3-92eb-c2a213538f5" }
         };
 
-        var actionExecutingContextMock = ActionExecutingContextMock.Create();
+        var actionExecutingContext = ActionExecutingContextCreator.Create(actionArguments: actionArguments);
 
-        actionExecutingContextMock.SetupGet(ec => ec.ActionArguments)
-            .Returns(actionArguments);
-
-        IActionResult? result = null;
-        actionExecutingContextMock.SetupSet(ec => ec.Result = It.IsAny<BadRequestObjectResult>())
-            .Callback((IActionResult callbackResult) => result = callbackResult);
-
-        var validateGuidFilter = new ValidateGuidAttribute(firstPropName, secondPropName);
+        var sut = new ValidateGuidAttribute(firstPropName, secondPropName);
 
         // Act
-        validateGuidFilter.OnActionExecuting(actionExecutingContextMock.Object);
+        sut.OnActionExecuting(actionExecutingContext);
 
         // Assert
-        actionExecutingContextMock.VerifyGet(
-            ec => ec.ActionArguments,
-            Times.Exactly(2));
-
-        actionExecutingContextMock.VerifySet(
-            ec => ec.Result = It.IsAny<IActionResult>(),
-            Times.Once());
-
-        var x = result.Should().NotBeNull()
+        actionExecutingContext.Result.Should().NotBeNull()
             .And.BeOfType<BadRequestObjectResult>()
 
             .Which.Should().HaveStatusCode(400)

@@ -3,134 +3,91 @@ using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.Models;
 using SubtitleFileCleanerWeb.Application.PostConversion.CommandHandlers;
 using SubtitleFileCleanerWeb.Application.PostConversion.Commands;
+using SubtitleFileCleanerWeb.Application.UnitTests.Fixtures.AutoData;
 
 namespace SubtitleFileCleanerWeb.Application.UnitTests.Systems.PostConversion.CommandHandlers;
 
 public class TestPostConvertFileHandler
 {
-    private readonly Mock<IPostConversionProcessor> _processorMock;
+    private readonly CancellationToken _cancellationToken = TestContext.Current.CancellationToken;
+    private readonly IPostConversionProcessor _processorMock;
+    private readonly PostConvertFileHandler _sut;
 
     public TestPostConvertFileHandler()
     {
-        _processorMock = new();
+        _processorMock = Substitute.For<IPostConversionProcessor>();
+        _sut = new(_processorMock);
     }
 
-    [Fact]
-    public async Task Handle_WithValidParameters_ReturnValid()
+    [Theory, StreamAutoData]
+    public async Task Handle_WithValidRequest_ReturnStreamResult
+        (PostConvertFile request, OperationResult<Stream> processorResult)
     {
         // Arrange
-        var contentStream = new MemoryStream([1, 2]);
-        var expectedContentStream = new MemoryStream([1], false);
-
-        PostConversionOption[] conversionOptions =
-        [
-            (PostConversionOption)(-1),
-            (PostConversionOption)(-2)
-        ];
-
-        var processorResult = new OperationResult<Stream>
-        {
-            Payload = expectedContentStream
-        };
-
-        _processorMock.Setup(
-            p => p.ProcessAsync(
-                contentStream,
-                It.IsAny<CancellationToken>(),
-                conversionOptions))
-            .ReturnsAsync(processorResult);
-
-        var request = new PostConvertFile(contentStream, conversionOptions);
-
-        var handler = new PostConvertFileHandler(_processorMock.Object);
+        _processorMock
+            .ProcessAsync(
+                request.ContentStream,
+                Arg.Any<CancellationToken>(),
+                request.ConversionOptions)
+            .Returns(Task.FromResult(processorResult));
 
         // Act
-        var result = await handler.Handle(request, default);
+        var result = await _sut.Handle(request, _cancellationToken);
 
         // Assert
-        _processorMock.Verify(
-            p => p.ProcessAsync(
-                It.IsAny<Stream>(),
-                It.IsAny<CancellationToken>(),
-                It.IsAny<PostConversionOption[]>()),
-            Times.Once());
-
         result.Should().NotBeNull()
             .And.NotBeInErrorState()
             .And.HaveNoErrors()
             .And.HaveNotDefaultPayload()
             
             .Which.Should().BeReadOnly()
-            .And.HaveLength(expectedContentStream.Length);
+            .And.HaveLength(processorResult.Payload!.Length);
     }
 
-    [Fact]
-    public async Task Handle_WithProcessorError_RaiseError()
+    [Theory, StreamAutoData]
+    public async Task Handle_WithProcessorError_RaiseError
+        (PostConvertFile request, ErrorCode code, string message)
     {
         // Arrange
-        var contentStream = Stream.Null;
-        var conversionOptions = Array.Empty<PostConversionOption>();
-
         var processorResult = new OperationResult<Stream>();
+        processorResult.AddError(code, message);
 
-        var errorCode = (ErrorCode)(-1);
-        var errorMessage = "Test unexpected error occurred."; 
-        processorResult.AddError(errorCode, errorMessage);
-
-        _processorMock.Setup(
-            p => p.ProcessAsync(
-                contentStream,
-                It.IsAny<CancellationToken>(),
-                conversionOptions))
-            .ReturnsAsync(processorResult);
-
-        var request = new PostConvertFile(contentStream, conversionOptions);
-
-        var handler = new PostConvertFileHandler(_processorMock.Object);
+        _processorMock
+            .ProcessAsync(
+                request.ContentStream,
+                Arg.Any<CancellationToken>(),
+                request.ConversionOptions)
+            .Returns(Task.FromResult(processorResult));
 
         // Act
-        var result = await handler.Handle(request, default);
+        var result = await _sut.Handle(request, _cancellationToken);
 
         // Assert
-        _processorMock.Verify(
-            p => p.ProcessAsync(
-                It.IsAny<Stream>(),
-                It.IsAny<CancellationToken>(),
-                It.IsAny<PostConversionOption[]>()),
-            Times.Once());
-
         result.Should().NotBeNull()
             .And.BeInErrorState()
-            .And.HaveSingleError(errorCode, errorMessage)
+            .And.HaveSingleError(code, message)
             .And.HaveDefaultPayload();
     }
 
-    [Fact]
-    public async Task Handle_WithUnexpectedException_ReturnUnknowError()
+    [Theory, StreamAutoData]
+    public async Task Handle_WithUnexpectedException_ReturnUnknowError
+        (PostConvertFile request, string message)
     {
         // Arrange
-        var contentStream = Stream.Null;
-        var conversionOptions = Array.Empty<PostConversionOption>();
-
-        var exceptionMessage = "Test unexpected exception occurred.";
-        _processorMock.Setup(
-            p => p.ProcessAsync(
-                contentStream,
-                It.IsAny<CancellationToken>(),
-                conversionOptions))
-            .ThrowsAsync(new Exception(exceptionMessage));
-
-        var request = new PostConvertFile(contentStream, conversionOptions);
-
-        var handler = new PostConvertFileHandler(_processorMock.Object);
+        _processorMock
+            .ProcessAsync(
+                Arg.Any<Stream>(),
+                Arg.Any<CancellationToken>(),
+                Arg.Any<PostConversionOption[]>())
+            .ThrowsAsync(new Exception(message));
 
         // Act
-        var result = await handler.Handle(request, default);
+        var result = await _sut.Handle(request, _cancellationToken);
 
         // Assert
         result.Should().NotBeNull()
             .And.BeInErrorState()
-            .And.HaveSingleError(ErrorCode.UnknownError, exceptionMessage)
+            .And.HaveSingleError(ErrorCode.UnknownError, message)
             .And.HaveDefaultPayload();
     }
 }

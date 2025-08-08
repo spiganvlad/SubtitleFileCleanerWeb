@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Routing;
 
 namespace SubtitleFileCleanerWeb.Api.UnitTests.Helpers.Creators;
 
-public static class TestActionContext
+public static class ActionContextCreator
 {
     public static ActionContext Create(
         HttpContext? context = null,

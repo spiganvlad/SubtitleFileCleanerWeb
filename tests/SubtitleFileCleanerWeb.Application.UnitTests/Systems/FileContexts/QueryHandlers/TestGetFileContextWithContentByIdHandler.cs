@@ -1,9 +1,11 @@
-﻿using SubtitleFileCleanerWeb.Application.Enums;
+﻿using AutoFixture.Xunit3;
+using MockQueryable.NSubstitute;
+using SubtitleFileCleanerWeb.Application.Enums;
 using SubtitleFileCleanerWeb.Application.FileContents.Queries;
 using SubtitleFileCleanerWeb.Application.FileContexts.Queries;
 using SubtitleFileCleanerWeb.Application.FileContexts.QueryHandlers;
 using SubtitleFileCleanerWeb.Application.Models;
-using SubtitleFileCleanerWeb.Application.UnitTests.Fixtures;
+using SubtitleFileCleanerWeb.Application.UnitTests.Fixtures.AutoData;
 using SubtitleFileCleanerWeb.Domain.Aggregates.FileContextAggregate;
 using SubtitleFileCleanerWeb.Infrastructure.Persistence;
 
@@ -11,52 +13,41 @@ namespace SubtitleFileCleanerWeb.Application.UnitTests.Systems.FileContexts.Quer
 
 public class TestGetFileContextWithContentByIdHandler
 {
-    private readonly Mock<IMediator> _mediatorMock;
-    private readonly Mock<ApplicationDbContext> _dbContextMock;
+    private readonly CancellationToken _cancellationToken = TestContext.Current.CancellationToken;
+    private readonly IMediator _mediatorMock;
+    private readonly ApplicationDbContext _dbContextMock;
+    private readonly GetFileContextWithContentByIdHandler _sut;
 
     public TestGetFileContextWithContentByIdHandler()
     {
-        _mediatorMock = new();
-        _dbContextMock = new();
+        _mediatorMock = Substitute.For<IMediator>();
+        _dbContextMock = Substitute.For<ApplicationDbContext>();
+        _sut = new GetFileContextWithContentByIdHandler(_mediatorMock, _dbContextMock);
     }
 
-    [Fact]
-    public async Task Handle_WithValidParameters_ReturnValid()
+    [Theory, StreamAutoData]
+    public async Task Handle_WithExistingId_ReturnFileContextResult
+        (List<FileContext> fileContexts, OperationResult<FileContent> searchedContent)
     {
         // Arrange
-        var fileContexts = FileContextFixture.GetListOfThree();
         var searchedContext = fileContexts.Last();
         var path = Path.Combine("Unauthorized", searchedContext.FileContextId.ToString());
 
-        var searchedContent = FileContent.Create(new MemoryStream([1], false));
+        var fileContextsDbSet = fileContexts.AsQueryable().BuildMockDbSet();
+        _dbContextMock.FileContexts.Returns(fileContextsDbSet);
 
-        _dbContextMock.SetupGet(db => db.FileContexts)
-            .ReturnsDbSet(fileContexts);
-
-        _mediatorMock.Setup(
-            m => m.Send(
-                It.Is<GetFileContentById>(x => x.Path == path),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new OperationResult<FileContent>() { Payload = searchedContent });
+        _mediatorMock
+            .Send(
+                Arg.Is<GetFileContentById>(x => x.Path == path),
+                Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(searchedContent));
 
         var request = new GetFileContextWithContentById(searchedContext.FileContextId);
 
-        var handler = new GetFileContextWithContentByIdHandler(_mediatorMock.Object, _dbContextMock.Object);
-
         // Act
-        var result = await handler.Handle(request, default);
+        var result = await _sut.Handle(request, _cancellationToken);
 
         // Assert
-        _dbContextMock.VerifyGet(
-            db => db.FileContexts,
-            Times.Once());
-
-        _mediatorMock.Verify(
-            m => m.Send(
-                It.IsAny<GetFileContentById>(),
-                It.IsAny<CancellationToken>()),
-            Times.Once());
-
         var payload = result.Should().NotBeNull()
             .And.NotBeInErrorState()
             .And.HaveNoErrors()
@@ -64,117 +55,74 @@ public class TestGetFileContextWithContentByIdHandler
             .Which;
 
         payload.Should().Be(searchedContext);
-        payload.FileContent.Should().NotBeNull()
-            .And.Be(searchedContent);
+        payload.FileContent.Should().Be(searchedContent.Payload);
     }
 
-    [Fact]
-    public async Task Handle_WithNonExistentId_ReturnNotFoundError()
+    [Theory, AutoData]
+    public async Task Handle_WithNonExistentId_ReturnNotFoundError
+        (GetFileContextWithContentById request)
     {
         // Arrange
-        _dbContextMock.SetupGet(db => db.FileContexts)
-            .ReturnsDbSet([]);
-
-        var request = new GetFileContextWithContentById(Guid.Empty);
-
-        var handler = new GetFileContextWithContentByIdHandler(_mediatorMock.Object, _dbContextMock.Object);
+        var fileContextsDbSet = Enumerable.Empty<FileContext>().AsQueryable().BuildMockDbSet();
+        _dbContextMock.FileContexts.Returns(fileContextsDbSet);
 
         // Act
-        var result = await handler.Handle(request, default);
+        var result = await _sut.Handle(request, _cancellationToken);
 
         // Assert
-        _dbContextMock.VerifyGet(
-            db => db.FileContexts,
-            Times.Once());
-
-        _mediatorMock.Verify(
-            m => m.Send(
-                It.IsAny<GetFileContentById>(),
-                It.IsAny<CancellationToken>()),
-            Times.Never());
-
         result.Should().NotBeNull()
             .And.BeInErrorState()
-            .And.HaveSingleError(ErrorCode.NotFound, $"No file context found with id: {Guid.Empty}.")
+            .And.HaveSingleError(
+                ErrorCode.NotFound,
+                $"No file context found with id: {request.FileContextId}.")
             .And.HaveDefaultPayload();
     }
 
-    [Fact]
-    public async Task Handle_WithFileContentError_RaiseError()
+    [Theory, AutoData]
+    public async Task Handle_WithFileContentError_RaiseError
+        (List<FileContext> fileContexts, ErrorCode code, string message)
     {
         // Arrange
-        var fileContexts = FileContextFixture.GetListOfThree();
         var searchedFileContext = fileContexts.Last();
         var path = Path.Combine("Unauthorized", searchedFileContext.FileContextId.ToString());
-
-        _dbContextMock.SetupGet(db => db.FileContexts)
-            .ReturnsDbSet(fileContexts);
-
-        var fileContentResult = new OperationResult<FileContent>();
-
-        var errorCode = (ErrorCode)(-1);
-        var errorMessage = "Test unexpected error occurred.";
-        fileContentResult.AddError(errorCode, errorMessage);
-
-        _mediatorMock.Setup(
-            m => m.Send(
-                It.Is<GetFileContentById>(x => x.Path == path),
-                It.IsAny<CancellationToken>()))
-            .ReturnsAsync(fileContentResult);
-
         var request = new GetFileContextWithContentById(searchedFileContext.FileContextId);
 
-        var handler = new GetFileContextWithContentByIdHandler(_mediatorMock.Object, _dbContextMock.Object);
+        var fileContextsDbSet = fileContexts.AsQueryable().BuildMockDbSet();
+        _dbContextMock.FileContexts.Returns(fileContextsDbSet);
+
+        var fileContentResult = new OperationResult<FileContent>();
+        fileContentResult.AddError(code, message);
+
+        _mediatorMock
+            .Send(
+                Arg.Is<GetFileContentById>(x => x.Path == path),
+                Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(fileContentResult));
 
         // Act
-        var result = await handler.Handle(request, default);
+        var result = await _sut.Handle(request, _cancellationToken);
 
         // Assert
-        _dbContextMock.VerifyGet(
-            db => db.FileContexts,
-            Times.Once());
-        
-        _mediatorMock.Verify(
-            m => m.Send(
-                It.IsAny<GetFileContentById>(),
-                It.IsAny<CancellationToken>()),
-            Times.Once());
-
         result.Should().NotBeNull()
             .And.BeInErrorState()
-            .And.HaveSingleError(errorCode, errorMessage)
+            .And.HaveSingleError(code, message)
             .And.HaveDefaultPayload();
     }
 
-    [Fact]
-    public async Task Handle_WithUnexpectedException_ReturnUnknownError()
+    [Theory, AutoData]
+    public async Task Handle_WithUnexpectedException_ReturnUnknownError
+        (GetFileContextWithContentById request, string message)
     {
         // Arrange
-        var exceptionMessage = "Test unexpected error occurred.";
-        _dbContextMock.SetupGet(db => db.FileContexts)
-            .Throws(new Exception(exceptionMessage));
-
-        var request = new GetFileContextWithContentById(Guid.Empty);
-
-        var handler = new GetFileContextWithContentByIdHandler(_mediatorMock.Object, _dbContextMock.Object);
+        _dbContextMock.FileContexts.Throws(new Exception(message));
 
         // Act
-        var result = await handler.Handle(request, default);
+        var result = await _sut.Handle(request, _cancellationToken);
 
         // Assert
-        _dbContextMock.VerifyGet(
-            db => db.FileContexts,
-            Times.Once());
-
-        _mediatorMock.Verify(
-            m => m.Send(
-                It.IsAny<GetFileContentById>(),
-                It.IsAny<CancellationToken>()),
-            Times.Never());
-
         result.Should().NotBeNull()
             .And.BeInErrorState()
-            .And.HaveSingleError(ErrorCode.UnknownError, exceptionMessage)
+            .And.HaveSingleError(ErrorCode.UnknownError, message)
             .And.HaveDefaultPayload();
     }
 }

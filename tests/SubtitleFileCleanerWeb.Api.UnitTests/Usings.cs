@@ -1,10 +1,9 @@
-global using AutoMapper;
+global using AutoFixture.Xunit3;
 global using AwesomeAssertions;
 global using AwesomeAssertions.Extensions;
-global using MediatR;
 global using Microsoft.AspNetCore.Http;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.Extensions.Options;
-global using Moq;
+global using NSubstitute;
 global using SubtitleFileCleanerWeb.Api.UnitTests.Helpers.Extensions;
 global using Xunit;

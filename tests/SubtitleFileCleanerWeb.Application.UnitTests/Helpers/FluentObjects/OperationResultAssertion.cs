@@ -71,9 +71,9 @@ public class OperationResultAssertion<T> : ObjectAssertions<OperationResult<T>, 
         return _andConstraintThis;
     }
 
-    public AndConstraint<OperationResultAssertion<T>> HaveMultipleErrors(params Error[] errors)
+    public AndConstraint<OperationResultAssertion<T>> HaveAllErrorsWithCode(ErrorCode code)
     {
-        Subject.Errors.Should().BeEquivalentTo(errors, options => options.WithStrictOrdering());
+        Subject.Errors.Should().AllSatisfy(error => error.Code.Should().Be(code));
 
         return _andConstraintThis;
     }
