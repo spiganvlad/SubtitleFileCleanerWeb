@@ -8,9 +8,9 @@ namespace SubtitleFileCleanerWeb.Application.UnitTests.Systems.PostConversion;
 
 public class TestPostConversionProcessor
 {
-    private readonly CancellationToken _cancellationToken = TestContext.Current.CancellationToken;
     private readonly List<IPostConverter> _converters;
     private readonly PostConversionProcessor _sut;
+    private readonly CancellationToken _cancellationToken = TestContext.Current.CancellationToken;
 
     public TestPostConversionProcessor()
     {

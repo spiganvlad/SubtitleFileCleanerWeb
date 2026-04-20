@@ -10,9 +10,9 @@ namespace SubtitleFileCleanerWeb.Application.UnitTests.Systems.FileContents.Comm
 
 public class TestDeleteFileContentHandler
 {
-    private readonly CancellationToken _cancellationToken = TestContext.Current.CancellationToken;
     private readonly IBlobStorageContext _blobContextMock;
     private readonly DeleteFileContentHandler _sut;
+    private readonly CancellationToken _cancellationToken = TestContext.Current.CancellationToken;
 
     public TestDeleteFileContentHandler()
     {

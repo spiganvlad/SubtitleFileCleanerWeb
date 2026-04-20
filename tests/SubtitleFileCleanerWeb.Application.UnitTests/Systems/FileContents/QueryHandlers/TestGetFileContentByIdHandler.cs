@@ -8,9 +8,9 @@ namespace SubtitleFileCleanerWeb.Application.UnitTests.Systems.FileContents.Quer
 
 public class TestGetFileContentByIdHandler
 {
-    private readonly CancellationToken _cancellationToken = TestContext.Current.CancellationToken;
     private readonly IBlobStorageContext _blobContextMock;
     private readonly GetFileContentByIdHandler _sut;
+    private readonly CancellationToken _cancellationToken = TestContext.Current.CancellationToken;
 
     public TestGetFileContentByIdHandler()
     {
