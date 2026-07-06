@@ -10,9 +10,9 @@ namespace SubtitleFileCleanerWeb.Application.UnitTests.Systems.FileContexts.Quer
 
 public class TestGetFileContextByIdHandler
 {
-    private readonly CancellationToken _cancellationToken = TestContext.Current.CancellationToken;
     private readonly ApplicationDbContext _dbContextMock;
     private readonly GetFileContextByIdHandler _sut;
+    private readonly CancellationToken _cancellationToken = TestContext.Current.CancellationToken;
 
     public TestGetFileContextByIdHandler()
     {

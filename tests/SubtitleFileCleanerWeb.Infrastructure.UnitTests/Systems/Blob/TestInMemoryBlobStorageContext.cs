@@ -5,8 +5,8 @@ namespace SubtitleFileCleanerWeb.Infrastructure.UnitTests.Systems.Blob;
 
 public class TestInMemoryBlobStorageContext
 {
-    private readonly CancellationToken _cancellationToken = TestContext.Current.CancellationToken;
     private readonly InMemoryBlobStorageContext _sut = new();
+    private readonly CancellationToken _cancellationToken = TestContext.Current.CancellationToken;
 
     [Fact]
     public async Task GetContentStreamAsync_WithExistedPath_ReturnValidStream()

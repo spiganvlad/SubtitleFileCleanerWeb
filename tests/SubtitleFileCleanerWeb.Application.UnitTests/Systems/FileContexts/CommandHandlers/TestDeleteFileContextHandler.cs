@@ -12,10 +12,10 @@ namespace SubtitleFileCleanerWeb.Application.UnitTests.Systems.FileContexts.Comm
 
 public class TestDeleteFileContextHandler
 {
-    private readonly CancellationToken _cancellationToken = TestContext.Current.CancellationToken;
     private readonly IMediator _mediatorMock;
     private readonly ApplicationDbContext _dbContextMock;
     private readonly DeleteFileContextHandler _sut;
+    private readonly CancellationToken _cancellationToken = TestContext.Current.CancellationToken;
 
     public TestDeleteFileContextHandler()
     {

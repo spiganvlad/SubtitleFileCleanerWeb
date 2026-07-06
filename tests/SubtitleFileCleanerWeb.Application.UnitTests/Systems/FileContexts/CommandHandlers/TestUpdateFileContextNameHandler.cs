@@ -10,9 +10,9 @@ namespace SubtitleFileCleanerWeb.Application.UnitTests.Systems.FileContexts.Comm
 
 public class TestUpdateFileContextNameHandler
 {
-    private readonly CancellationToken _cancellationToken = TestContext.Current.CancellationToken;
     private readonly ApplicationDbContext _dbContextMock;
     private readonly UpdateFileContextNameHandler _sut;
+    private readonly CancellationToken _cancellationToken = TestContext.Current.CancellationToken;
 
     public TestUpdateFileContextNameHandler()
     {
